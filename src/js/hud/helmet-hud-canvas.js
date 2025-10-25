@@ -63,11 +63,7 @@ function drawHUD(canvas, frameImg) {
     }
   }
 
-  // small HUD label near bottom center
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.font = `${Math.round(radius * 0.08)}px Roboto, Arial`;
-  ctx.textAlign = 'center';
-  ctx.fillText('CREW HUD', cx, cy + radius * 0.9);
+  // HUD label removed per request: do not draw text label in the helmet HUD
 }
 
 // utilities

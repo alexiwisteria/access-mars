@@ -37,6 +37,7 @@ import { testCompatibility } from './utils/compatibility';
 import { Scene } from './core/scene';
 import qs from 'qs';
 import { initHelmetHUDCanvas } from './hud/helmet-hud-canvas';
+import { initHelmetHUDWidget } from './hud/helmet-hud-widget';
 
 // Restore the crossOrigin property to its default value.
 // AFRAME modifies it and breaks CORS in some versions of Safari.
@@ -64,6 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		Scene.setModeType('360'); // Default to 360 mode
 			Scene.loadSite(site);
 			// initialize camera-attached helmet HUD (canvas version)
-			initHelmetHUDCanvas();
+				initHelmetHUDCanvas();
+				// initialize centered DOM HUD widget (overlay)
+				try { initHelmetHUDWidget(); } catch(e) { console.warn('helmet-hud-widget failed to init', e); }
 	}, 100);
 });

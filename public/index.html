@@ -35,13 +35,13 @@
 
         <script src="js/ga.js"></script>
         <script src="js/fallback.js"></script>
-        <script src="js/splash.js"></script>
+        <!-- <script src="js/splash.js"></script> --> <!-- Removed for immediate terrain load -->
 		<script src="js/vr.js"></script>
     </head>
 
     <body>
 
-		<div class="splash">
+		<div class="splash" style="display: none;">
 			<header>
 				<span class="headerImage">
 					<img class="headerPart" src="img/splash/title-access.png">
@@ -58,7 +58,7 @@
 			</header>
 		</div>
 
-		<div class="footer">
+		<div class="footer" style="display: none;">
 			<div class="gradient left"></div>
 			<div class="gradient right"></div>
 			<a href="#" class="about-btn">About</a>
@@ -74,7 +74,7 @@
 			</ul>
 		</div>
 
-		<div class="about">
+		<div class="about" style="display: none;">
 			<article>
 				<div class="close"></div>
 
@@ -145,7 +145,7 @@
 			</article>
 		</div>
 
-        <ul class="scene-intro-labels">
+        <ul class="scene-intro-labels" style="display: none;">
             <li data-site="landing_site">
                 01; Landing Site; Photographed by Curiosity; Aug 7, 2012 - Aug 26, 2012
             </li>
@@ -163,10 +163,10 @@
             </li>
         </ul>
 
-        <video id="intro-video-webm" src="intro/intro.webm" playsinline style="display:block; z-index: 0; position:absolute;"></video>
-        <video id="intro-video-mp4" src="intro/intro.mp4" playsinline style="display:block; z-index: 0; position:absolute;"></video>
+        <video id="intro-video-webm" src="intro/intro.webm" playsinline style="display:none; z-index: 0; position:absolute;"></video>
+        <video id="intro-video-mp4" src="intro/intro.mp4" playsinline style="display:none; z-index: 0; position:absolute;"></video>
 
-        <div id="skip-intro">SKIP INTRO</div>
+        <div id="skip-intro" style="display: none;">SKIP INTRO</div>
 
         <a-scene id="scene" vr-mode-ui="enabled: false" fog="type: exponential; color: #e1cbb2; density: 0.01">
 
@@ -174,13 +174,13 @@
 
                 <a-camera id="camera" wasd-controls="fly: true" frustum>
 
-                    <a-entity id="mouse-touch-controller" better-raycaster="objects: .clickable; useCursor: true; controllerType: mouse-touch"></a-entity>
+                    <a-entity id="mouse-touch-controller" better-raycaster="objects: .clickable; useCursor: false; controllerType: mouse-touch"></a-entity>
                     <a-entity id="arc-dummy" position="-0.1 0 -0.25"></a-entity>
                     <a-entity id="ui-dummy" position="0 0 -1.75"></a-entity>
                     <a-entity id="ui-dummy-far" position="0 0 -6"></a-entity>
-                    <a-entity id="fader" fade-to-black></a-entity>
+                    <a-entity id="fader" fade-to-black style="display: none;"></a-entity>
 
-                    <a-entity id="scene-label-intro" scene-intro-label scale="0.03 0.03 0.03" position="0, 0, -1">
+                    <a-entity id="scene-label-intro" scene-intro-label scale="0.03 0.03 0.03" position="0, 0, -1" style="display: none;">
                         <a-entity class="progress-bg" geometry="primitive: plane; height: 0.4; width: 32" position="0 -3.5 0" material="shader: flat; color: white;"></a-entity>
                         <a-entity class="progress" geometry="primitive: plane; height: 0.4; width: 32" scale="1 1 1" position="0 -3.5 0.0001" material="shader: flat; color: #133754;"></a-entity>
                     </a-entity>
@@ -195,7 +195,7 @@
 
             <a-entity id="boundary-sphere" class="clickable" boundary-sphere></a-entity>
 
-            <a-entity id="markers"  visible="false" class="invisible">
+            <a-entity id="markers" visible="false" class="invisible" style="display: none;">
 
                 <a-entity id="landing_site_markers" visible="false">
                     <a-entity id="ls1" position="21 0 0" poi-marker="vo: ls3; img: cards/ls1.jpg; title: SATELLITE VIEW; ">This photo taken from the Mars Reconnaissance Orbiter shows the landing site where you&#39;re standing now. It also shows where other parts of the landing system ended up, like the rocket-powered descent stage and the parachute.</a-entity>
@@ -250,7 +250,7 @@
 
             </a-entity>
 
-            <a-entity id="rover-markers" class="invisible">
+            <a-entity id="rover-markers" class="invisible" style="display: none;">
 
                 <a-entity id="rover_poi_arm" rover-poi="title: Robotic Arm; target: arm; img: cards/rm4.jpg; vo: rover1;">Curiosity&#39;s robotic arm contains various instruments to measure rock and soil composition, brush dust away from rocks, take imagery, and even drill into rocks.</a-entity>
 
@@ -293,18 +293,18 @@
                 </a-entity>
             </a-entity>
 
-            <a-entity id="info-card" info-card visible="false"></a-entity>
+            <a-entity id="info-card" info-card visible="false" style="display: none;"></a-entity>
 
-            <a-entity id="orientation-card" orientation-card="title: How To Access Mars:;" visible="false">
+            <a-entity id="orientation-card" orientation-card="title: How To Access Mars:;" visible="false" style="display: none;">
                 <a-entity id="orientation-back-meshes"></a-entity>
                 <a-entity orientation-card-column="title: Learn;  img: intro1; text: Learn about the Curiosity mission by clicking points of interest and highlighted rover parts."></a-entity>
                 <a-entity orientation-card-column="title: Move;   img: intro2; text: Move from point to point by clicking on the terrain."></a-entity>
                 <a-entity orientation-card-column="title: Travel; img: intro3; text: Travel to different mission sites by clicking the map icon."></a-entity>
             </a-entity>
 
-            <a-entity id="controller-dot" controller-dot></a-entity>
-            <a-entity id="controller-arc" controller-arc></a-entity>
-            <a-entity id="controller-parabola" controller-parabola></a-entity>
+            <a-entity id="controller-dot" controller-dot style="display: none;"></a-entity>
+            <a-entity id="controller-arc" controller-arc style="display: none;"></a-entity>
+            <a-entity id="controller-parabola" controller-parabola style="display: none;"></a-entity>
 
         </a-scene>
 

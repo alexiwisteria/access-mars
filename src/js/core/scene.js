@@ -47,7 +47,7 @@ class StaticScene extends EventEmitter {
 		this.isShowingInfoCard = false;
 		this.nextSite = 'landing_site';
 		this.firstLoad = true;
-		this.hasSeenIntro = false;
+		this.hasSeenIntro = true; // Skip intro - go directly to Mars VR
 		this.hasSeenOrientation = false;
 		this.firstVOPlayed = false;
 		this.isPageRefresh = false;
@@ -80,12 +80,12 @@ class StaticScene extends EventEmitter {
 		this.roverMarkers = document.getElementById( 'rover-markers' );
 		this.terrainContainer = document.getElementById( 'terrain-container' );
 
-		// flags
-		AudioManager.disableAudio = !!this.flags.disableAudio;
-		AudioManager.disableVO = !!this.flags.disableVO || AudioManager.disableAudio;
-		AudioManager.disableSFX = !!this.flags.disableSFX || AudioManager.disableAudio;
-		AudioManager.disableAtmosphere = !!this.flags.disableAtmosphere || AudioManager.disableAudio;
-		AudioManager.disableIntroVO = !!this.flags.disableIntroVO || AudioManager.disableAudio;
+		// flags - disable all audio for minimal terrain experience
+		AudioManager.disableAudio = true;
+		AudioManager.disableVO = true;
+		AudioManager.disableSFX = true;
+		AudioManager.disableAtmosphere = true;
+		AudioManager.disableIntroVO = true;
 		this.wireframe = !!this.flags.wireframe || this.wireframe;
 		this.nextSite = this.flags.site || this.nextSite;
 		this.hasSeenOrientation = !!this.flags.hasSeenOrientation || this.hasSeenOrientation;
@@ -266,7 +266,8 @@ class StaticScene extends EventEmitter {
 		this.horizMarkers = document.getElementById( this.currentSite + '_horizMarkers' );
 
 		// Only show rover markers in the landing site
-		this.roverMarkers.setAttribute( 'visible', site === 'landing_site' );
+		// Removed rover markers for minimal terrain experience
+		// this.roverMarkers.setAttribute( 'visible', site === 'landing_site' );
 
 		this.scene.object3D.background = new THREE.Color( '#000' );
 
@@ -298,10 +299,12 @@ class StaticScene extends EventEmitter {
 				// the current session.
 				this.hasSeenIntro = true;
 				this.tryEnablingInteraction();
-				this.tryPlayingAudio();
+				// Removed audio for minimal terrain experience
+				// this.tryPlayingAudio();
 
 				if ( this.firstLoad ) {
-					this.showMarkers();
+					// Removed markers for minimal terrain experience
+					// this.showMarkers();
 					this.firstLoad = false;
 				}
 			});
@@ -312,9 +315,11 @@ class StaticScene extends EventEmitter {
 			this.player.setAttribute( 'position', this.playerStartPos );
 			this.player.setAttribute( 'rotation', this.playerStartRot );
 
-			this.createRover();
+			// Removed rover creation for minimal terrain experience
+			// this.createRover();
 			this.tryEnablingInteraction();
-			this.tryPlayingAudio();
+			// Removed audio for minimal experience
+			// this.tryPlayingAudio();
 
 		// Loading of sites: Pahrump Hills, Murray Buttes and Marias Pass
 		} else {
@@ -357,10 +362,11 @@ class StaticScene extends EventEmitter {
 					this.emit( 'terrain-loaded' );
 					this.emit( 'site-loaded' );
 
-					// Enable interaction, audio, and rover display
-					this.tryEnablingInteraction();
-					this.tryPlayingAudio();
-					this.tryShowRover();
+				// Enable interaction only for minimal terrain experience
+				this.tryEnablingInteraction();
+				// Removed audio and rover for minimal experience
+				// this.tryPlayingAudio();
+				// this.tryShowRover();
 
 					resolve();
 				});
@@ -379,17 +385,18 @@ class StaticScene extends EventEmitter {
 		if ( !this.scene.is( 'loaded' ) ) return;
 		if ( this.scene.is( 'playing-intro' ) ) return;
 
-		// Play the tile loading sound
-		if ( !this.isLinkFromiOS ) {
-			AudioManager.playSFX( 'tile-loadD' );
-		}
+		// Play the tile loading sound - removed for minimal terrain experience
+		// if ( !this.isLinkFromiOS ) {
+		// 	AudioManager.playSFX( 'tile-loadD' );
+		// }
 
 		// Show orientation card if the user hasn't seen it yet
-		if ( !this.hasSeenOrientation ) {
-			this.hasSeenOrientation = true;
-			this.orientationCard.addState( 'visible' );
-			this.orientationCard.components[ 'orientation-card' ].update();
-		}
+		// Removed orientation card for minimal terrain experience
+		// if ( !this.hasSeenOrientation ) {
+		// 	this.hasSeenOrientation = true;
+		// 	this.orientationCard.addState( 'visible' );
+		// 	this.orientationCard.components[ 'orientation-card' ].update();
+		// }
 
 		// Hide the simplified terrain and show the full terrain
 		this.terrain.removeState( 'show-simple' );
@@ -407,7 +414,8 @@ class StaticScene extends EventEmitter {
 
 		this.scene.addState( 'interactive' );
 
-		this.showMarkers();
+		// Removed markers for minimal terrain experience
+		// this.showMarkers();
 		this.enableTeleport = true;
 
 		// checks visibility of controls
@@ -510,38 +518,40 @@ class StaticScene extends EventEmitter {
 
 	}
 
-	createRover() {
-		if ( this.rover ) return this.rover;
+	// Removed rover creation for minimal terrain experience
+	// createRover() {
+	// 	if ( this.rover ) return this.rover;
 
-		this.rover = document.createElement( 'a-entity' );
-		this.rover.setAttribute( 'rover', '' );
-		this.rover.setAttribute( 'rotation', { x: 0, y: 90, z: 0 } );
-		this.rover.id = 'rover';
+	// 	this.rover = document.createElement( 'a-entity' );
+	// 	this.rover.setAttribute( 'rover', '' );
+	// 	this.rover.setAttribute( 'rotation', { x: 0, y: 90, z: 0 } );
+	// 	this.rover.id = 'rover';
 
-		this.terrainContainer.appendChild( this.rover );
+	// 	this.terrainContainer.appendChild( this.rover );
 
-		return this.rover;
-	}
+	// 	return this.rover;
+	// }
 
-	tryShowRover() {
-		if( !this.rover ) return;
-		if( !this.isPageRefresh && !this.hasSeenIntro ) return;
+	// Removed rover methods for minimal terrain experience
+	// tryShowRover() {
+	// 	if( !this.rover ) return;
+	// 	if( !this.isPageRefresh && !this.hasSeenIntro ) return;
 
-		// The rover should only be visible on the landing site. Since this function
-		// is only called when returning to the landing site after having seen the intro,
-		// set the rover's complete state so that it shows up already in position.
-		if ( this.currentSite === 'landing_site' ) {
-			this.rover.setAttribute( 'visible', true );
-			this.rover.addState( 'complete' );
-		} else {
-			this.hideRover();
-		}
-	}
+	// 	// The rover should only be visible on the landing site. Since this function
+	// 	// is only called when returning to the landing site after having seen the intro,
+	// 	// set the rover's complete state so that it shows up already in position.
+	// 	if ( this.currentSite === 'landing_site' ) {
+	// 		this.rover.setAttribute( 'visible', true );
+	// 		this.rover.addState( 'complete' );
+	// 	} else {
+	// 		this.hideRover();
+	// 	}
+	// }
 
-	hideRover() {
-		if ( !this.rover ) return;
-		this.rover.setAttribute( 'visible', false );
-	}
+	// hideRover() {
+	// 	if ( !this.rover ) return;
+	// 	this.rover.setAttribute( 'visible', false );
+	// }
 
 	showMarkers() {
 		this.mapMarkers.setAttribute( 'visible', true );

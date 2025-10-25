@@ -81331,15 +81331,15 @@ module.exports = getWakeLock();
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],3:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/object/create"), __esModule: true };
-},{"core-js/library/fn/object/create":20}],4:[function(require,module,exports){
+},{"core-js/library/fn/object/create":17}],4:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/object/define-property"), __esModule: true };
-},{"core-js/library/fn/object/define-property":21}],5:[function(require,module,exports){
+},{"core-js/library/fn/object/define-property":18}],5:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/object/set-prototype-of"), __esModule: true };
-},{"core-js/library/fn/object/set-prototype-of":22}],6:[function(require,module,exports){
+},{"core-js/library/fn/object/set-prototype-of":19}],6:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/symbol"), __esModule: true };
-},{"core-js/library/fn/symbol":23}],7:[function(require,module,exports){
+},{"core-js/library/fn/symbol":20}],7:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/symbol/iterator"), __esModule: true };
-},{"core-js/library/fn/symbol/iterator":24}],8:[function(require,module,exports){
+},{"core-js/library/fn/symbol/iterator":21}],8:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -81579,192 +81579,6 @@ module.exports = function bezier (mX1, mY1, mX2, mY2) {
 };
 
 },{}],15:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],16:[function(require,module,exports){
 'use strict';
 
 /**
@@ -81821,352 +81635,162 @@ function cloneArrayDeep(arr, instanceClone) {
 
 module.exports = cloneDeep;
 
-},{"for-own":17,"is-plain-object":131,"kind-of":18,"shallow-clone":142}],17:[function(require,module,exports){
-/*!
- * for-own <https://github.com/jonschlinkert/for-own>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
-
-'use strict';
-
-var forIn = require('for-in');
-var hasOwn = Object.prototype.hasOwnProperty;
-
-module.exports = function forOwn(obj, fn, thisArg) {
-  forIn(obj, function(val, key) {
-    if (hasOwn.call(obj, key)) {
-      return fn.call(thisArg, obj[key], key, obj);
-    }
-  });
-};
-
-},{"for-in":129}],18:[function(require,module,exports){
-var toString = Object.prototype.toString;
-
-/**
- * Get the native `typeof` a value.
- *
- * @param  {*} `val`
- * @return {*} Native javascript type
- */
-
-module.exports = function kindOf(val) {
-  var type = typeof val;
-
-  // primitivies
-  if (type === 'undefined') {
-    return 'undefined';
-  }
-  if (val === null) {
-    return 'null';
-  }
-  if (val === true || val === false || val instanceof Boolean) {
-    return 'boolean';
-  }
-  if (type === 'string' || val instanceof String) {
-    return 'string';
-  }
-  if (type === 'number' || val instanceof Number) {
-    return 'number';
-  }
-
-  // functions
-  if (type === 'function' || val instanceof Function) {
-    if (typeof val.constructor.name !== 'undefined' && val.constructor.name.slice(0, 9) === 'Generator') {
-      return 'generatorfunction';
-    }
-    return 'function';
-  }
-
-  // array
-  if (typeof Array.isArray !== 'undefined' && Array.isArray(val)) {
-    return 'array';
-  }
-
-  // check for instances of RegExp and Date before calling `toString`
-  if (val instanceof RegExp) {
-    return 'regexp';
-  }
-  if (val instanceof Date) {
-    return 'date';
-  }
-
-  // other objects
-  type = toString.call(val);
-
-  if (type === '[object RegExp]') {
-    return 'regexp';
-  }
-  if (type === '[object Date]') {
-    return 'date';
-  }
-  if (type === '[object Arguments]') {
-    return 'arguments';
-  }
-  if (type === '[object Error]') {
-    return 'error';
-  }
-  if (type === '[object Promise]') {
-    return 'promise';
-  }
-
-  // buffer
-  if (isBuffer(val)) {
-    return 'buffer';
-  }
-
-  // es6: Map, WeakMap, Set, WeakSet
-  if (type === '[object Set]') {
-    return 'set';
-  }
-  if (type === '[object WeakSet]') {
-    return 'weakset';
-  }
-  if (type === '[object Map]') {
-    return 'map';
-  }
-  if (type === '[object WeakMap]') {
-    return 'weakmap';
-  }
-  if (type === '[object Symbol]') {
-    return 'symbol';
-  }
-  
-  if (type === '[object Map Iterator]') {
-    return 'mapiterator';
-  }
-  if (type === '[object Set Iterator]') {
-    return 'setiterator';
-  }
-  if (type === '[object String Iterator]') {
-    return 'stringiterator';
-  }
-  if (type === '[object Array Iterator]') {
-    return 'arrayiterator';
-  }
-  
-  // typed arrays
-  if (type === '[object Int8Array]') {
-    return 'int8array';
-  }
-  if (type === '[object Uint8Array]') {
-    return 'uint8array';
-  }
-  if (type === '[object Uint8ClampedArray]') {
-    return 'uint8clampedarray';
-  }
-  if (type === '[object Int16Array]') {
-    return 'int16array';
-  }
-  if (type === '[object Uint16Array]') {
-    return 'uint16array';
-  }
-  if (type === '[object Int32Array]') {
-    return 'int32array';
-  }
-  if (type === '[object Uint32Array]') {
-    return 'uint32array';
-  }
-  if (type === '[object Float32Array]') {
-    return 'float32array';
-  }
-  if (type === '[object Float64Array]') {
-    return 'float64array';
-  }
-
-  // must be a plain object
-  return 'object';
-};
-
-/**
- * If you need to support Safari 5-7 (8-10 yr-old browser),
- * take a look at https://github.com/feross/is-buffer
- */
-
-function isBuffer(val) {
-  return val.constructor
-    && typeof val.constructor.isBuffer === 'function'
-    && val.constructor.isBuffer(val);
-}
-
-},{}],19:[function(require,module,exports){
+},{"for-own":128,"is-plain-object":130,"kind-of":132,"shallow-clone":142}],16:[function(require,module,exports){
 require('../../modules/es6.object.assign');
 module.exports = require('../../modules/_core').Object.assign;
-
-},{"../../modules/_core":95,"../../modules/es6.object.assign":126}],20:[function(require,module,exports){
+},{"../../modules/_core":93,"../../modules/es6.object.assign":124}],17:[function(require,module,exports){
 require('../../modules/es6.object.create');
 var $Object = require('../../modules/_core').Object;
-module.exports = function create(P, D) {
+module.exports = function create(P, D){
   return $Object.create(P, D);
 };
-
-},{"../../modules/_core":30,"../../modules/es6.object.create":82}],21:[function(require,module,exports){
+},{"../../modules/_core":27,"../../modules/es6.object.create":80}],18:[function(require,module,exports){
 require('../../modules/es6.object.define-property');
 var $Object = require('../../modules/_core').Object;
-module.exports = function defineProperty(it, key, desc) {
+module.exports = function defineProperty(it, key, desc){
   return $Object.defineProperty(it, key, desc);
 };
-
-},{"../../modules/_core":30,"../../modules/es6.object.define-property":83}],22:[function(require,module,exports){
+},{"../../modules/_core":27,"../../modules/es6.object.define-property":81}],19:[function(require,module,exports){
 require('../../modules/es6.object.set-prototype-of');
 module.exports = require('../../modules/_core').Object.setPrototypeOf;
-
-},{"../../modules/_core":30,"../../modules/es6.object.set-prototype-of":84}],23:[function(require,module,exports){
+},{"../../modules/_core":27,"../../modules/es6.object.set-prototype-of":82}],20:[function(require,module,exports){
 require('../../modules/es6.symbol');
 require('../../modules/es6.object.to-string');
 require('../../modules/es7.symbol.async-iterator');
 require('../../modules/es7.symbol.observable');
 module.exports = require('../../modules/_core').Symbol;
-
-},{"../../modules/_core":30,"../../modules/es6.object.to-string":85,"../../modules/es6.symbol":87,"../../modules/es7.symbol.async-iterator":88,"../../modules/es7.symbol.observable":89}],24:[function(require,module,exports){
+},{"../../modules/_core":27,"../../modules/es6.object.to-string":83,"../../modules/es6.symbol":85,"../../modules/es7.symbol.async-iterator":86,"../../modules/es7.symbol.observable":87}],21:[function(require,module,exports){
 require('../../modules/es6.string.iterator');
 require('../../modules/web.dom.iterable');
 module.exports = require('../../modules/_wks-ext').f('iterator');
-
-},{"../../modules/_wks-ext":79,"../../modules/es6.string.iterator":86,"../../modules/web.dom.iterable":90}],25:[function(require,module,exports){
-module.exports = function (it) {
-  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+},{"../../modules/_wks-ext":77,"../../modules/es6.string.iterator":84,"../../modules/web.dom.iterable":88}],22:[function(require,module,exports){
+module.exports = function(it){
+  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
-
-},{}],26:[function(require,module,exports){
-module.exports = function () { /* empty */ };
-
-},{}],27:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
+module.exports = function(){ /* empty */ };
+},{}],24:[function(require,module,exports){
 var isObject = require('./_is-object');
-module.exports = function (it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+module.exports = function(it){
+  if(!isObject(it))throw TypeError(it + ' is not an object!');
   return it;
 };
-
-},{"./_is-object":46}],28:[function(require,module,exports){
+},{"./_is-object":43}],25:[function(require,module,exports){
 // false -> Array#indexOf
 // true  -> Array#includes
-var toIObject = require('./_to-iobject');
-var toLength = require('./_to-length');
-var toAbsoluteIndex = require('./_to-absolute-index');
-module.exports = function (IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = toIObject($this);
-    var length = toLength(O.length);
-    var index = toAbsoluteIndex(fromIndex, length);
-    var value;
+var toIObject = require('./_to-iobject')
+  , toLength  = require('./_to-length')
+  , toIndex   = require('./_to-index');
+module.exports = function(IS_INCLUDES){
+  return function($this, el, fromIndex){
+    var O      = toIObject($this)
+      , length = toLength(O.length)
+      , index  = toIndex(fromIndex, length)
+      , value;
     // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare
-    if (IS_INCLUDES && el != el) while (length > index) {
+    if(IS_INCLUDES && el != el)while(length > index){
       value = O[index++];
-      // eslint-disable-next-line no-self-compare
-      if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
-    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
-      if (O[index] === el) return IS_INCLUDES || index || 0;
+      if(value != value)return true;
+    // Array#toIndex ignores holes, Array#includes - not
+    } else for(;length > index; index++)if(IS_INCLUDES || index in O){
+      if(O[index] === el)return IS_INCLUDES || index || 0;
     } return !IS_INCLUDES && -1;
   };
 };
-
-},{"./_to-absolute-index":71,"./_to-iobject":73,"./_to-length":74}],29:[function(require,module,exports){
+},{"./_to-index":69,"./_to-iobject":71,"./_to-length":72}],26:[function(require,module,exports){
 var toString = {}.toString;
 
-module.exports = function (it) {
+module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
-
-},{}],30:[function(require,module,exports){
-var core = module.exports = { version: '2.5.1' };
-if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-
-},{}],31:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
+var core = module.exports = {version: '2.4.0'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+},{}],28:[function(require,module,exports){
 // optional / simple context binding
 var aFunction = require('./_a-function');
-module.exports = function (fn, that, length) {
+module.exports = function(fn, that, length){
   aFunction(fn);
-  if (that === undefined) return fn;
-  switch (length) {
-    case 1: return function (a) {
+  if(that === undefined)return fn;
+  switch(length){
+    case 1: return function(a){
       return fn.call(that, a);
     };
-    case 2: return function (a, b) {
+    case 2: return function(a, b){
       return fn.call(that, a, b);
     };
-    case 3: return function (a, b, c) {
+    case 3: return function(a, b, c){
       return fn.call(that, a, b, c);
     };
   }
-  return function (/* ...args */) {
+  return function(/* ...args */){
     return fn.apply(that, arguments);
   };
 };
-
-},{"./_a-function":25}],32:[function(require,module,exports){
+},{"./_a-function":22}],29:[function(require,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
-module.exports = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
+module.exports = function(it){
+  if(it == undefined)throw TypeError("Can't call method on  " + it);
   return it;
 };
-
-},{}],33:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // Thank's IE8 for his funny defineProperty
-module.exports = !require('./_fails')(function () {
-  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+module.exports = !require('./_fails')(function(){
+  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
-
-},{"./_fails":38}],34:[function(require,module,exports){
-var isObject = require('./_is-object');
-var document = require('./_global').document;
-// typeof document.createElement is 'object' in old IE
-var is = isObject(document) && isObject(document.createElement);
-module.exports = function (it) {
+},{"./_fails":35}],31:[function(require,module,exports){
+var isObject = require('./_is-object')
+  , document = require('./_global').document
+  // in old IE typeof document.createElement is 'object'
+  , is = isObject(document) && isObject(document.createElement);
+module.exports = function(it){
   return is ? document.createElement(it) : {};
 };
-
-},{"./_global":39,"./_is-object":46}],35:[function(require,module,exports){
+},{"./_global":36,"./_is-object":43}],32:[function(require,module,exports){
 // IE 8- don't enum bug keys
 module.exports = (
   'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
 ).split(',');
-
-},{}],36:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 // all enumerable object keys, includes symbols
-var getKeys = require('./_object-keys');
-var gOPS = require('./_object-gops');
-var pIE = require('./_object-pie');
-module.exports = function (it) {
-  var result = getKeys(it);
-  var getSymbols = gOPS.f;
-  if (getSymbols) {
-    var symbols = getSymbols(it);
-    var isEnum = pIE.f;
-    var i = 0;
-    var key;
-    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
+var getKeys = require('./_object-keys')
+  , gOPS    = require('./_object-gops')
+  , pIE     = require('./_object-pie');
+module.exports = function(it){
+  var result     = getKeys(it)
+    , getSymbols = gOPS.f;
+  if(getSymbols){
+    var symbols = getSymbols(it)
+      , isEnum  = pIE.f
+      , i       = 0
+      , key;
+    while(symbols.length > i)if(isEnum.call(it, key = symbols[i++]))result.push(key);
   } return result;
 };
+},{"./_object-gops":57,"./_object-keys":60,"./_object-pie":61}],34:[function(require,module,exports){
+var global    = require('./_global')
+  , core      = require('./_core')
+  , ctx       = require('./_ctx')
+  , hide      = require('./_hide')
+  , PROTOTYPE = 'prototype';
 
-},{"./_object-gops":59,"./_object-keys":62,"./_object-pie":63}],37:[function(require,module,exports){
-var global = require('./_global');
-var core = require('./_core');
-var ctx = require('./_ctx');
-var hide = require('./_hide');
-var PROTOTYPE = 'prototype';
-
-var $export = function (type, name, source) {
-  var IS_FORCED = type & $export.F;
-  var IS_GLOBAL = type & $export.G;
-  var IS_STATIC = type & $export.S;
-  var IS_PROTO = type & $export.P;
-  var IS_BIND = type & $export.B;
-  var IS_WRAP = type & $export.W;
-  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
-  var expProto = exports[PROTOTYPE];
-  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE];
-  var key, own, out;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , IS_WRAP   = type & $export.W
+    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , expProto  = exports[PROTOTYPE]
+    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
+    , key, own, out;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
     // contains in native
     own = !IS_FORCED && target && target[key] !== undefined;
-    if (own && key in exports) continue;
+    if(own && key in exports)continue;
     // export native or passed
     out = own ? target[key] : source[key];
     // prevent global pollution for namespaces
@@ -82174,11 +81798,11 @@ var $export = function (type, name, source) {
     // bind timers to global for call from export context
     : IS_BIND && own ? ctx(out, global)
     // wrap global constructors for prevent change them in library
-    : IS_WRAP && target[key] == out ? (function (C) {
-      var F = function (a, b, c) {
-        if (this instanceof C) {
-          switch (arguments.length) {
-            case 0: return new C();
+    : IS_WRAP && target[key] == out ? (function(C){
+      var F = function(a, b, c){
+        if(this instanceof C){
+          switch(arguments.length){
+            case 0: return new C;
             case 1: return new C(a);
             case 2: return new C(a, b);
           } return new C(a, b, c);
@@ -82189,10 +81813,10 @@ var $export = function (type, name, source) {
     // make static versions for prototype methods
     })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
     // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
-    if (IS_PROTO) {
+    if(IS_PROTO){
       (exports.virtual || (exports.virtual = {}))[key] = out;
       // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
-      if (type & $export.R && expProto && !expProto[key]) hide(expProto, key, out);
+      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
     }
   }
 };
@@ -82204,241 +81828,232 @@ $export.P = 8;   // proto
 $export.B = 16;  // bind
 $export.W = 32;  // wrap
 $export.U = 64;  // safe
-$export.R = 128; // real proto method for `library`
+$export.R = 128; // real proto method for `library` 
 module.exports = $export;
-
-},{"./_core":30,"./_ctx":31,"./_global":39,"./_hide":41}],38:[function(require,module,exports){
-module.exports = function (exec) {
+},{"./_core":27,"./_ctx":28,"./_global":36,"./_hide":38}],35:[function(require,module,exports){
+module.exports = function(exec){
   try {
     return !!exec();
-  } catch (e) {
+  } catch(e){
     return true;
   }
 };
-
-},{}],39:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
-  ? window : typeof self != 'undefined' && self.Math == Math ? self
-  // eslint-disable-next-line no-new-func
-  : Function('return this')();
-if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
-
-},{}],40:[function(require,module,exports){
+  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
+if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
+},{}],37:[function(require,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
-module.exports = function (it, key) {
+module.exports = function(it, key){
   return hasOwnProperty.call(it, key);
 };
-
-},{}],41:[function(require,module,exports){
-var dP = require('./_object-dp');
-var createDesc = require('./_property-desc');
-module.exports = require('./_descriptors') ? function (object, key, value) {
+},{}],38:[function(require,module,exports){
+var dP         = require('./_object-dp')
+  , createDesc = require('./_property-desc');
+module.exports = require('./_descriptors') ? function(object, key, value){
   return dP.f(object, key, createDesc(1, value));
-} : function (object, key, value) {
+} : function(object, key, value){
   object[key] = value;
   return object;
 };
-
-},{"./_descriptors":33,"./_object-dp":54,"./_property-desc":64}],42:[function(require,module,exports){
-var document = require('./_global').document;
-module.exports = document && document.documentElement;
-
-},{"./_global":39}],43:[function(require,module,exports){
-module.exports = !require('./_descriptors') && !require('./_fails')(function () {
-  return Object.defineProperty(require('./_dom-create')('div'), 'a', { get: function () { return 7; } }).a != 7;
+},{"./_descriptors":30,"./_object-dp":52,"./_property-desc":62}],39:[function(require,module,exports){
+module.exports = require('./_global').document && document.documentElement;
+},{"./_global":36}],40:[function(require,module,exports){
+module.exports = !require('./_descriptors') && !require('./_fails')(function(){
+  return Object.defineProperty(require('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
-
-},{"./_descriptors":33,"./_dom-create":34,"./_fails":38}],44:[function(require,module,exports){
+},{"./_descriptors":30,"./_dom-create":31,"./_fails":35}],41:[function(require,module,exports){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = require('./_cof');
-// eslint-disable-next-line no-prototype-builtins
-module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
-
-},{"./_cof":29}],45:[function(require,module,exports){
+},{"./_cof":26}],42:[function(require,module,exports){
 // 7.2.2 IsArray(argument)
 var cof = require('./_cof');
-module.exports = Array.isArray || function isArray(arg) {
+module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
-
-},{"./_cof":29}],46:[function(require,module,exports){
-module.exports = function (it) {
+},{"./_cof":26}],43:[function(require,module,exports){
+module.exports = function(it){
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
-
-},{}],47:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
-var create = require('./_object-create');
-var descriptor = require('./_property-desc');
-var setToStringTag = require('./_set-to-string-tag');
-var IteratorPrototype = {};
+var create         = require('./_object-create')
+  , descriptor     = require('./_property-desc')
+  , setToStringTag = require('./_set-to-string-tag')
+  , IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-require('./_hide')(IteratorPrototype, require('./_wks')('iterator'), function () { return this; });
+require('./_hide')(IteratorPrototype, require('./_wks')('iterator'), function(){ return this; });
 
-module.exports = function (Constructor, NAME, next) {
-  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
+module.exports = function(Constructor, NAME, next){
+  Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
   setToStringTag(Constructor, NAME + ' Iterator');
 };
-
-},{"./_hide":41,"./_object-create":53,"./_property-desc":64,"./_set-to-string-tag":67,"./_wks":80}],48:[function(require,module,exports){
+},{"./_hide":38,"./_object-create":51,"./_property-desc":62,"./_set-to-string-tag":65,"./_wks":78}],45:[function(require,module,exports){
 'use strict';
-var LIBRARY = require('./_library');
-var $export = require('./_export');
-var redefine = require('./_redefine');
-var hide = require('./_hide');
-var has = require('./_has');
-var Iterators = require('./_iterators');
-var $iterCreate = require('./_iter-create');
-var setToStringTag = require('./_set-to-string-tag');
-var getPrototypeOf = require('./_object-gpo');
-var ITERATOR = require('./_wks')('iterator');
-var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
-var FF_ITERATOR = '@@iterator';
-var KEYS = 'keys';
-var VALUES = 'values';
+var LIBRARY        = require('./_library')
+  , $export        = require('./_export')
+  , redefine       = require('./_redefine')
+  , hide           = require('./_hide')
+  , has            = require('./_has')
+  , Iterators      = require('./_iterators')
+  , $iterCreate    = require('./_iter-create')
+  , setToStringTag = require('./_set-to-string-tag')
+  , getPrototypeOf = require('./_object-gpo')
+  , ITERATOR       = require('./_wks')('iterator')
+  , BUGGY          = !([].keys && 'next' in [].keys()) // Safari has buggy iterators w/o `next`
+  , FF_ITERATOR    = '@@iterator'
+  , KEYS           = 'keys'
+  , VALUES         = 'values';
 
-var returnThis = function () { return this; };
+var returnThis = function(){ return this; };
 
-module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
+module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED){
   $iterCreate(Constructor, NAME, next);
-  var getMethod = function (kind) {
-    if (!BUGGY && kind in proto) return proto[kind];
-    switch (kind) {
-      case KEYS: return function keys() { return new Constructor(this, kind); };
-      case VALUES: return function values() { return new Constructor(this, kind); };
-    } return function entries() { return new Constructor(this, kind); };
+  var getMethod = function(kind){
+    if(!BUGGY && kind in proto)return proto[kind];
+    switch(kind){
+      case KEYS: return function keys(){ return new Constructor(this, kind); };
+      case VALUES: return function values(){ return new Constructor(this, kind); };
+    } return function entries(){ return new Constructor(this, kind); };
   };
-  var TAG = NAME + ' Iterator';
-  var DEF_VALUES = DEFAULT == VALUES;
-  var VALUES_BUG = false;
-  var proto = Base.prototype;
-  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
-  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
-  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
-  var methods, key, IteratorPrototype;
+  var TAG        = NAME + ' Iterator'
+    , DEF_VALUES = DEFAULT == VALUES
+    , VALUES_BUG = false
+    , proto      = Base.prototype
+    , $native    = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT]
+    , $default   = $native || getMethod(DEFAULT)
+    , $entries   = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined
+    , $anyNative = NAME == 'Array' ? proto.entries || $native : $native
+    , methods, key, IteratorPrototype;
   // Fix native
-  if ($anyNative) {
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
-    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
+  if($anyNative){
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base));
+    if(IteratorPrototype !== Object.prototype){
       // Set @@toStringTag to native iterators
       setToStringTag(IteratorPrototype, TAG, true);
       // fix for some old engines
-      if (!LIBRARY && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
+      if(!LIBRARY && !has(IteratorPrototype, ITERATOR))hide(IteratorPrototype, ITERATOR, returnThis);
     }
   }
   // fix Array#{values, @@iterator}.name in V8 / FF
-  if (DEF_VALUES && $native && $native.name !== VALUES) {
+  if(DEF_VALUES && $native && $native.name !== VALUES){
     VALUES_BUG = true;
-    $default = function values() { return $native.call(this); };
+    $default = function values(){ return $native.call(this); };
   }
   // Define iterator
-  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+  if((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])){
     hide(proto, ITERATOR, $default);
   }
   // Plug for library
   Iterators[NAME] = $default;
-  Iterators[TAG] = returnThis;
-  if (DEFAULT) {
+  Iterators[TAG]  = returnThis;
+  if(DEFAULT){
     methods = {
-      values: DEF_VALUES ? $default : getMethod(VALUES),
-      keys: IS_SET ? $default : getMethod(KEYS),
+      values:  DEF_VALUES ? $default : getMethod(VALUES),
+      keys:    IS_SET     ? $default : getMethod(KEYS),
       entries: $entries
     };
-    if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine(proto, key, methods[key]);
+    if(FORCED)for(key in methods){
+      if(!(key in proto))redefine(proto, key, methods[key]);
     } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
   }
   return methods;
 };
-
-},{"./_export":37,"./_has":40,"./_hide":41,"./_iter-create":47,"./_iterators":50,"./_library":51,"./_object-gpo":60,"./_redefine":65,"./_set-to-string-tag":67,"./_wks":80}],49:[function(require,module,exports){
-module.exports = function (done, value) {
-  return { value: value, done: !!done };
+},{"./_export":34,"./_has":37,"./_hide":38,"./_iter-create":44,"./_iterators":47,"./_library":49,"./_object-gpo":58,"./_redefine":63,"./_set-to-string-tag":65,"./_wks":78}],46:[function(require,module,exports){
+module.exports = function(done, value){
+  return {value: value, done: !!done};
 };
-
-},{}],50:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = {};
-
-},{}],51:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
+var getKeys   = require('./_object-keys')
+  , toIObject = require('./_to-iobject');
+module.exports = function(object, el){
+  var O      = toIObject(object)
+    , keys   = getKeys(O)
+    , length = keys.length
+    , index  = 0
+    , key;
+  while(length > index)if(O[key = keys[index++]] === el)return key;
+};
+},{"./_object-keys":60,"./_to-iobject":71}],49:[function(require,module,exports){
 module.exports = true;
-
-},{}],52:[function(require,module,exports){
-var META = require('./_uid')('meta');
-var isObject = require('./_is-object');
-var has = require('./_has');
-var setDesc = require('./_object-dp').f;
-var id = 0;
-var isExtensible = Object.isExtensible || function () {
+},{}],50:[function(require,module,exports){
+var META     = require('./_uid')('meta')
+  , isObject = require('./_is-object')
+  , has      = require('./_has')
+  , setDesc  = require('./_object-dp').f
+  , id       = 0;
+var isExtensible = Object.isExtensible || function(){
   return true;
 };
-var FREEZE = !require('./_fails')(function () {
+var FREEZE = !require('./_fails')(function(){
   return isExtensible(Object.preventExtensions({}));
 });
-var setMeta = function (it) {
-  setDesc(it, META, { value: {
+var setMeta = function(it){
+  setDesc(it, META, {value: {
     i: 'O' + ++id, // object ID
     w: {}          // weak collections IDs
-  } });
+  }});
 };
-var fastKey = function (it, create) {
+var fastKey = function(it, create){
   // return primitive with prefix
-  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
-  if (!has(it, META)) {
+  if(!isObject(it))return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if(!has(it, META)){
     // can't set metadata to uncaught frozen object
-    if (!isExtensible(it)) return 'F';
+    if(!isExtensible(it))return 'F';
     // not necessary to add metadata
-    if (!create) return 'E';
+    if(!create)return 'E';
     // add missing metadata
     setMeta(it);
   // return object ID
   } return it[META].i;
 };
-var getWeak = function (it, create) {
-  if (!has(it, META)) {
+var getWeak = function(it, create){
+  if(!has(it, META)){
     // can't set metadata to uncaught frozen object
-    if (!isExtensible(it)) return true;
+    if(!isExtensible(it))return true;
     // not necessary to add metadata
-    if (!create) return false;
+    if(!create)return false;
     // add missing metadata
     setMeta(it);
   // return hash weak collections IDs
   } return it[META].w;
 };
 // add metadata on freeze-family methods calling
-var onFreeze = function (it) {
-  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
+var onFreeze = function(it){
+  if(FREEZE && meta.NEED && isExtensible(it) && !has(it, META))setMeta(it);
   return it;
 };
 var meta = module.exports = {
-  KEY: META,
-  NEED: false,
-  fastKey: fastKey,
-  getWeak: getWeak,
+  KEY:      META,
+  NEED:     false,
+  fastKey:  fastKey,
+  getWeak:  getWeak,
   onFreeze: onFreeze
 };
-
-},{"./_fails":38,"./_has":40,"./_is-object":46,"./_object-dp":54,"./_uid":77}],53:[function(require,module,exports){
+},{"./_fails":35,"./_has":37,"./_is-object":43,"./_object-dp":52,"./_uid":75}],51:[function(require,module,exports){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = require('./_an-object');
-var dPs = require('./_object-dps');
-var enumBugKeys = require('./_enum-bug-keys');
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-var Empty = function () { /* empty */ };
-var PROTOTYPE = 'prototype';
+var anObject    = require('./_an-object')
+  , dPs         = require('./_object-dps')
+  , enumBugKeys = require('./_enum-bug-keys')
+  , IE_PROTO    = require('./_shared-key')('IE_PROTO')
+  , Empty       = function(){ /* empty */ }
+  , PROTOTYPE   = 'prototype';
 
 // Create object with fake `null` prototype: use iframe Object with cleared prototype
-var createDict = function () {
+var createDict = function(){
   // Thrash, waste and sodomy: IE GC bug
-  var iframe = require('./_dom-create')('iframe');
-  var i = enumBugKeys.length;
-  var lt = '<';
-  var gt = '>';
-  var iframeDocument;
+  var iframe = require('./_dom-create')('iframe')
+    , i      = enumBugKeys.length
+    , lt     = '<'
+    , gt     = '>'
+    , iframeDocument;
   iframe.style.display = 'none';
   require('./_html').appendChild(iframe);
   iframe.src = 'javascript:'; // eslint-disable-line no-script-url
@@ -82449,15 +82064,15 @@ var createDict = function () {
   iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
   iframeDocument.close();
   createDict = iframeDocument.F;
-  while (i--) delete createDict[PROTOTYPE][enumBugKeys[i]];
+  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
   return createDict();
 };
 
-module.exports = Object.create || function create(O, Properties) {
+module.exports = Object.create || function create(O, Properties){
   var result;
-  if (O !== null) {
+  if(O !== null){
     Empty[PROTOTYPE] = anObject(O);
-    result = new Empty();
+    result = new Empty;
     Empty[PROTOTYPE] = null;
     // add "__proto__" for Object.getPrototypeOf polyfill
     result[IE_PROTO] = O;
@@ -82465,333 +82080,307 @@ module.exports = Object.create || function create(O, Properties) {
   return Properties === undefined ? result : dPs(result, Properties);
 };
 
-},{"./_an-object":27,"./_dom-create":34,"./_enum-bug-keys":35,"./_html":42,"./_object-dps":55,"./_shared-key":68}],54:[function(require,module,exports){
-var anObject = require('./_an-object');
-var IE8_DOM_DEFINE = require('./_ie8-dom-define');
-var toPrimitive = require('./_to-primitive');
-var dP = Object.defineProperty;
+},{"./_an-object":24,"./_dom-create":31,"./_enum-bug-keys":32,"./_html":39,"./_object-dps":53,"./_shared-key":66}],52:[function(require,module,exports){
+var anObject       = require('./_an-object')
+  , IE8_DOM_DEFINE = require('./_ie8-dom-define')
+  , toPrimitive    = require('./_to-primitive')
+  , dP             = Object.defineProperty;
 
-exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes){
   anObject(O);
   P = toPrimitive(P, true);
   anObject(Attributes);
-  if (IE8_DOM_DEFINE) try {
+  if(IE8_DOM_DEFINE)try {
     return dP(O, P, Attributes);
-  } catch (e) { /* empty */ }
-  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
-  if ('value' in Attributes) O[P] = Attributes.value;
+  } catch(e){ /* empty */ }
+  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
+  if('value' in Attributes)O[P] = Attributes.value;
   return O;
 };
+},{"./_an-object":24,"./_descriptors":30,"./_ie8-dom-define":40,"./_to-primitive":74}],53:[function(require,module,exports){
+var dP       = require('./_object-dp')
+  , anObject = require('./_an-object')
+  , getKeys  = require('./_object-keys');
 
-},{"./_an-object":27,"./_descriptors":33,"./_ie8-dom-define":43,"./_to-primitive":76}],55:[function(require,module,exports){
-var dP = require('./_object-dp');
-var anObject = require('./_an-object');
-var getKeys = require('./_object-keys');
-
-module.exports = require('./_descriptors') ? Object.defineProperties : function defineProperties(O, Properties) {
+module.exports = require('./_descriptors') ? Object.defineProperties : function defineProperties(O, Properties){
   anObject(O);
-  var keys = getKeys(Properties);
-  var length = keys.length;
-  var i = 0;
-  var P;
-  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
+  var keys   = getKeys(Properties)
+    , length = keys.length
+    , i = 0
+    , P;
+  while(length > i)dP.f(O, P = keys[i++], Properties[P]);
   return O;
 };
+},{"./_an-object":24,"./_descriptors":30,"./_object-dp":52,"./_object-keys":60}],54:[function(require,module,exports){
+var pIE            = require('./_object-pie')
+  , createDesc     = require('./_property-desc')
+  , toIObject      = require('./_to-iobject')
+  , toPrimitive    = require('./_to-primitive')
+  , has            = require('./_has')
+  , IE8_DOM_DEFINE = require('./_ie8-dom-define')
+  , gOPD           = Object.getOwnPropertyDescriptor;
 
-},{"./_an-object":27,"./_descriptors":33,"./_object-dp":54,"./_object-keys":62}],56:[function(require,module,exports){
-var pIE = require('./_object-pie');
-var createDesc = require('./_property-desc');
-var toIObject = require('./_to-iobject');
-var toPrimitive = require('./_to-primitive');
-var has = require('./_has');
-var IE8_DOM_DEFINE = require('./_ie8-dom-define');
-var gOPD = Object.getOwnPropertyDescriptor;
-
-exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor(O, P) {
+exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor(O, P){
   O = toIObject(O);
   P = toPrimitive(P, true);
-  if (IE8_DOM_DEFINE) try {
+  if(IE8_DOM_DEFINE)try {
     return gOPD(O, P);
-  } catch (e) { /* empty */ }
-  if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
+  } catch(e){ /* empty */ }
+  if(has(O, P))return createDesc(!pIE.f.call(O, P), O[P]);
 };
-
-},{"./_descriptors":33,"./_has":40,"./_ie8-dom-define":43,"./_object-pie":63,"./_property-desc":64,"./_to-iobject":73,"./_to-primitive":76}],57:[function(require,module,exports){
+},{"./_descriptors":30,"./_has":37,"./_ie8-dom-define":40,"./_object-pie":61,"./_property-desc":62,"./_to-iobject":71,"./_to-primitive":74}],55:[function(require,module,exports){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
-var toIObject = require('./_to-iobject');
-var gOPN = require('./_object-gopn').f;
-var toString = {}.toString;
+var toIObject = require('./_to-iobject')
+  , gOPN      = require('./_object-gopn').f
+  , toString  = {}.toString;
 
 var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
   ? Object.getOwnPropertyNames(window) : [];
 
-var getWindowNames = function (it) {
+var getWindowNames = function(it){
   try {
     return gOPN(it);
-  } catch (e) {
+  } catch(e){
     return windowNames.slice();
   }
 };
 
-module.exports.f = function getOwnPropertyNames(it) {
+module.exports.f = function getOwnPropertyNames(it){
   return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
 };
 
-},{"./_object-gopn":58,"./_to-iobject":73}],58:[function(require,module,exports){
+},{"./_object-gopn":56,"./_to-iobject":71}],56:[function(require,module,exports){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-var $keys = require('./_object-keys-internal');
-var hiddenKeys = require('./_enum-bug-keys').concat('length', 'prototype');
+var $keys      = require('./_object-keys-internal')
+  , hiddenKeys = require('./_enum-bug-keys').concat('length', 'prototype');
 
-exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
   return $keys(O, hiddenKeys);
 };
-
-},{"./_enum-bug-keys":35,"./_object-keys-internal":61}],59:[function(require,module,exports){
+},{"./_enum-bug-keys":32,"./_object-keys-internal":59}],57:[function(require,module,exports){
 exports.f = Object.getOwnPropertySymbols;
-
-},{}],60:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-var has = require('./_has');
-var toObject = require('./_to-object');
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-var ObjectProto = Object.prototype;
+var has         = require('./_has')
+  , toObject    = require('./_to-object')
+  , IE_PROTO    = require('./_shared-key')('IE_PROTO')
+  , ObjectProto = Object.prototype;
 
-module.exports = Object.getPrototypeOf || function (O) {
+module.exports = Object.getPrototypeOf || function(O){
   O = toObject(O);
-  if (has(O, IE_PROTO)) return O[IE_PROTO];
-  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+  if(has(O, IE_PROTO))return O[IE_PROTO];
+  if(typeof O.constructor == 'function' && O instanceof O.constructor){
     return O.constructor.prototype;
   } return O instanceof Object ? ObjectProto : null;
 };
+},{"./_has":37,"./_shared-key":66,"./_to-object":73}],59:[function(require,module,exports){
+var has          = require('./_has')
+  , toIObject    = require('./_to-iobject')
+  , arrayIndexOf = require('./_array-includes')(false)
+  , IE_PROTO     = require('./_shared-key')('IE_PROTO');
 
-},{"./_has":40,"./_shared-key":68,"./_to-object":75}],61:[function(require,module,exports){
-var has = require('./_has');
-var toIObject = require('./_to-iobject');
-var arrayIndexOf = require('./_array-includes')(false);
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-
-module.exports = function (object, names) {
-  var O = toIObject(object);
-  var i = 0;
-  var result = [];
-  var key;
-  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
+module.exports = function(object, names){
+  var O      = toIObject(object)
+    , i      = 0
+    , result = []
+    , key;
+  for(key in O)if(key != IE_PROTO)has(O, key) && result.push(key);
   // Don't enum bug & hidden keys
-  while (names.length > i) if (has(O, key = names[i++])) {
+  while(names.length > i)if(has(O, key = names[i++])){
     ~arrayIndexOf(result, key) || result.push(key);
   }
   return result;
 };
-
-},{"./_array-includes":28,"./_has":40,"./_shared-key":68,"./_to-iobject":73}],62:[function(require,module,exports){
+},{"./_array-includes":25,"./_has":37,"./_shared-key":66,"./_to-iobject":71}],60:[function(require,module,exports){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = require('./_object-keys-internal');
-var enumBugKeys = require('./_enum-bug-keys');
+var $keys       = require('./_object-keys-internal')
+  , enumBugKeys = require('./_enum-bug-keys');
 
-module.exports = Object.keys || function keys(O) {
+module.exports = Object.keys || function keys(O){
   return $keys(O, enumBugKeys);
 };
-
-},{"./_enum-bug-keys":35,"./_object-keys-internal":61}],63:[function(require,module,exports){
+},{"./_enum-bug-keys":32,"./_object-keys-internal":59}],61:[function(require,module,exports){
 exports.f = {}.propertyIsEnumerable;
-
-},{}],64:[function(require,module,exports){
-module.exports = function (bitmap, value) {
+},{}],62:[function(require,module,exports){
+module.exports = function(bitmap, value){
   return {
-    enumerable: !(bitmap & 1),
+    enumerable  : !(bitmap & 1),
     configurable: !(bitmap & 2),
-    writable: !(bitmap & 4),
-    value: value
+    writable    : !(bitmap & 4),
+    value       : value
   };
 };
-
-},{}],65:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 module.exports = require('./_hide');
-
-},{"./_hide":41}],66:[function(require,module,exports){
+},{"./_hide":38}],64:[function(require,module,exports){
 // Works with __proto__ only. Old v8 can't work with null proto objects.
 /* eslint-disable no-proto */
-var isObject = require('./_is-object');
-var anObject = require('./_an-object');
-var check = function (O, proto) {
+var isObject = require('./_is-object')
+  , anObject = require('./_an-object');
+var check = function(O, proto){
   anObject(O);
-  if (!isObject(proto) && proto !== null) throw TypeError(proto + ": can't set as prototype!");
+  if(!isObject(proto) && proto !== null)throw TypeError(proto + ": can't set as prototype!");
 };
 module.exports = {
   set: Object.setPrototypeOf || ('__proto__' in {} ? // eslint-disable-line
-    function (test, buggy, set) {
+    function(test, buggy, set){
       try {
         set = require('./_ctx')(Function.call, require('./_object-gopd').f(Object.prototype, '__proto__').set, 2);
         set(test, []);
         buggy = !(test instanceof Array);
-      } catch (e) { buggy = true; }
-      return function setPrototypeOf(O, proto) {
+      } catch(e){ buggy = true; }
+      return function setPrototypeOf(O, proto){
         check(O, proto);
-        if (buggy) O.__proto__ = proto;
+        if(buggy)O.__proto__ = proto;
         else set(O, proto);
         return O;
       };
     }({}, false) : undefined),
   check: check
 };
+},{"./_an-object":24,"./_ctx":28,"./_is-object":43,"./_object-gopd":54}],65:[function(require,module,exports){
+var def = require('./_object-dp').f
+  , has = require('./_has')
+  , TAG = require('./_wks')('toStringTag');
 
-},{"./_an-object":27,"./_ctx":31,"./_is-object":46,"./_object-gopd":56}],67:[function(require,module,exports){
-var def = require('./_object-dp').f;
-var has = require('./_has');
-var TAG = require('./_wks')('toStringTag');
-
-module.exports = function (it, tag, stat) {
-  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
+module.exports = function(it, tag, stat){
+  if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
 };
-
-},{"./_has":40,"./_object-dp":54,"./_wks":80}],68:[function(require,module,exports){
-var shared = require('./_shared')('keys');
-var uid = require('./_uid');
-module.exports = function (key) {
+},{"./_has":37,"./_object-dp":52,"./_wks":78}],66:[function(require,module,exports){
+var shared = require('./_shared')('keys')
+  , uid    = require('./_uid');
+module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
 };
-
-},{"./_shared":69,"./_uid":77}],69:[function(require,module,exports){
-var global = require('./_global');
-var SHARED = '__core-js_shared__';
-var store = global[SHARED] || (global[SHARED] = {});
-module.exports = function (key) {
+},{"./_shared":67,"./_uid":75}],67:[function(require,module,exports){
+var global = require('./_global')
+  , SHARED = '__core-js_shared__'
+  , store  = global[SHARED] || (global[SHARED] = {});
+module.exports = function(key){
   return store[key] || (store[key] = {});
 };
-
-},{"./_global":39}],70:[function(require,module,exports){
-var toInteger = require('./_to-integer');
-var defined = require('./_defined');
+},{"./_global":36}],68:[function(require,module,exports){
+var toInteger = require('./_to-integer')
+  , defined   = require('./_defined');
 // true  -> String#at
 // false -> String#codePointAt
-module.exports = function (TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined(that));
-    var i = toInteger(pos);
-    var l = s.length;
-    var a, b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+module.exports = function(TO_STRING){
+  return function(that, pos){
+    var s = String(defined(that))
+      , i = toInteger(pos)
+      , l = s.length
+      , a, b;
+    if(i < 0 || i >= l)return TO_STRING ? '' : undefined;
     a = s.charCodeAt(i);
     return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
       ? TO_STRING ? s.charAt(i) : a
       : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
   };
 };
-
-},{"./_defined":32,"./_to-integer":72}],71:[function(require,module,exports){
-var toInteger = require('./_to-integer');
-var max = Math.max;
-var min = Math.min;
-module.exports = function (index, length) {
+},{"./_defined":29,"./_to-integer":70}],69:[function(require,module,exports){
+var toInteger = require('./_to-integer')
+  , max       = Math.max
+  , min       = Math.min;
+module.exports = function(index, length){
   index = toInteger(index);
   return index < 0 ? max(index + length, 0) : min(index, length);
 };
-
-},{"./_to-integer":72}],72:[function(require,module,exports){
+},{"./_to-integer":70}],70:[function(require,module,exports){
 // 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-module.exports = function (it) {
+var ceil  = Math.ceil
+  , floor = Math.floor;
+module.exports = function(it){
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
-
-},{}],73:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = require('./_iobject');
-var defined = require('./_defined');
-module.exports = function (it) {
+var IObject = require('./_iobject')
+  , defined = require('./_defined');
+module.exports = function(it){
   return IObject(defined(it));
 };
-
-},{"./_defined":32,"./_iobject":44}],74:[function(require,module,exports){
+},{"./_defined":29,"./_iobject":41}],72:[function(require,module,exports){
 // 7.1.15 ToLength
-var toInteger = require('./_to-integer');
-var min = Math.min;
-module.exports = function (it) {
+var toInteger = require('./_to-integer')
+  , min       = Math.min;
+module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
-
-},{"./_to-integer":72}],75:[function(require,module,exports){
+},{"./_to-integer":70}],73:[function(require,module,exports){
 // 7.1.13 ToObject(argument)
 var defined = require('./_defined');
-module.exports = function (it) {
+module.exports = function(it){
   return Object(defined(it));
 };
-
-},{"./_defined":32}],76:[function(require,module,exports){
+},{"./_defined":29}],74:[function(require,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = require('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
-module.exports = function (it, S) {
-  if (!isObject(it)) return it;
+module.exports = function(it, S){
+  if(!isObject(it))return it;
   var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
   throw TypeError("Can't convert object to primitive value");
 };
-
-},{"./_is-object":46}],77:[function(require,module,exports){
-var id = 0;
-var px = Math.random();
-module.exports = function (key) {
+},{"./_is-object":43}],75:[function(require,module,exports){
+var id = 0
+  , px = Math.random();
+module.exports = function(key){
   return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
-
-},{}],78:[function(require,module,exports){
-var global = require('./_global');
-var core = require('./_core');
-var LIBRARY = require('./_library');
-var wksExt = require('./_wks-ext');
-var defineProperty = require('./_object-dp').f;
-module.exports = function (name) {
+},{}],76:[function(require,module,exports){
+var global         = require('./_global')
+  , core           = require('./_core')
+  , LIBRARY        = require('./_library')
+  , wksExt         = require('./_wks-ext')
+  , defineProperty = require('./_object-dp').f;
+module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
-  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
+  if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
 };
-
-},{"./_core":30,"./_global":39,"./_library":51,"./_object-dp":54,"./_wks-ext":79}],79:[function(require,module,exports){
+},{"./_core":27,"./_global":36,"./_library":49,"./_object-dp":52,"./_wks-ext":77}],77:[function(require,module,exports){
 exports.f = require('./_wks');
+},{"./_wks":78}],78:[function(require,module,exports){
+var store      = require('./_shared')('wks')
+  , uid        = require('./_uid')
+  , Symbol     = require('./_global').Symbol
+  , USE_SYMBOL = typeof Symbol == 'function';
 
-},{"./_wks":80}],80:[function(require,module,exports){
-var store = require('./_shared')('wks');
-var uid = require('./_uid');
-var Symbol = require('./_global').Symbol;
-var USE_SYMBOL = typeof Symbol == 'function';
-
-var $exports = module.exports = function (name) {
+var $exports = module.exports = function(name){
   return store[name] || (store[name] =
     USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
 };
 
 $exports.store = store;
-
-},{"./_global":39,"./_shared":69,"./_uid":77}],81:[function(require,module,exports){
+},{"./_global":36,"./_shared":67,"./_uid":75}],79:[function(require,module,exports){
 'use strict';
-var addToUnscopables = require('./_add-to-unscopables');
-var step = require('./_iter-step');
-var Iterators = require('./_iterators');
-var toIObject = require('./_to-iobject');
+var addToUnscopables = require('./_add-to-unscopables')
+  , step             = require('./_iter-step')
+  , Iterators        = require('./_iterators')
+  , toIObject        = require('./_to-iobject');
 
 // 22.1.3.4 Array.prototype.entries()
 // 22.1.3.13 Array.prototype.keys()
 // 22.1.3.29 Array.prototype.values()
 // 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = require('./_iter-define')(Array, 'Array', function (iterated, kind) {
+module.exports = require('./_iter-define')(Array, 'Array', function(iterated, kind){
   this._t = toIObject(iterated); // target
   this._i = 0;                   // next index
   this._k = kind;                // kind
 // 22.1.5.2.1 %ArrayIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var kind = this._k;
-  var index = this._i++;
-  if (!O || index >= O.length) {
+}, function(){
+  var O     = this._t
+    , kind  = this._k
+    , index = this._i++;
+  if(!O || index >= O.length){
     this._t = undefined;
     return step(1);
   }
-  if (kind == 'keys') return step(0, index);
-  if (kind == 'values') return step(0, O[index]);
+  if(kind == 'keys'  )return step(0, index);
+  if(kind == 'values')return step(0, O[index]);
   return step(0, [index, O[index]]);
 }, 'values');
 
@@ -82801,228 +82390,224 @@ Iterators.Arguments = Iterators.Array;
 addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
-
-},{"./_add-to-unscopables":26,"./_iter-define":48,"./_iter-step":49,"./_iterators":50,"./_to-iobject":73}],82:[function(require,module,exports){
-var $export = require('./_export');
+},{"./_add-to-unscopables":23,"./_iter-define":45,"./_iter-step":46,"./_iterators":47,"./_to-iobject":71}],80:[function(require,module,exports){
+var $export = require('./_export')
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-$export($export.S, 'Object', { create: require('./_object-create') });
-
-},{"./_export":37,"./_object-create":53}],83:[function(require,module,exports){
+$export($export.S, 'Object', {create: require('./_object-create')});
+},{"./_export":34,"./_object-create":51}],81:[function(require,module,exports){
 var $export = require('./_export');
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
-$export($export.S + $export.F * !require('./_descriptors'), 'Object', { defineProperty: require('./_object-dp').f });
-
-},{"./_descriptors":33,"./_export":37,"./_object-dp":54}],84:[function(require,module,exports){
+$export($export.S + $export.F * !require('./_descriptors'), 'Object', {defineProperty: require('./_object-dp').f});
+},{"./_descriptors":30,"./_export":34,"./_object-dp":52}],82:[function(require,module,exports){
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = require('./_export');
-$export($export.S, 'Object', { setPrototypeOf: require('./_set-proto').set });
+$export($export.S, 'Object', {setPrototypeOf: require('./_set-proto').set});
+},{"./_export":34,"./_set-proto":64}],83:[function(require,module,exports){
 
-},{"./_export":37,"./_set-proto":66}],85:[function(require,module,exports){
-
-},{}],86:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 'use strict';
-var $at = require('./_string-at')(true);
+var $at  = require('./_string-at')(true);
 
 // 21.1.3.27 String.prototype[@@iterator]()
-require('./_iter-define')(String, 'String', function (iterated) {
+require('./_iter-define')(String, 'String', function(iterated){
   this._t = String(iterated); // target
   this._i = 0;                // next index
 // 21.1.5.2.1 %StringIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var index = this._i;
-  var point;
-  if (index >= O.length) return { value: undefined, done: true };
+}, function(){
+  var O     = this._t
+    , index = this._i
+    , point;
+  if(index >= O.length)return {value: undefined, done: true};
   point = $at(O, index);
   this._i += point.length;
-  return { value: point, done: false };
+  return {value: point, done: false};
 });
-
-},{"./_iter-define":48,"./_string-at":70}],87:[function(require,module,exports){
+},{"./_iter-define":45,"./_string-at":68}],85:[function(require,module,exports){
 'use strict';
 // ECMAScript 6 symbols shim
-var global = require('./_global');
-var has = require('./_has');
-var DESCRIPTORS = require('./_descriptors');
-var $export = require('./_export');
-var redefine = require('./_redefine');
-var META = require('./_meta').KEY;
-var $fails = require('./_fails');
-var shared = require('./_shared');
-var setToStringTag = require('./_set-to-string-tag');
-var uid = require('./_uid');
-var wks = require('./_wks');
-var wksExt = require('./_wks-ext');
-var wksDefine = require('./_wks-define');
-var enumKeys = require('./_enum-keys');
-var isArray = require('./_is-array');
-var anObject = require('./_an-object');
-var toIObject = require('./_to-iobject');
-var toPrimitive = require('./_to-primitive');
-var createDesc = require('./_property-desc');
-var _create = require('./_object-create');
-var gOPNExt = require('./_object-gopn-ext');
-var $GOPD = require('./_object-gopd');
-var $DP = require('./_object-dp');
-var $keys = require('./_object-keys');
-var gOPD = $GOPD.f;
-var dP = $DP.f;
-var gOPN = gOPNExt.f;
-var $Symbol = global.Symbol;
-var $JSON = global.JSON;
-var _stringify = $JSON && $JSON.stringify;
-var PROTOTYPE = 'prototype';
-var HIDDEN = wks('_hidden');
-var TO_PRIMITIVE = wks('toPrimitive');
-var isEnum = {}.propertyIsEnumerable;
-var SymbolRegistry = shared('symbol-registry');
-var AllSymbols = shared('symbols');
-var OPSymbols = shared('op-symbols');
-var ObjectProto = Object[PROTOTYPE];
-var USE_NATIVE = typeof $Symbol == 'function';
-var QObject = global.QObject;
+var global         = require('./_global')
+  , has            = require('./_has')
+  , DESCRIPTORS    = require('./_descriptors')
+  , $export        = require('./_export')
+  , redefine       = require('./_redefine')
+  , META           = require('./_meta').KEY
+  , $fails         = require('./_fails')
+  , shared         = require('./_shared')
+  , setToStringTag = require('./_set-to-string-tag')
+  , uid            = require('./_uid')
+  , wks            = require('./_wks')
+  , wksExt         = require('./_wks-ext')
+  , wksDefine      = require('./_wks-define')
+  , keyOf          = require('./_keyof')
+  , enumKeys       = require('./_enum-keys')
+  , isArray        = require('./_is-array')
+  , anObject       = require('./_an-object')
+  , toIObject      = require('./_to-iobject')
+  , toPrimitive    = require('./_to-primitive')
+  , createDesc     = require('./_property-desc')
+  , _create        = require('./_object-create')
+  , gOPNExt        = require('./_object-gopn-ext')
+  , $GOPD          = require('./_object-gopd')
+  , $DP            = require('./_object-dp')
+  , $keys          = require('./_object-keys')
+  , gOPD           = $GOPD.f
+  , dP             = $DP.f
+  , gOPN           = gOPNExt.f
+  , $Symbol        = global.Symbol
+  , $JSON          = global.JSON
+  , _stringify     = $JSON && $JSON.stringify
+  , PROTOTYPE      = 'prototype'
+  , HIDDEN         = wks('_hidden')
+  , TO_PRIMITIVE   = wks('toPrimitive')
+  , isEnum         = {}.propertyIsEnumerable
+  , SymbolRegistry = shared('symbol-registry')
+  , AllSymbols     = shared('symbols')
+  , OPSymbols      = shared('op-symbols')
+  , ObjectProto    = Object[PROTOTYPE]
+  , USE_NATIVE     = typeof $Symbol == 'function'
+  , QObject        = global.QObject;
 // Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
 var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
 
 // fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
-var setSymbolDesc = DESCRIPTORS && $fails(function () {
+var setSymbolDesc = DESCRIPTORS && $fails(function(){
   return _create(dP({}, 'a', {
-    get: function () { return dP(this, 'a', { value: 7 }).a; }
+    get: function(){ return dP(this, 'a', {value: 7}).a; }
   })).a != 7;
-}) ? function (it, key, D) {
+}) ? function(it, key, D){
   var protoDesc = gOPD(ObjectProto, key);
-  if (protoDesc) delete ObjectProto[key];
+  if(protoDesc)delete ObjectProto[key];
   dP(it, key, D);
-  if (protoDesc && it !== ObjectProto) dP(ObjectProto, key, protoDesc);
+  if(protoDesc && it !== ObjectProto)dP(ObjectProto, key, protoDesc);
 } : dP;
 
-var wrap = function (tag) {
+var wrap = function(tag){
   var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
   sym._k = tag;
   return sym;
 };
 
-var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
+var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function(it){
   return typeof it == 'symbol';
-} : function (it) {
+} : function(it){
   return it instanceof $Symbol;
 };
 
-var $defineProperty = function defineProperty(it, key, D) {
-  if (it === ObjectProto) $defineProperty(OPSymbols, key, D);
+var $defineProperty = function defineProperty(it, key, D){
+  if(it === ObjectProto)$defineProperty(OPSymbols, key, D);
   anObject(it);
   key = toPrimitive(key, true);
   anObject(D);
-  if (has(AllSymbols, key)) {
-    if (!D.enumerable) {
-      if (!has(it, HIDDEN)) dP(it, HIDDEN, createDesc(1, {}));
+  if(has(AllSymbols, key)){
+    if(!D.enumerable){
+      if(!has(it, HIDDEN))dP(it, HIDDEN, createDesc(1, {}));
       it[HIDDEN][key] = true;
     } else {
-      if (has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
-      D = _create(D, { enumerable: createDesc(0, false) });
+      if(has(it, HIDDEN) && it[HIDDEN][key])it[HIDDEN][key] = false;
+      D = _create(D, {enumerable: createDesc(0, false)});
     } return setSymbolDesc(it, key, D);
   } return dP(it, key, D);
 };
-var $defineProperties = function defineProperties(it, P) {
+var $defineProperties = function defineProperties(it, P){
   anObject(it);
-  var keys = enumKeys(P = toIObject(P));
-  var i = 0;
-  var l = keys.length;
-  var key;
-  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
+  var keys = enumKeys(P = toIObject(P))
+    , i    = 0
+    , l = keys.length
+    , key;
+  while(l > i)$defineProperty(it, key = keys[i++], P[key]);
   return it;
 };
-var $create = function create(it, P) {
+var $create = function create(it, P){
   return P === undefined ? _create(it) : $defineProperties(_create(it), P);
 };
-var $propertyIsEnumerable = function propertyIsEnumerable(key) {
+var $propertyIsEnumerable = function propertyIsEnumerable(key){
   var E = isEnum.call(this, key = toPrimitive(key, true));
-  if (this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return false;
+  if(this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key))return false;
   return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
 };
-var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
-  it = toIObject(it);
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key){
+  it  = toIObject(it);
   key = toPrimitive(key, true);
-  if (it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return;
+  if(it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key))return;
   var D = gOPD(it, key);
-  if (D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
+  if(D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key]))D.enumerable = true;
   return D;
 };
-var $getOwnPropertyNames = function getOwnPropertyNames(it) {
-  var names = gOPN(toIObject(it));
-  var result = [];
-  var i = 0;
-  var key;
-  while (names.length > i) {
-    if (!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
+var $getOwnPropertyNames = function getOwnPropertyNames(it){
+  var names  = gOPN(toIObject(it))
+    , result = []
+    , i      = 0
+    , key;
+  while(names.length > i){
+    if(!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META)result.push(key);
   } return result;
 };
-var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
-  var IS_OP = it === ObjectProto;
-  var names = gOPN(IS_OP ? OPSymbols : toIObject(it));
-  var result = [];
-  var i = 0;
-  var key;
-  while (names.length > i) {
-    if (has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true)) result.push(AllSymbols[key]);
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it){
+  var IS_OP  = it === ObjectProto
+    , names  = gOPN(IS_OP ? OPSymbols : toIObject(it))
+    , result = []
+    , i      = 0
+    , key;
+  while(names.length > i){
+    if(has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true))result.push(AllSymbols[key]);
   } return result;
 };
 
 // 19.4.1.1 Symbol([description])
-if (!USE_NATIVE) {
-  $Symbol = function Symbol() {
-    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
+if(!USE_NATIVE){
+  $Symbol = function Symbol(){
+    if(this instanceof $Symbol)throw TypeError('Symbol is not a constructor!');
     var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
-    var $set = function (value) {
-      if (this === ObjectProto) $set.call(OPSymbols, value);
-      if (has(this, HIDDEN) && has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
+    var $set = function(value){
+      if(this === ObjectProto)$set.call(OPSymbols, value);
+      if(has(this, HIDDEN) && has(this[HIDDEN], tag))this[HIDDEN][tag] = false;
       setSymbolDesc(this, tag, createDesc(1, value));
     };
-    if (DESCRIPTORS && setter) setSymbolDesc(ObjectProto, tag, { configurable: true, set: $set });
+    if(DESCRIPTORS && setter)setSymbolDesc(ObjectProto, tag, {configurable: true, set: $set});
     return wrap(tag);
   };
-  redefine($Symbol[PROTOTYPE], 'toString', function toString() {
+  redefine($Symbol[PROTOTYPE], 'toString', function toString(){
     return this._k;
   });
 
   $GOPD.f = $getOwnPropertyDescriptor;
-  $DP.f = $defineProperty;
+  $DP.f   = $defineProperty;
   require('./_object-gopn').f = gOPNExt.f = $getOwnPropertyNames;
-  require('./_object-pie').f = $propertyIsEnumerable;
+  require('./_object-pie').f  = $propertyIsEnumerable;
   require('./_object-gops').f = $getOwnPropertySymbols;
 
-  if (DESCRIPTORS && !require('./_library')) {
+  if(DESCRIPTORS && !require('./_library')){
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
-  wksExt.f = function (name) {
+  wksExt.f = function(name){
     return wrap(wks(name));
-  };
+  }
 }
 
-$export($export.G + $export.W + $export.F * !USE_NATIVE, { Symbol: $Symbol });
+$export($export.G + $export.W + $export.F * !USE_NATIVE, {Symbol: $Symbol});
 
-for (var es6Symbols = (
+for(var symbols = (
   // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
   'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
-).split(','), j = 0; es6Symbols.length > j;)wks(es6Symbols[j++]);
+).split(','), i = 0; symbols.length > i; )wks(symbols[i++]);
 
-for (var wellKnownSymbols = $keys(wks.store), k = 0; wellKnownSymbols.length > k;) wksDefine(wellKnownSymbols[k++]);
+for(var symbols = $keys(wks.store), i = 0; symbols.length > i; )wksDefine(symbols[i++]);
 
 $export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
   // 19.4.2.1 Symbol.for(key)
-  'for': function (key) {
+  'for': function(key){
     return has(SymbolRegistry, key += '')
       ? SymbolRegistry[key]
       : SymbolRegistry[key] = $Symbol(key);
   },
   // 19.4.2.5 Symbol.keyFor(sym)
-  keyFor: function keyFor(sym) {
-    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
-    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
+  keyFor: function keyFor(key){
+    if(isSymbol(key))return keyOf(SymbolRegistry, key);
+    throw TypeError(key + ' is not a symbol!');
   },
-  useSetter: function () { setter = true; },
-  useSimple: function () { setter = false; }
+  useSetter: function(){ setter = true; },
+  useSimple: function(){ setter = false; }
 });
 
 $export($export.S + $export.F * !USE_NATIVE, 'Object', {
@@ -83041,24 +82626,24 @@ $export($export.S + $export.F * !USE_NATIVE, 'Object', {
 });
 
 // 24.3.2 JSON.stringify(value [, replacer [, space]])
-$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
+$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function(){
   var S = $Symbol();
   // MS Edge converts symbol values to JSON as {}
   // WebKit converts symbol values to JSON as null
   // V8 throws on boxed symbols
-  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
+  return _stringify([S]) != '[null]' || _stringify({a: S}) != '{}' || _stringify(Object(S)) != '{}';
 })), 'JSON', {
-  stringify: function stringify(it) {
-    if (it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
-    var args = [it];
-    var i = 1;
-    var replacer, $replacer;
-    while (arguments.length > i) args.push(arguments[i++]);
+  stringify: function stringify(it){
+    if(it === undefined || isSymbol(it))return; // IE8 returns string on undefined
+    var args = [it]
+      , i    = 1
+      , replacer, $replacer;
+    while(arguments.length > i)args.push(arguments[i++]);
     replacer = args[1];
-    if (typeof replacer == 'function') $replacer = replacer;
-    if ($replacer || !isArray(replacer)) replacer = function (key, value) {
-      if ($replacer) value = $replacer.call(this, key, value);
-      if (!isSymbol(value)) return value;
+    if(typeof replacer == 'function')$replacer = replacer;
+    if($replacer || !isArray(replacer))replacer = function(key, value){
+      if($replacer)value = $replacer.call(this, key, value);
+      if(!isSymbol(value))return value;
     };
     args[1] = replacer;
     return _stringify.apply($JSON, args);
@@ -83073,74 +82658,64 @@ setToStringTag($Symbol, 'Symbol');
 setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
-
-},{"./_an-object":27,"./_descriptors":33,"./_enum-keys":36,"./_export":37,"./_fails":38,"./_global":39,"./_has":40,"./_hide":41,"./_is-array":45,"./_library":51,"./_meta":52,"./_object-create":53,"./_object-dp":54,"./_object-gopd":56,"./_object-gopn":58,"./_object-gopn-ext":57,"./_object-gops":59,"./_object-keys":62,"./_object-pie":63,"./_property-desc":64,"./_redefine":65,"./_set-to-string-tag":67,"./_shared":69,"./_to-iobject":73,"./_to-primitive":76,"./_uid":77,"./_wks":80,"./_wks-define":78,"./_wks-ext":79}],88:[function(require,module,exports){
+},{"./_an-object":24,"./_descriptors":30,"./_enum-keys":33,"./_export":34,"./_fails":35,"./_global":36,"./_has":37,"./_hide":38,"./_is-array":42,"./_keyof":48,"./_library":49,"./_meta":50,"./_object-create":51,"./_object-dp":52,"./_object-gopd":54,"./_object-gopn":56,"./_object-gopn-ext":55,"./_object-gops":57,"./_object-keys":60,"./_object-pie":61,"./_property-desc":62,"./_redefine":63,"./_set-to-string-tag":65,"./_shared":67,"./_to-iobject":71,"./_to-primitive":74,"./_uid":75,"./_wks":78,"./_wks-define":76,"./_wks-ext":77}],86:[function(require,module,exports){
 require('./_wks-define')('asyncIterator');
-
-},{"./_wks-define":78}],89:[function(require,module,exports){
+},{"./_wks-define":76}],87:[function(require,module,exports){
 require('./_wks-define')('observable');
-
-},{"./_wks-define":78}],90:[function(require,module,exports){
+},{"./_wks-define":76}],88:[function(require,module,exports){
 require('./es6.array.iterator');
-var global = require('./_global');
-var hide = require('./_hide');
-var Iterators = require('./_iterators');
-var TO_STRING_TAG = require('./_wks')('toStringTag');
+var global        = require('./_global')
+  , hide          = require('./_hide')
+  , Iterators     = require('./_iterators')
+  , TO_STRING_TAG = require('./_wks')('toStringTag');
 
-var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
-  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
-  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
-  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
-  'TextTrackList,TouchList').split(',');
-
-for (var i = 0; i < DOMIterables.length; i++) {
-  var NAME = DOMIterables[i];
-  var Collection = global[NAME];
-  var proto = Collection && Collection.prototype;
-  if (proto && !proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
+for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList', 'CSSRuleList'], i = 0; i < 5; i++){
+  var NAME       = collections[i]
+    , Collection = global[NAME]
+    , proto      = Collection && Collection.prototype;
+  if(proto && !proto[TO_STRING_TAG])hide(proto, TO_STRING_TAG, NAME);
   Iterators[NAME] = Iterators.Array;
 }
-
-},{"./_global":39,"./_hide":41,"./_iterators":50,"./_wks":80,"./es6.array.iterator":81}],91:[function(require,module,exports){
+},{"./_global":36,"./_hide":38,"./_iterators":47,"./_wks":78,"./es6.array.iterator":79}],89:[function(require,module,exports){
+arguments[4][22][0].apply(exports,arguments)
+},{"dup":22}],90:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"./_is-object":106,"dup":24}],91:[function(require,module,exports){
 arguments[4][25][0].apply(exports,arguments)
-},{"dup":25}],92:[function(require,module,exports){
+},{"./_to-index":117,"./_to-iobject":119,"./_to-length":120,"dup":25}],92:[function(require,module,exports){
+arguments[4][26][0].apply(exports,arguments)
+},{"dup":26}],93:[function(require,module,exports){
 arguments[4][27][0].apply(exports,arguments)
-},{"./_is-object":108,"dup":27}],93:[function(require,module,exports){
+},{"dup":27}],94:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./_to-absolute-index":119,"./_to-iobject":121,"./_to-length":122,"dup":28}],94:[function(require,module,exports){
+},{"./_a-function":89,"dup":28}],95:[function(require,module,exports){
 arguments[4][29][0].apply(exports,arguments)
-},{"dup":29}],95:[function(require,module,exports){
+},{"dup":29}],96:[function(require,module,exports){
 arguments[4][30][0].apply(exports,arguments)
-},{"dup":30}],96:[function(require,module,exports){
+},{"./_fails":100,"dup":30}],97:[function(require,module,exports){
 arguments[4][31][0].apply(exports,arguments)
-},{"./_a-function":91,"dup":31}],97:[function(require,module,exports){
+},{"./_global":101,"./_is-object":106,"dup":31}],98:[function(require,module,exports){
 arguments[4][32][0].apply(exports,arguments)
-},{"dup":32}],98:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"./_fails":102,"dup":33}],99:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"./_global":103,"./_is-object":108,"dup":34}],100:[function(require,module,exports){
-arguments[4][35][0].apply(exports,arguments)
-},{"dup":35}],101:[function(require,module,exports){
-var global = require('./_global');
-var core = require('./_core');
-var hide = require('./_hide');
-var redefine = require('./_redefine');
-var ctx = require('./_ctx');
-var PROTOTYPE = 'prototype';
+},{"dup":32}],99:[function(require,module,exports){
+var global    = require('./_global')
+  , core      = require('./_core')
+  , hide      = require('./_hide')
+  , redefine  = require('./_redefine')
+  , ctx       = require('./_ctx')
+  , PROTOTYPE = 'prototype';
 
-var $export = function (type, name, source) {
-  var IS_FORCED = type & $export.F;
-  var IS_GLOBAL = type & $export.G;
-  var IS_STATIC = type & $export.S;
-  var IS_PROTO = type & $export.P;
-  var IS_BIND = type & $export.B;
-  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] || (global[name] = {}) : (global[name] || {})[PROTOTYPE];
-  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
-  var expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {});
-  var key, own, out, exp;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] || (global[name] = {}) : (global[name] || {})[PROTOTYPE]
+    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , expProto  = exports[PROTOTYPE] || (exports[PROTOTYPE] = {})
+    , key, own, out, exp;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
     // contains in native
     own = !IS_FORCED && target && target[key] !== undefined;
     // export native or passed
@@ -83148,10 +82723,10 @@ var $export = function (type, name, source) {
     // bind timers to global for call from export context
     exp = IS_BIND && own ? ctx(out, global) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
     // extend global
-    if (target) redefine(target, key, out, type & $export.U);
+    if(target)redefine(target, key, out, type & $export.U);
     // export
-    if (exports[key] != out) hide(exports, key, exp);
-    if (IS_PROTO && expProto[key] != out) expProto[key] = out;
+    if(exports[key] != out)hide(exports, key, exp);
+    if(IS_PROTO && expProto[key] != out)expProto[key] = out;
   }
 };
 global.core = core;
@@ -83163,129 +82738,125 @@ $export.P = 8;   // proto
 $export.B = 16;  // bind
 $export.W = 32;  // wrap
 $export.U = 64;  // safe
-$export.R = 128; // real proto method for `library`
+$export.R = 128; // real proto method for `library` 
 module.exports = $export;
-
-},{"./_core":95,"./_ctx":96,"./_global":103,"./_hide":105,"./_redefine":116}],102:[function(require,module,exports){
+},{"./_core":93,"./_ctx":94,"./_global":101,"./_hide":103,"./_redefine":114}],100:[function(require,module,exports){
+arguments[4][35][0].apply(exports,arguments)
+},{"dup":35}],101:[function(require,module,exports){
+arguments[4][36][0].apply(exports,arguments)
+},{"dup":36}],102:[function(require,module,exports){
+arguments[4][37][0].apply(exports,arguments)
+},{"dup":37}],103:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"dup":38}],103:[function(require,module,exports){
-arguments[4][39][0].apply(exports,arguments)
-},{"dup":39}],104:[function(require,module,exports){
+},{"./_descriptors":96,"./_object-dp":108,"./_property-desc":113,"dup":38}],104:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"dup":40}],105:[function(require,module,exports){
+},{"./_descriptors":96,"./_dom-create":97,"./_fails":100,"dup":40}],105:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"./_descriptors":98,"./_object-dp":110,"./_property-desc":115,"dup":41}],106:[function(require,module,exports){
+},{"./_cof":92,"dup":41}],106:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"./_descriptors":98,"./_dom-create":99,"./_fails":102,"dup":43}],107:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"./_cof":94,"dup":44}],108:[function(require,module,exports){
-arguments[4][46][0].apply(exports,arguments)
-},{"dup":46}],109:[function(require,module,exports){
+},{"dup":43}],107:[function(require,module,exports){
 'use strict';
 // 19.1.2.1 Object.assign(target, source, ...)
-var getKeys = require('./_object-keys');
-var gOPS = require('./_object-gops');
-var pIE = require('./_object-pie');
-var toObject = require('./_to-object');
-var IObject = require('./_iobject');
-var $assign = Object.assign;
+var getKeys  = require('./_object-keys')
+  , gOPS     = require('./_object-gops')
+  , pIE      = require('./_object-pie')
+  , toObject = require('./_to-object')
+  , IObject  = require('./_iobject')
+  , $assign  = Object.assign;
 
 // should work with symbols and should have deterministic property order (V8 bug)
-module.exports = !$assign || require('./_fails')(function () {
-  var A = {};
-  var B = {};
-  // eslint-disable-next-line no-undef
-  var S = Symbol();
-  var K = 'abcdefghijklmnopqrst';
+module.exports = !$assign || require('./_fails')(function(){
+  var A = {}
+    , B = {}
+    , S = Symbol()
+    , K = 'abcdefghijklmnopqrst';
   A[S] = 7;
-  K.split('').forEach(function (k) { B[k] = k; });
+  K.split('').forEach(function(k){ B[k] = k; });
   return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
-}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
-  var T = toObject(target);
-  var aLen = arguments.length;
-  var index = 1;
-  var getSymbols = gOPS.f;
-  var isEnum = pIE.f;
-  while (aLen > index) {
-    var S = IObject(arguments[index++]);
-    var keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S);
-    var length = keys.length;
-    var j = 0;
-    var key;
-    while (length > j) if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
+}) ? function assign(target, source){ // eslint-disable-line no-unused-vars
+  var T     = toObject(target)
+    , aLen  = arguments.length
+    , index = 1
+    , getSymbols = gOPS.f
+    , isEnum     = pIE.f;
+  while(aLen > index){
+    var S      = IObject(arguments[index++])
+      , keys   = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S)
+      , length = keys.length
+      , j      = 0
+      , key;
+    while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
   } return T;
 } : $assign;
-
-},{"./_fails":102,"./_iobject":107,"./_object-gops":111,"./_object-keys":113,"./_object-pie":114,"./_to-object":123}],110:[function(require,module,exports){
-arguments[4][54][0].apply(exports,arguments)
-},{"./_an-object":92,"./_descriptors":98,"./_ie8-dom-define":106,"./_to-primitive":124,"dup":54}],111:[function(require,module,exports){
+},{"./_fails":100,"./_iobject":105,"./_object-gops":109,"./_object-keys":111,"./_object-pie":112,"./_to-object":121}],108:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./_an-object":90,"./_descriptors":96,"./_ie8-dom-define":104,"./_to-primitive":122,"dup":52}],109:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],110:[function(require,module,exports){
 arguments[4][59][0].apply(exports,arguments)
-},{"dup":59}],112:[function(require,module,exports){
+},{"./_array-includes":91,"./_has":102,"./_shared-key":115,"./_to-iobject":119,"dup":59}],111:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"./_enum-bug-keys":98,"./_object-keys-internal":110,"dup":60}],112:[function(require,module,exports){
 arguments[4][61][0].apply(exports,arguments)
-},{"./_array-includes":93,"./_has":104,"./_shared-key":117,"./_to-iobject":121,"dup":61}],113:[function(require,module,exports){
+},{"dup":61}],113:[function(require,module,exports){
 arguments[4][62][0].apply(exports,arguments)
-},{"./_enum-bug-keys":100,"./_object-keys-internal":112,"dup":62}],114:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"dup":63}],115:[function(require,module,exports){
-arguments[4][64][0].apply(exports,arguments)
-},{"dup":64}],116:[function(require,module,exports){
-var global = require('./_global');
-var hide = require('./_hide');
-var has = require('./_has');
-var SRC = require('./_uid')('src');
-var TO_STRING = 'toString';
-var $toString = Function[TO_STRING];
-var TPL = ('' + $toString).split(TO_STRING);
+},{"dup":62}],114:[function(require,module,exports){
+var global    = require('./_global')
+  , hide      = require('./_hide')
+  , has       = require('./_has')
+  , SRC       = require('./_uid')('src')
+  , TO_STRING = 'toString'
+  , $toString = Function[TO_STRING]
+  , TPL       = ('' + $toString).split(TO_STRING);
 
-require('./_core').inspectSource = function (it) {
+require('./_core').inspectSource = function(it){
   return $toString.call(it);
 };
 
-(module.exports = function (O, key, val, safe) {
+(module.exports = function(O, key, val, safe){
   var isFunction = typeof val == 'function';
-  if (isFunction) has(val, 'name') || hide(val, 'name', key);
-  if (O[key] === val) return;
-  if (isFunction) has(val, SRC) || hide(val, SRC, O[key] ? '' + O[key] : TPL.join(String(key)));
-  if (O === global) {
-    O[key] = val;
-  } else if (!safe) {
-    delete O[key];
-    hide(O, key, val);
-  } else if (O[key]) {
+  if(isFunction)has(val, 'name') || hide(val, 'name', key);
+  if(O[key] === val)return;
+  if(isFunction)has(val, SRC) || hide(val, SRC, O[key] ? '' + O[key] : TPL.join(String(key)));
+  if(O === global){
     O[key] = val;
   } else {
-    hide(O, key, val);
+    if(!safe){
+      delete O[key];
+      hide(O, key, val);
+    } else {
+      if(O[key])O[key] = val;
+      else hide(O, key, val);
+    }
   }
 // add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
-})(Function.prototype, TO_STRING, function toString() {
+})(Function.prototype, TO_STRING, function toString(){
   return typeof this == 'function' && this[SRC] || $toString.call(this);
 });
-
-},{"./_core":95,"./_global":103,"./_has":104,"./_hide":105,"./_uid":125}],117:[function(require,module,exports){
-arguments[4][68][0].apply(exports,arguments)
-},{"./_shared":118,"./_uid":125,"dup":68}],118:[function(require,module,exports){
+},{"./_core":93,"./_global":101,"./_has":102,"./_hide":103,"./_uid":123}],115:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"./_shared":116,"./_uid":123,"dup":66}],116:[function(require,module,exports){
+arguments[4][67][0].apply(exports,arguments)
+},{"./_global":101,"dup":67}],117:[function(require,module,exports){
 arguments[4][69][0].apply(exports,arguments)
-},{"./_global":103,"dup":69}],119:[function(require,module,exports){
+},{"./_to-integer":118,"dup":69}],118:[function(require,module,exports){
+arguments[4][70][0].apply(exports,arguments)
+},{"dup":70}],119:[function(require,module,exports){
 arguments[4][71][0].apply(exports,arguments)
-},{"./_to-integer":120,"dup":71}],120:[function(require,module,exports){
+},{"./_defined":95,"./_iobject":105,"dup":71}],120:[function(require,module,exports){
 arguments[4][72][0].apply(exports,arguments)
-},{"dup":72}],121:[function(require,module,exports){
+},{"./_to-integer":118,"dup":72}],121:[function(require,module,exports){
 arguments[4][73][0].apply(exports,arguments)
-},{"./_defined":97,"./_iobject":107,"dup":73}],122:[function(require,module,exports){
+},{"./_defined":95,"dup":73}],122:[function(require,module,exports){
 arguments[4][74][0].apply(exports,arguments)
-},{"./_to-integer":120,"dup":74}],123:[function(require,module,exports){
+},{"./_is-object":106,"dup":74}],123:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./_defined":97,"dup":75}],124:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"./_is-object":108,"dup":76}],125:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77}],126:[function(require,module,exports){
+},{"dup":75}],124:[function(require,module,exports){
 // 19.1.3.1 Object.assign(target, source)
 var $export = require('./_export');
 
-$export($export.S + $export.F, 'Object', { assign: require('./_object-assign') });
-
-},{"./_export":101,"./_object-assign":109}],127:[function(require,module,exports){
+$export($export.S + $export.F, 'Object', {assign: require('./_object-assign')});
+},{"./_export":99,"./_object-assign":107}],125:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -83598,7 +83169,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],128:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -83902,7 +83473,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],129:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 /*!
  * for-in <https://github.com/jonschlinkert/for-in>
  *
@@ -83920,7 +83491,28 @@ module.exports = function forIn(obj, fn, thisArg) {
   }
 };
 
-},{}],130:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
+/*!
+ * for-own <https://github.com/jonschlinkert/for-own>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+'use strict';
+
+var forIn = require('for-in');
+var hasOwn = Object.prototype.hasOwnProperty;
+
+module.exports = function forOwn(obj, fn, thisArg) {
+  forIn(obj, function(val, key) {
+    if (hasOwn.call(obj, key)) {
+      return fn.call(thisArg, obj[key], key, obj);
+    }
+  });
+};
+
+},{"for-in":127}],129:[function(require,module,exports){
 /*!
  * is-extendable <https://github.com/jonschlinkert/is-extendable>
  *
@@ -83935,7 +83527,7 @@ module.exports = function isExtendable(val) {
     && (typeof val === 'object' || typeof val === 'function');
 };
 
-},{}],131:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 /*!
  * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
  *
@@ -83974,7 +83566,7 @@ module.exports = function isPlainObject(o) {
   return true;
 };
 
-},{"isobject":132}],132:[function(require,module,exports){
+},{"isobject":131}],131:[function(require,module,exports){
 /*!
  * isobject <https://github.com/jonschlinkert/isobject>
  *
@@ -83987,6 +83579,155 @@ module.exports = function isPlainObject(o) {
 module.exports = function isObject(val) {
   return val != null && typeof val === 'object' && Array.isArray(val) === false;
 };
+
+},{}],132:[function(require,module,exports){
+var toString = Object.prototype.toString;
+
+/**
+ * Get the native `typeof` a value.
+ *
+ * @param  {*} `val`
+ * @return {*} Native javascript type
+ */
+
+module.exports = function kindOf(val) {
+  var type = typeof val;
+
+  // primitivies
+  if (type === 'undefined') {
+    return 'undefined';
+  }
+  if (val === null) {
+    return 'null';
+  }
+  if (val === true || val === false || val instanceof Boolean) {
+    return 'boolean';
+  }
+  if (type === 'string' || val instanceof String) {
+    return 'string';
+  }
+  if (type === 'number' || val instanceof Number) {
+    return 'number';
+  }
+
+  // functions
+  if (type === 'function' || val instanceof Function) {
+    if (typeof val.constructor.name !== 'undefined' && val.constructor.name.slice(0, 9) === 'Generator') {
+      return 'generatorfunction';
+    }
+    return 'function';
+  }
+
+  // array
+  if (typeof Array.isArray !== 'undefined' && Array.isArray(val)) {
+    return 'array';
+  }
+
+  // check for instances of RegExp and Date before calling `toString`
+  if (val instanceof RegExp) {
+    return 'regexp';
+  }
+  if (val instanceof Date) {
+    return 'date';
+  }
+
+  // other objects
+  type = toString.call(val);
+
+  if (type === '[object RegExp]') {
+    return 'regexp';
+  }
+  if (type === '[object Date]') {
+    return 'date';
+  }
+  if (type === '[object Arguments]') {
+    return 'arguments';
+  }
+  if (type === '[object Error]') {
+    return 'error';
+  }
+  if (type === '[object Promise]') {
+    return 'promise';
+  }
+
+  // buffer
+  if (isBuffer(val)) {
+    return 'buffer';
+  }
+
+  // es6: Map, WeakMap, Set, WeakSet
+  if (type === '[object Set]') {
+    return 'set';
+  }
+  if (type === '[object WeakSet]') {
+    return 'weakset';
+  }
+  if (type === '[object Map]') {
+    return 'map';
+  }
+  if (type === '[object WeakMap]') {
+    return 'weakmap';
+  }
+  if (type === '[object Symbol]') {
+    return 'symbol';
+  }
+  
+  if (type === '[object Map Iterator]') {
+    return 'mapiterator';
+  }
+  if (type === '[object Set Iterator]') {
+    return 'setiterator';
+  }
+  if (type === '[object String Iterator]') {
+    return 'stringiterator';
+  }
+  if (type === '[object Array Iterator]') {
+    return 'arrayiterator';
+  }
+  
+  // typed arrays
+  if (type === '[object Int8Array]') {
+    return 'int8array';
+  }
+  if (type === '[object Uint8Array]') {
+    return 'uint8array';
+  }
+  if (type === '[object Uint8ClampedArray]') {
+    return 'uint8clampedarray';
+  }
+  if (type === '[object Int16Array]') {
+    return 'int16array';
+  }
+  if (type === '[object Uint16Array]') {
+    return 'uint16array';
+  }
+  if (type === '[object Int32Array]') {
+    return 'int32array';
+  }
+  if (type === '[object Uint32Array]') {
+    return 'uint32array';
+  }
+  if (type === '[object Float32Array]') {
+    return 'float32array';
+  }
+  if (type === '[object Float64Array]') {
+    return 'float64array';
+  }
+
+  // must be a plain object
+  return 'object';
+};
+
+/**
+ * If you need to support Safari 5-7 (8-10 yr-old browser),
+ * take a look at https://github.com/feross/is-buffer
+ */
+
+function isBuffer(val) {
+  return val.constructor
+    && typeof val.constructor.isBuffer === 'function'
+    && val.constructor.isBuffer(val);
+}
 
 },{}],133:[function(require,module,exports){
 'use strict';
@@ -84025,9 +83766,9 @@ function copy(value, key) {
  */
 
 module.exports = mixin;
-},{"for-in":134,"is-extendable":130}],134:[function(require,module,exports){
-arguments[4][129][0].apply(exports,arguments)
-},{"dup":129}],135:[function(require,module,exports){
+},{"for-in":134,"is-extendable":129}],134:[function(require,module,exports){
+arguments[4][127][0].apply(exports,arguments)
+},{"dup":127}],135:[function(require,module,exports){
 (function (root) {
 
   // Store setTimeout reference so promise-polyfill will be unaffected by
@@ -84860,7 +84601,7 @@ exports.isBuffer = function (obj) {
 },{}],141:[function(require,module,exports){
 /*!
 * screenfull
-* v3.3.1 - 2017-07-07
+* v3.3.3 - 2018-09-04
 * (c) Sindre Sorhus; MIT License
 */
 (function () {
@@ -84952,10 +84693,10 @@ exports.isBuffer = function (obj) {
 			// keyboard in fullscreen even though it doesn't.
 			// Browser sniffing, since the alternative with
 			// setTimeout is even worse.
-			if (/5\.1[.\d]* Safari/.test(navigator.userAgent)) {
+			if (/ Version\/5\.1(?:\.\d+)? Safari\//.test(navigator.userAgent)) {
 				elem[request]();
 			} else {
-				elem[request](keyboardAllowed && Element.ALLOW_KEYBOARD_INPUT);
+				elem[request](keyboardAllowed ? Element.ALLOW_KEYBOARD_INPUT : {});
 			}
 		},
 		exit: function () {
@@ -85086,9 +84827,7 @@ clone.regexp = function cloneRegExp(re) {
 
 module.exports = clone;
 
-},{"is-extendable":130,"kind-of":143,"mixin-object":133}],143:[function(require,module,exports){
-arguments[4][18][0].apply(exports,arguments)
-},{"dup":18}],144:[function(require,module,exports){
+},{"is-extendable":129,"kind-of":132,"mixin-object":133}],143:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -85135,7 +84874,7 @@ if (context.state === 'suspended' && typeof context.resume === 'function') {
 }
 
 exports.default = context;
-},{"./utils/dummy":154,"./utils/fake-context":156,"./utils/iOS":159}],145:[function(require,module,exports){
+},{"./utils/dummy":153,"./utils/fake-context":155,"./utils/iOS":158}],144:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -85310,7 +85049,7 @@ var Effects = function () {
 }();
 
 exports.default = Effects;
-},{"babel-runtime/helpers/classCallCheck":8}],146:[function(require,module,exports){
+},{"babel-runtime/helpers/classCallCheck":8}],145:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -85552,7 +85291,7 @@ function Group(context, destination) {
 }
 
 Group.Effects = _effects2.default;
-},{"./effects":145}],147:[function(require,module,exports){
+},{"./effects":144}],146:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -85611,7 +85350,7 @@ var _utils2 = _interopRequireDefault(_utils);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION = '2.1.2';
+var VERSION = '2.1.6';
 var bus = new _group2.default(_context2.default, _context2.default.destination);
 
 /*
@@ -85919,7 +85658,7 @@ var sono = (_sono = {
 }, (0, _defineEnumerableProperties3.default)(_sono, _mutatorMap), _sono);
 
 exports.default = sono;
-},{"./context":144,"./effects":145,"./group":146,"./sound":148,"./utils/file":157,"./utils/loader":161,"./utils/log":162,"./utils/pageVisibility":163,"./utils/sound-group":164,"./utils/touchLock":165,"./utils/utils":166,"babel-runtime/helpers/defineEnumerableProperties":10,"core-js/fn/object/assign":19}],148:[function(require,module,exports){
+},{"./context":143,"./effects":144,"./group":145,"./sound":147,"./utils/file":156,"./utils/loader":160,"./utils/log":161,"./utils/pageVisibility":162,"./utils/sound-group":163,"./utils/touchLock":164,"./utils/utils":165,"babel-runtime/helpers/defineEnumerableProperties":10,"core-js/fn/object/assign":16}],147:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -86479,7 +86218,7 @@ Sound.__source = {
     MicrophoneSource: _microphoneSource2.default,
     OscillatorSource: _oscillatorSource2.default
 };
-},{"./context":144,"./effects":145,"./source/audio-source":149,"./source/buffer-source":150,"./source/media-source":151,"./source/microphone-source":152,"./source/oscillator-source":153,"./utils/emitter":155,"./utils/file":157,"./utils/firefox":158,"./utils/isSafeNumber":160,"./utils/loader":161,"./utils/utils":166,"babel-runtime/helpers/classCallCheck":8,"babel-runtime/helpers/createClass":9,"babel-runtime/helpers/inherits":11,"babel-runtime/helpers/possibleConstructorReturn":12}],149:[function(require,module,exports){
+},{"./context":143,"./effects":144,"./source/audio-source":148,"./source/buffer-source":149,"./source/media-source":150,"./source/microphone-source":151,"./source/oscillator-source":152,"./utils/emitter":154,"./utils/file":156,"./utils/firefox":157,"./utils/isSafeNumber":159,"./utils/loader":160,"./utils/utils":165,"babel-runtime/helpers/classCallCheck":8,"babel-runtime/helpers/createClass":9,"babel-runtime/helpers/inherits":11,"babel-runtime/helpers/possibleConstructorReturn":12}],148:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -86505,7 +86244,7 @@ function AudioSource(Type, data, context, onEnded) {
     }
 
     function onSourceEnded(src) {
-        if (clones.length) {
+        if (src !== source && clones.length) {
             var index = clones.indexOf(src);
             clones.splice(index, 1);
             disposeSource(src);
@@ -86564,15 +86303,6 @@ function AudioSource(Type, data, context, onEnded) {
         source.load(url);
     }
 
-    function fade(volume, duration) {
-        if (typeof source.fade === 'function') {
-            source.fade(volume, duration);
-            clones.forEach(function (src) {
-                return src.fade(volume, duration);
-            });
-        }
-    }
-
     function destroy() {
         source.destroy();
         while (clones.length) {
@@ -86600,9 +86330,6 @@ function AudioSource(Type, data, context, onEnded) {
         },
         load: {
             value: load
-        },
-        fade: {
-            value: fade
         },
         destroy: {
             value: destroy
@@ -86720,7 +86447,7 @@ function AudioSource(Type, data, context, onEnded) {
 
     return Object.freeze(api);
 }
-},{}],150:[function(require,module,exports){
+},{}],149:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -86919,24 +86646,23 @@ function BufferSource(buffer, context, endedCallback) {
 
     return Object.freeze(api);
 }
-},{}],151:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.default = MediaSource;
 function MediaSource(el, context, onEnded) {
     var api = {};
-    var ended = false,
-        endedCallback = onEnded,
-        delayTimeout = void 0,
-        fadeTimeout = void 0,
-        loop = false,
-        paused = false,
-        playbackRate = 1,
-        playing = false,
-        sourceNode = null,
-        groupVolume = 1,
-        volume = 1;
+    var ended = false;
+    var endedCallback = onEnded;
+    var delayTimeout = null;
+    var loop = false;
+    var paused = false;
+    var playbackRate = 1;
+    var playing = false;
+    var sourceNode = null;
+    var groupVolume = 1;
+    var volume = 1;
 
     function createSourceNode() {
         if (!sourceNode && context) {
@@ -87060,32 +86786,6 @@ function MediaSource(el, context, onEnded) {
     }
 
     /*
-     * Fade for no webaudio
-     */
-
-    function fade(toVolume, duration) {
-        if (context && !context.isFake) {
-            return api;
-        }
-
-        function ramp(value, step) {
-            fadeTimeout = window.setTimeout(function () {
-                api.volume = api.volume + (value - api.volume) * 0.2;
-                if (Math.abs(api.volume - value) > 0.05) {
-                    ramp(value, step);
-                    return;
-                }
-                api.volume = value;
-            }, step * 1000);
-        }
-
-        window.clearTimeout(fadeTimeout);
-        ramp(toVolume, duration / 10);
-
-        return api;
-    }
-
-    /*
      * Destroy
      */
 
@@ -87115,9 +86815,6 @@ function MediaSource(el, context, onEnded) {
         },
         load: {
             value: load
-        },
-        fade: {
-            value: fade
         },
         destroy: {
             value: destroy
@@ -87186,7 +86883,6 @@ function MediaSource(el, context, onEnded) {
                 return volume;
             },
             set: function set(value) {
-                window.clearTimeout(fadeTimeout);
                 volume = value;
                 if (el) {
                     el.volume = volume * groupVolume;
@@ -87208,7 +86904,7 @@ function MediaSource(el, context, onEnded) {
 
     return Object.freeze(api);
 }
-},{}],152:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -87342,7 +87038,7 @@ function MicrophoneSource(stream, context) {
 
     return Object.freeze(api);
 }
-},{}],153:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -87495,7 +87191,7 @@ function OscillatorSource(type, context) {
 
     return Object.freeze(api);
 }
-},{}],154:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -87509,7 +87205,7 @@ function dummy(context) {
     source.stop(0);
     source.disconnect();
 }
-},{}],155:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -87556,7 +87252,7 @@ var Emitter = function (_EventEmitter) {
 }(EventEmitter);
 
 exports.default = Emitter;
-},{"babel-runtime/helpers/classCallCheck":8,"babel-runtime/helpers/inherits":11,"babel-runtime/helpers/possibleConstructorReturn":12,"events":128}],156:[function(require,module,exports){
+},{"babel-runtime/helpers/classCallCheck":8,"babel-runtime/helpers/inherits":11,"babel-runtime/helpers/possibleConstructorReturn":12,"events":126}],155:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -87679,7 +87375,7 @@ function FakeContext() {
         }
     };
 }
-},{}],157:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -87834,17 +87530,17 @@ exports.default = {
     isOscillatorType: isOscillatorType,
     isURL: isURL
 };
-},{"babel-runtime/helpers/typeof":13}],158:[function(require,module,exports){
+},{"babel-runtime/helpers/typeof":13}],157:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = navigator && /Firefox/i.test(navigator.userAgent);
-},{}],159:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = navigator && /(iPhone|iPad|iPod)/i.test(navigator.userAgent);
-},{}],160:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -87852,7 +87548,7 @@ exports.default = isSafeNumber;
 function isSafeNumber(value) {
     return typeof value === 'number' && !isNaN(value) && isFinite(value);
 }
-},{}],161:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -88145,7 +87841,7 @@ Loader.Group = function () {
         start: start
     });
 };
-},{"./emitter":155}],162:[function(require,module,exports){
+},{"./emitter":154}],161:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -88161,7 +87857,7 @@ function log(api) {
         console.log.call(console, title + ' ' + info);
     }
 }
-},{}],163:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -88216,7 +87912,7 @@ function pageVisibility(onHidden, onShown) {
         }
     };
 }
-},{}],164:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -88252,7 +87948,7 @@ function SoundGroup(context, destination) {
         return group;
     };
 
-    var remove = group.rmeove;
+    var remove = group.remove;
     group.remove = function (soundOrId) {
         remove(soundOrId);
         getSource();
@@ -88322,7 +88018,7 @@ function SoundGroup(context, destination) {
 
     return group;
 }
-},{"../group":146}],165:[function(require,module,exports){
+},{"../group":145}],164:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -88358,16 +88054,22 @@ function touchLock(context, callback) {
         callback();
     }
 
+    function addListeners() {
+        document.body.addEventListener('touchstart', unlock, false);
+        document.body.addEventListener('touchend', unlock, false);
+    }
+
     if (locked) {
-        document.addEventListener('DOMContentLoaded', function () {
-            document.body.addEventListener('touchstart', unlock, false);
-            document.body.addEventListener('touchend', unlock, false);
-        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', addListeners);
+        } else {
+            addListeners();
+        }
     }
 
     return locked;
 }
-},{"./dummy":154,"./iOS":159}],166:[function(require,module,exports){
+},{"./dummy":153,"./iOS":158}],165:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -88495,893 +88197,7 @@ exports.default = {
     getFrequency: getFrequency,
     timeCode: timeCode
 };
-},{"../context":144}],167:[function(require,module,exports){
-(function (process){
-/**
- * Tween.js - Licensed under the MIT license
- * https://github.com/tweenjs/tween.js
- * ----------------------------------------------
- *
- * See https://github.com/tweenjs/tween.js/graphs/contributors for the full list of contributors.
- * Thank you all, you're awesome!
- */
-
-var TWEEN = TWEEN || (function () {
-
-	var _tweens = [];
-
-	return {
-
-		getAll: function () {
-
-			return _tweens;
-
-		},
-
-		removeAll: function () {
-
-			_tweens = [];
-
-		},
-
-		add: function (tween) {
-
-			_tweens.push(tween);
-
-		},
-
-		remove: function (tween) {
-
-			var i = _tweens.indexOf(tween);
-
-			if (i !== -1) {
-				_tweens.splice(i, 1);
-			}
-
-		},
-
-		update: function (time, preserve) {
-
-			if (_tweens.length === 0) {
-				return false;
-			}
-
-			var i = 0;
-
-			time = time !== undefined ? time : TWEEN.now();
-
-			while (i < _tweens.length) {
-
-				if (_tweens[i].update(time) || preserve) {
-					i++;
-				} else {
-					_tweens.splice(i, 1);
-				}
-
-			}
-
-			return true;
-
-		}
-	};
-
-})();
-
-
-// Include a performance.now polyfill.
-// In node.js, use process.hrtime.
-if (typeof (window) === 'undefined' && typeof (process) !== 'undefined') {
-	TWEEN.now = function () {
-		var time = process.hrtime();
-
-		// Convert [seconds, nanoseconds] to milliseconds.
-		return time[0] * 1000 + time[1] / 1000000;
-	};
-}
-// In a browser, use window.performance.now if it is available.
-else if (typeof (window) !== 'undefined' &&
-         window.performance !== undefined &&
-		 window.performance.now !== undefined) {
-	// This must be bound, because directly assigning this function
-	// leads to an invocation exception in Chrome.
-	TWEEN.now = window.performance.now.bind(window.performance);
-}
-// Use Date.now if it is available.
-else if (Date.now !== undefined) {
-	TWEEN.now = Date.now;
-}
-// Otherwise, use 'new Date().getTime()'.
-else {
-	TWEEN.now = function () {
-		return new Date().getTime();
-	};
-}
-
-
-TWEEN.Tween = function (object) {
-
-	var _object = object;
-	var _valuesStart = {};
-	var _valuesEnd = {};
-	var _valuesStartRepeat = {};
-	var _duration = 1000;
-	var _repeat = 0;
-	var _repeatDelayTime;
-	var _yoyo = false;
-	var _isPlaying = false;
-	var _reversed = false;
-	var _delayTime = 0;
-	var _startTime = null;
-	var _easingFunction = TWEEN.Easing.Linear.None;
-	var _interpolationFunction = TWEEN.Interpolation.Linear;
-	var _chainedTweens = [];
-	var _onStartCallback = null;
-	var _onStartCallbackFired = false;
-	var _onUpdateCallback = null;
-	var _onCompleteCallback = null;
-	var _onStopCallback = null;
-
-	this.to = function (properties, duration) {
-
-		_valuesEnd = properties;
-
-		if (duration !== undefined) {
-			_duration = duration;
-		}
-
-		return this;
-
-	};
-
-	this.start = function (time) {
-
-		TWEEN.add(this);
-
-		_isPlaying = true;
-
-		_onStartCallbackFired = false;
-
-		_startTime = time !== undefined ? time : TWEEN.now();
-		_startTime += _delayTime;
-
-		for (var property in _valuesEnd) {
-
-			// Check if an Array was provided as property value
-			if (_valuesEnd[property] instanceof Array) {
-
-				if (_valuesEnd[property].length === 0) {
-					continue;
-				}
-
-				// Create a local copy of the Array with the start value at the front
-				_valuesEnd[property] = [_object[property]].concat(_valuesEnd[property]);
-
-			}
-
-			// If `to()` specifies a property that doesn't exist in the source object,
-			// we should not set that property in the object
-			if (_object[property] === undefined) {
-				continue;
-			}
-
-			// Save the starting value.
-			_valuesStart[property] = _object[property];
-
-			if ((_valuesStart[property] instanceof Array) === false) {
-				_valuesStart[property] *= 1.0; // Ensures we're using numbers, not strings
-			}
-
-			_valuesStartRepeat[property] = _valuesStart[property] || 0;
-
-		}
-
-		return this;
-
-	};
-
-	this.stop = function () {
-
-		if (!_isPlaying) {
-			return this;
-		}
-
-		TWEEN.remove(this);
-		_isPlaying = false;
-
-		if (_onStopCallback !== null) {
-			_onStopCallback.call(_object, _object);
-		}
-
-		this.stopChainedTweens();
-		return this;
-
-	};
-
-	this.end = function () {
-
-		this.update(_startTime + _duration);
-		return this;
-
-	};
-
-	this.stopChainedTweens = function () {
-
-		for (var i = 0, numChainedTweens = _chainedTweens.length; i < numChainedTweens; i++) {
-			_chainedTweens[i].stop();
-		}
-
-	};
-
-	this.delay = function (amount) {
-
-		_delayTime = amount;
-		return this;
-
-	};
-
-	this.repeat = function (times) {
-
-		_repeat = times;
-		return this;
-
-	};
-
-	this.repeatDelay = function (amount) {
-
-		_repeatDelayTime = amount;
-		return this;
-
-	};
-
-	this.yoyo = function (yoyo) {
-
-		_yoyo = yoyo;
-		return this;
-
-	};
-
-
-	this.easing = function (easing) {
-
-		_easingFunction = easing;
-		return this;
-
-	};
-
-	this.interpolation = function (interpolation) {
-
-		_interpolationFunction = interpolation;
-		return this;
-
-	};
-
-	this.chain = function () {
-
-		_chainedTweens = arguments;
-		return this;
-
-	};
-
-	this.onStart = function (callback) {
-
-		_onStartCallback = callback;
-		return this;
-
-	};
-
-	this.onUpdate = function (callback) {
-
-		_onUpdateCallback = callback;
-		return this;
-
-	};
-
-	this.onComplete = function (callback) {
-
-		_onCompleteCallback = callback;
-		return this;
-
-	};
-
-	this.onStop = function (callback) {
-
-		_onStopCallback = callback;
-		return this;
-
-	};
-
-	this.update = function (time) {
-
-		var property;
-		var elapsed;
-		var value;
-
-		if (time < _startTime) {
-			return true;
-		}
-
-		if (_onStartCallbackFired === false) {
-
-			if (_onStartCallback !== null) {
-				_onStartCallback.call(_object, _object);
-			}
-
-			_onStartCallbackFired = true;
-		}
-
-		elapsed = (time - _startTime) / _duration;
-		elapsed = elapsed > 1 ? 1 : elapsed;
-
-		value = _easingFunction(elapsed);
-
-		for (property in _valuesEnd) {
-
-			// Don't update properties that do not exist in the source object
-			if (_valuesStart[property] === undefined) {
-				continue;
-			}
-
-			var start = _valuesStart[property] || 0;
-			var end = _valuesEnd[property];
-
-			if (end instanceof Array) {
-
-				_object[property] = _interpolationFunction(end, value);
-
-			} else {
-
-				// Parses relative end values with start as base (e.g.: +10, -3)
-				if (typeof (end) === 'string') {
-
-					if (end.charAt(0) === '+' || end.charAt(0) === '-') {
-						end = start + parseFloat(end);
-					} else {
-						end = parseFloat(end);
-					}
-				}
-
-				// Protect against non numeric properties.
-				if (typeof (end) === 'number') {
-					_object[property] = start + (end - start) * value;
-				}
-
-			}
-
-		}
-
-		if (_onUpdateCallback !== null) {
-			_onUpdateCallback.call(_object, value);
-		}
-
-		if (elapsed === 1) {
-
-			if (_repeat > 0) {
-
-				if (isFinite(_repeat)) {
-					_repeat--;
-				}
-
-				// Reassign starting values, restart by making startTime = now
-				for (property in _valuesStartRepeat) {
-
-					if (typeof (_valuesEnd[property]) === 'string') {
-						_valuesStartRepeat[property] = _valuesStartRepeat[property] + parseFloat(_valuesEnd[property]);
-					}
-
-					if (_yoyo) {
-						var tmp = _valuesStartRepeat[property];
-
-						_valuesStartRepeat[property] = _valuesEnd[property];
-						_valuesEnd[property] = tmp;
-					}
-
-					_valuesStart[property] = _valuesStartRepeat[property];
-
-				}
-
-				if (_yoyo) {
-					_reversed = !_reversed;
-				}
-
-				if (_repeatDelayTime !== undefined) {
-					_startTime = time + _repeatDelayTime;
-				} else {
-					_startTime = time + _delayTime;
-				}
-
-				return true;
-
-			} else {
-
-				if (_onCompleteCallback !== null) {
-
-					_onCompleteCallback.call(_object, _object);
-				}
-
-				for (var i = 0, numChainedTweens = _chainedTweens.length; i < numChainedTweens; i++) {
-					// Make the chained tweens start exactly at the time they should,
-					// even if the `update()` method was called way past the duration of the tween
-					_chainedTweens[i].start(_startTime + _duration);
-				}
-
-				return false;
-
-			}
-
-		}
-
-		return true;
-
-	};
-
-};
-
-
-TWEEN.Easing = {
-
-	Linear: {
-
-		None: function (k) {
-
-			return k;
-
-		}
-
-	},
-
-	Quadratic: {
-
-		In: function (k) {
-
-			return k * k;
-
-		},
-
-		Out: function (k) {
-
-			return k * (2 - k);
-
-		},
-
-		InOut: function (k) {
-
-			if ((k *= 2) < 1) {
-				return 0.5 * k * k;
-			}
-
-			return - 0.5 * (--k * (k - 2) - 1);
-
-		}
-
-	},
-
-	Cubic: {
-
-		In: function (k) {
-
-			return k * k * k;
-
-		},
-
-		Out: function (k) {
-
-			return --k * k * k + 1;
-
-		},
-
-		InOut: function (k) {
-
-			if ((k *= 2) < 1) {
-				return 0.5 * k * k * k;
-			}
-
-			return 0.5 * ((k -= 2) * k * k + 2);
-
-		}
-
-	},
-
-	Quartic: {
-
-		In: function (k) {
-
-			return k * k * k * k;
-
-		},
-
-		Out: function (k) {
-
-			return 1 - (--k * k * k * k);
-
-		},
-
-		InOut: function (k) {
-
-			if ((k *= 2) < 1) {
-				return 0.5 * k * k * k * k;
-			}
-
-			return - 0.5 * ((k -= 2) * k * k * k - 2);
-
-		}
-
-	},
-
-	Quintic: {
-
-		In: function (k) {
-
-			return k * k * k * k * k;
-
-		},
-
-		Out: function (k) {
-
-			return --k * k * k * k * k + 1;
-
-		},
-
-		InOut: function (k) {
-
-			if ((k *= 2) < 1) {
-				return 0.5 * k * k * k * k * k;
-			}
-
-			return 0.5 * ((k -= 2) * k * k * k * k + 2);
-
-		}
-
-	},
-
-	Sinusoidal: {
-
-		In: function (k) {
-
-			return 1 - Math.cos(k * Math.PI / 2);
-
-		},
-
-		Out: function (k) {
-
-			return Math.sin(k * Math.PI / 2);
-
-		},
-
-		InOut: function (k) {
-
-			return 0.5 * (1 - Math.cos(Math.PI * k));
-
-		}
-
-	},
-
-	Exponential: {
-
-		In: function (k) {
-
-			return k === 0 ? 0 : Math.pow(1024, k - 1);
-
-		},
-
-		Out: function (k) {
-
-			return k === 1 ? 1 : 1 - Math.pow(2, - 10 * k);
-
-		},
-
-		InOut: function (k) {
-
-			if (k === 0) {
-				return 0;
-			}
-
-			if (k === 1) {
-				return 1;
-			}
-
-			if ((k *= 2) < 1) {
-				return 0.5 * Math.pow(1024, k - 1);
-			}
-
-			return 0.5 * (- Math.pow(2, - 10 * (k - 1)) + 2);
-
-		}
-
-	},
-
-	Circular: {
-
-		In: function (k) {
-
-			return 1 - Math.sqrt(1 - k * k);
-
-		},
-
-		Out: function (k) {
-
-			return Math.sqrt(1 - (--k * k));
-
-		},
-
-		InOut: function (k) {
-
-			if ((k *= 2) < 1) {
-				return - 0.5 * (Math.sqrt(1 - k * k) - 1);
-			}
-
-			return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
-
-		}
-
-	},
-
-	Elastic: {
-
-		In: function (k) {
-
-			if (k === 0) {
-				return 0;
-			}
-
-			if (k === 1) {
-				return 1;
-			}
-
-			return -Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI);
-
-		},
-
-		Out: function (k) {
-
-			if (k === 0) {
-				return 0;
-			}
-
-			if (k === 1) {
-				return 1;
-			}
-
-			return Math.pow(2, -10 * k) * Math.sin((k - 0.1) * 5 * Math.PI) + 1;
-
-		},
-
-		InOut: function (k) {
-
-			if (k === 0) {
-				return 0;
-			}
-
-			if (k === 1) {
-				return 1;
-			}
-
-			k *= 2;
-
-			if (k < 1) {
-				return -0.5 * Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI);
-			}
-
-			return 0.5 * Math.pow(2, -10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI) + 1;
-
-		}
-
-	},
-
-	Back: {
-
-		In: function (k) {
-
-			var s = 1.70158;
-
-			return k * k * ((s + 1) * k - s);
-
-		},
-
-		Out: function (k) {
-
-			var s = 1.70158;
-
-			return --k * k * ((s + 1) * k + s) + 1;
-
-		},
-
-		InOut: function (k) {
-
-			var s = 1.70158 * 1.525;
-
-			if ((k *= 2) < 1) {
-				return 0.5 * (k * k * ((s + 1) * k - s));
-			}
-
-			return 0.5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
-
-		}
-
-	},
-
-	Bounce: {
-
-		In: function (k) {
-
-			return 1 - TWEEN.Easing.Bounce.Out(1 - k);
-
-		},
-
-		Out: function (k) {
-
-			if (k < (1 / 2.75)) {
-				return 7.5625 * k * k;
-			} else if (k < (2 / 2.75)) {
-				return 7.5625 * (k -= (1.5 / 2.75)) * k + 0.75;
-			} else if (k < (2.5 / 2.75)) {
-				return 7.5625 * (k -= (2.25 / 2.75)) * k + 0.9375;
-			} else {
-				return 7.5625 * (k -= (2.625 / 2.75)) * k + 0.984375;
-			}
-
-		},
-
-		InOut: function (k) {
-
-			if (k < 0.5) {
-				return TWEEN.Easing.Bounce.In(k * 2) * 0.5;
-			}
-
-			return TWEEN.Easing.Bounce.Out(k * 2 - 1) * 0.5 + 0.5;
-
-		}
-
-	}
-
-};
-
-TWEEN.Interpolation = {
-
-	Linear: function (v, k) {
-
-		var m = v.length - 1;
-		var f = m * k;
-		var i = Math.floor(f);
-		var fn = TWEEN.Interpolation.Utils.Linear;
-
-		if (k < 0) {
-			return fn(v[0], v[1], f);
-		}
-
-		if (k > 1) {
-			return fn(v[m], v[m - 1], m - f);
-		}
-
-		return fn(v[i], v[i + 1 > m ? m : i + 1], f - i);
-
-	},
-
-	Bezier: function (v, k) {
-
-		var b = 0;
-		var n = v.length - 1;
-		var pw = Math.pow;
-		var bn = TWEEN.Interpolation.Utils.Bernstein;
-
-		for (var i = 0; i <= n; i++) {
-			b += pw(1 - k, n - i) * pw(k, i) * v[i] * bn(n, i);
-		}
-
-		return b;
-
-	},
-
-	CatmullRom: function (v, k) {
-
-		var m = v.length - 1;
-		var f = m * k;
-		var i = Math.floor(f);
-		var fn = TWEEN.Interpolation.Utils.CatmullRom;
-
-		if (v[0] === v[m]) {
-
-			if (k < 0) {
-				i = Math.floor(f = m * (1 + k));
-			}
-
-			return fn(v[(i - 1 + m) % m], v[i], v[(i + 1) % m], v[(i + 2) % m], f - i);
-
-		} else {
-
-			if (k < 0) {
-				return v[0] - (fn(v[0], v[0], v[1], v[1], -f) - v[0]);
-			}
-
-			if (k > 1) {
-				return v[m] - (fn(v[m], v[m], v[m - 1], v[m - 1], f - m) - v[m]);
-			}
-
-			return fn(v[i ? i - 1 : 0], v[i], v[m < i + 1 ? m : i + 1], v[m < i + 2 ? m : i + 2], f - i);
-
-		}
-
-	},
-
-	Utils: {
-
-		Linear: function (p0, p1, t) {
-
-			return (p1 - p0) * t + p0;
-
-		},
-
-		Bernstein: function (n, i) {
-
-			var fc = TWEEN.Interpolation.Utils.Factorial;
-
-			return fc(n) / fc(i) / fc(n - i);
-
-		},
-
-		Factorial: (function () {
-
-			var a = [1];
-
-			return function (n) {
-
-				var s = 1;
-
-				if (a[n]) {
-					return a[n];
-				}
-
-				for (var i = n; i > 1; i--) {
-					s *= i;
-				}
-
-				a[n] = s;
-				return s;
-
-			};
-
-		})(),
-
-		CatmullRom: function (p0, p1, p2, p3, t) {
-
-			var v0 = (p2 - p0) * 0.5;
-			var v1 = (p3 - p1) * 0.5;
-			var t2 = t * t;
-			var t3 = t * t2;
-
-			return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (- 3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
-
-		}
-
-	}
-
-};
-
-// UMD (Universal Module Definition)
-(function (root) {
-
-	if (typeof define === 'function' && define.amd) {
-
-		// AMD
-		define([], function () {
-			return TWEEN;
-		});
-
-	} else if (typeof module !== 'undefined' && typeof exports === 'object') {
-
-		// Node.js
-		module.exports = TWEEN;
-
-	} else if (root !== undefined) {
-
-		// Global variable
-		root.TWEEN = TWEEN;
-
-	}
-
-})(this);
-
-}).call(this,require('_process'))
-},{"_process":15}],168:[function(require,module,exports){
+},{"../context":143}],166:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -90952,7 +89768,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],169:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 (function(self) {
   'use strict';
 
@@ -91313,7 +90129,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
   function parseHeaders(rawHeaders) {
     var headers = new Headers()
-    rawHeaders.split(/\r?\n/).forEach(function(line) {
+    // Replace instances of \r\n and \n followed by at least one space or horizontal tab with a space
+    // https://tools.ietf.org/html/rfc7230#section-3.2
+    var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, ' ')
+    preProcessedHeaders.split(/\r?\n/).forEach(function(line) {
       var parts = line.split(':')
       var key = parts.shift().trim()
       if (key) {
@@ -91332,7 +90151,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     this.type = 'default'
-    this.status = 'status' in options ? options.status : 200
+    this.status = options.status === undefined ? 200 : options.status
     this.ok = this.status >= 200 && this.status < 300
     this.statusText = 'statusText' in options ? options.statusText : 'OK'
     this.headers = new Headers(options.headers)
@@ -91399,6 +90218,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       if (request.credentials === 'include') {
         xhr.withCredentials = true
+      } else if (request.credentials === 'omit') {
+        xhr.withCredentials = false
       }
 
       if ('responseType' in xhr && support.blob) {
@@ -91415,7 +90236,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   self.fetch.polyfill = true
 })(typeof self !== 'undefined' ? self : this);
 
-},{}],170:[function(require,module,exports){
+},{}],168:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -91524,7 +90345,7 @@ var C4DExportLoader = exports.C4DExportLoader = function () {
 	return C4DExportLoader;
 }();
 
-},{"../loaders/gltf-loader":215,"./c4d-metadata":172}],171:[function(require,module,exports){
+},{"../loaders/gltf-loader":181,"./c4d-metadata":170}],169:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -91705,7 +90526,7 @@ var C4DLinkObject = exports.C4DLinkObject = function () {
 	return C4DLinkObject;
 }();
 
-},{"./c4d-metadata":172,"./c4d-utils":174,"clone-deep":16}],172:[function(require,module,exports){
+},{"./c4d-metadata":170,"./c4d-utils":171,"clone-deep":15}],170:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -92117,273 +90938,7 @@ var GetMetadataFromName = exports.GetMetadataFromName = function GetMetadataFrom
 	return result;
 };
 
-},{"../shaders/color-alpha-shader":220,"../shaders/color-shader":222,"../shaders/flashline-shader":226,"../shaders/rover-lambert-shader":230,"../shaders/unlit-map-shader":234,"./c4d-export-loader":170,"./c4d-link-object":171,"./c4d-utils":174}],173:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.C4DSceneManager = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _eventemitter = require('eventemitter3');
-
-var _c4dUtils = require('./c4d-utils');
-
-var _c4dExportLoader = require('./c4d-export-loader');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * C4DSceneManager
- *
- * Class which loads and manages THREE.AnimationClip playback for an entire 
- * scene file exported using the COLLADA Export Plus plugin in Cinema4D.
- */
-
-var C4DSceneManager = exports.C4DSceneManager = function (_EventEmitter) {
-	_inherits(C4DSceneManager, _EventEmitter);
-
-	function C4DSceneManager() {
-		_classCallCheck(this, C4DSceneManager);
-
-		var _this = _possibleConstructorReturn(this, (C4DSceneManager.__proto__ || Object.getPrototypeOf(C4DSceneManager)).call(this));
-
-		_this.isPlaying = false;
-		_this.duration = 0;
-		return _this;
-	}
-
-	/**
-  * Loads a given GLTF scene file exported from Cinema4D. 
-  * Animations and LinkObjects are set up and added to an 
-  * AnimationMixer for playback.
-  *
-  * Returns a promise which resolves when both the scene and 
-  * animation setups are complete.
-  */
-
-
-	_createClass(C4DSceneManager, [{
-		key: 'load',
-		value: function load(src, xrefPath, texPath) {
-			var _this2 = this;
-
-			return new Promise(function (resolve, reject) {
-
-				_this2.loader = new _c4dExportLoader.C4DExportLoader();
-				_this2.loader.load(src, xrefPath, texPath).then(function (response) {
-
-					_this2.scene = response.scene;
-					_this2.animClips = response.animations;
-					_this2.linkObjects = response.linkObjects;
-					_this2.hitboxes = response.hitboxes;
-					_this2.highlights = {};
-
-					_this2.initHitboxes();
-					_this2.initAnimation();
-					_this2.sortObjectsByType();
-
-					resolve(response.scene);
-				}).catch(function (error) {
-					return reject(error);
-				});
-			});
-		}
-
-		/**
-   * Match hitbox meshes to their corresponding rover-poi entities
-   */
-
-	}, {
-		key: 'initHitboxes',
-		value: function initHitboxes() {
-			var _this3 = this;
-
-			this.scene.traverse(function (node) {
-				if (!node.metadata) return;
-				if (!node.metadata.highlight) return;
-
-				if (!_this3.highlights.hasOwnProperty(node.metadata.highlight)) {
-					_this3.highlights[node.metadata.highlight] = [];
-				}
-
-				_this3.highlights[node.metadata.highlight].push(node.metadata.mesh);
-			});
-
-			// Add hitboxes to their corresponding POI objects
-			this.hitboxes.forEach(function (hitbox) {
-				var marker = document.getElementById('rover_poi_' + hitbox.name);
-				var target = marker.getAttribute('rover-poi').target;
-				marker.emit('mesh-added', hitbox.node, false);
-				marker.emit('materials-added', _this3.highlights[target], false);
-			});
-		}
-
-		/**
-   * Creates and initializes animation playback for the loaded scene
-   */
-
-	}, {
-		key: 'initAnimation',
-		value: function initAnimation() {
-			var _this4 = this;
-
-			// Create new AnimationMixer for clip playback
-			this.animMixer = new THREE.AnimationMixer(this.scene);
-
-			// Create AnimationClips for each C4DLinkObject.
-			this.linkObjects.forEach(function (linkObject) {
-				linkObject.setLinkTargetFromScene(_this4.scene);
-				linkObject.setSourceClipFromClipArray(_this4.animClips);
-
-				var linkedClip = linkObject.getLinkedAnimationClip();
-				if (linkedClip) _this4.animClips.push(linkedClip);
-			});
-
-			// Get the duration of the entire animation, which is the duration of the longest clip
-			this.animClips.forEach(function (clip) {
-				_this4.duration = Math.max(_this4.duration, clip.duration);
-			});
-
-			// Create AnimationActions for each clip
-			this.animActions = this.animClips.map(function (clip) {
-				return _this4.animMixer.clipAction(clip);
-			});
-
-			// Configure AnimationAction playback properties
-			this.animActions.forEach(function (action) {
-				action.clampWhenFinished = true;
-				action.loop = THREE.LoopOnce;
-				action.play();
-			});
-
-			// Tick the mixer forward one frame, then reset immediately.
-			// This ensures that the animation will pause at the first frame
-			// until the play() function is called.
-			this.animMixer.update(1 / 60);
-			this.animMixer.stopAllAction();
-		}
-
-		/**
-   * Sorts all scene objects by metadata types. This is used only for
-   * the rover scene, so the type names are hardcoded.
-   */
-
-	}, {
-		key: 'sortObjectsByType',
-		value: function sortObjectsByType() {
-			var _this5 = this;
-
-			this.objectsByType = { LINES: [], PART: [], SKYCRANE: [], IMAGEPLANE: [] };
-
-			this.scene.traverse(function (node) {
-				if (!node.metadata) return;
-				if (!node.metadata.type) return;
-				_this5.objectsByType[node.metadata.type].push(node);
-			});
-		}
-
-		/**
-   * Disables textures on all objects with type PART
-   */
-
-	}, {
-		key: 'hidePartTextures',
-		value: function hidePartTextures() {
-			this.objectsByType.PART.forEach(function (part) {
-				var mesh = _c4dUtils.C4DUtils.getChildWithType(part, 'Mesh');
-				mesh.material.uniforms.color.value = new THREE.Color(0);
-			});
-		}
-
-		/**
-   * Enables textures on all objects with the type PART
-   */
-
-	}, {
-		key: 'showPartTextures',
-		value: function showPartTextures() {
-			this.objectsByType.PART.forEach(function (part) {
-				var mesh = _c4dUtils.C4DUtils.getChildWithType(part, 'Mesh');
-				mesh.material.uniforms.color.value = new THREE.Color(0xFFFFFF);
-			});
-		}
-
-		/**
-   * Removes all objects of a given type from the scene
-   */
-
-	}, {
-		key: 'removeObjectsWithType',
-		value: function removeObjectsWithType(type) {
-			this.objectsByType[type].forEach(function (obj) {
-				var mesh = _c4dUtils.C4DUtils.getChildWithType(obj, 'Mesh');
-				obj.remove(mesh);
-			});
-		}
-
-		/**
-   * Starts playback for all AnimationActions in the scene
-   */
-
-	}, {
-		key: 'play',
-		value: function play() {
-			this.animActions.forEach(function (action) {
-				return action.play();
-			});
-			this.isPlaying = true;
-		}
-
-		/**
-   * Updates the master AnimationMixer timeline to the last frame.
-   */
-
-	}, {
-		key: 'stopAtLastFrame',
-		value: function stopAtLastFrame() {
-			this.animActions.forEach(function (action) {
-				return action.play();
-			});
-			this.animMixer.update(this.duration);
-			this.animMixer.stopAllAction();
-		}
-
-		/** 
-   * Updates the master AnimationMixer timeline with a given delta time
-   */
-
-	}, {
-		key: 'tick',
-		value: function tick(t, dt) {
-			if (!this.isPlaying) return;
-			this.animMixer.update(dt);
-		}
-	}]);
-
-	return C4DSceneManager;
-}(_eventemitter.EventEmitter);
-
-},{"./c4d-export-loader":170,"./c4d-utils":174,"eventemitter3":127}],174:[function(require,module,exports){
+},{"../shaders/color-alpha-shader":182,"../shaders/color-shader":183,"../shaders/flashline-shader":185,"../shaders/rover-lambert-shader":186,"../shaders/unlit-map-shader":190,"./c4d-export-loader":168,"./c4d-link-object":169,"./c4d-utils":171}],171:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -92537,498 +91092,7 @@ var StaticC4DUtils = function () {
 
 var C4DUtils = exports.C4DUtils = new StaticC4DUtils();
 
-},{"./c4d-metadata":172}],175:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _eventemitter = require('eventemitter3');
-
-var _parabolicPointer = require('../third_party/biagioli/parabolic-pointer');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * better-raycaster
- *
- * An extension of AFRAME's raycaster, which implements a sort of
- * event bubbling mechanism for collision events.
- *
- * Events are sorted by an event-priority component, then by distance
- * to the raycaster origin. If multiple objects are intersected, the
- * event is emitted on all intersected objects, unless an object has
- * the 'consume-click' attribute set, which will stop the event
- * from being emitted on any objects further down the intersection
- * stack.
- *
- * If the user is using a VR hand controller and the terrain is intersected,
- * a parabola teleporation arc is calculated while the controller button is
- * pressed. This provides a nice intuitive way of selecting a teleportation
- * spot, which avoids the pitfalls of pointer precision decreasing as
- * the terrain falls away from the camera.
- */
-var scaleDummy = new THREE.Vector3();
-
-var FWD_VECTOR = new THREE.Vector3(0, 0, -1);
-var UP_VECTOR = new THREE.Vector3(0, 1, 0);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('better-raycaster', {
-
-		isRaycaster: true,
-
-		schema: {
-			far: { default: Infinity },
-			interval: { default: 0 },
-			near: { default: 0 },
-			objects: { default: '' },
-			recursive: { default: true },
-			useCursor: { default: false },
-			initialVelocity: { type: 'vec3', default: new THREE.Vector3(0, 0, -12) },
-			acceleration: { type: 'vec3', default: new THREE.Vector3(0, -9.8, 0) },
-			numArcPoints: { default: 50 },
-			arcPointSpacing: { default: 0.5 },
-			controllerType: { default: 'mouse-touch' }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.direction = new THREE.Vector3();
-			this.mouse = new THREE.Vector2();
-			this.isButtonDown = false;
-			this.isTouchActive = false;
-			this.intersectedEls = [];
-			this.objects = null;
-			this.raycaster = new THREE.Raycaster();
-			this.buttonHoldTime = 0;
-
-			this.origin = new THREE.Vector3();
-			this.parabolaPoints = [];
-			this.parabolicPointer = new _parabolicPointer.ParabolicPointer();
-			this.terrainIntersection = new THREE.Vector3();
-			this.lastTerrainIntersection = new THREE.Vector3();
-
-			this.tryAddingInteraction();
-
-			this.parent = document.getElementById('daydream-debug') || this.el;
-
-			this.el.sceneEl.addEventListener('terrain-intersected', function (event) {
-				_this.lastTerrainIntersection.copy(event.detail.point);
-			});
-
-			// event for exiting vr
-			_scene.Scene.on('on-controls-ready', this.checkForVisibility.bind(this));
-
-			// used to throttle tick method on slower devices
-			this.tickCount = 0;
-			this.tickIncrement = AFRAME.utils.device.isMobile() ? 3 : 1;
-		},
-
-		/*
-  	 * Interaction models are attatched based on controller and device type
-   */
-		tryAddingInteraction: function tryAddingInteraction() {
-
-			var isMouseTouch = this.data.controllerType === 'mouse-touch';
-			var isMobile = AFRAME.utils.device.isMobile();
-
-			// mobile touch and cardboard
-			if (isMouseTouch && isMobile) {
-				this.el.sceneEl.addEventListener('touchstart', this.onTouch.bind(this));
-				this.el.sceneEl.addEventListener('touchend', this.onTouch.bind(this));
-
-				// desktop
-			} else if (isMouseTouch) {
-				this.el.sceneEl.addEventListener('mousemove', this.onMouseMove.bind(this));
-				this.el.sceneEl.addEventListener('mousedown', this.onMouseDown.bind(this));
-				this.el.sceneEl.addEventListener('mouseup', this.onMouseUp.bind(this));
-
-				// vr controllers
-			} else {
-				this.controller = document.getElementById('right-hand');
-				this.controller.addEventListener('buttonchanged', this.onControllerChanged.bind(this));
-			}
-		},
-		checkForVisibility: function checkForVisibility() {
-			this.el.setAttribute('visible', !this.isRaycasterDeactivated());
-		},
-
-
-		play: function play() {
-			this.el.sceneEl.addEventListener('child-attached', this.refreshObjects.bind(this));
-			this.el.sceneEl.addEventListener('child-detached', this.refreshObjects.bind(this));
-			this.el.sceneEl.addEventListener('mesh-added', this.refreshObjects.bind(this));
-			_scene.Scene.on('force-added', this.refreshObjects.bind(this));
-		},
-
-		/**
-   * Create or update raycaster object.
-   */
-		update: function update() {
-			if (this.isRaycasterDeactivated()) return;
-
-			this.raycaster.far = this.data.far;
-			this.raycaster.near = this.data.near;
-			this.tryGetCamera();
-			this.refreshObjects();
-		},
-
-		tryGetCamera: function tryGetCamera() {
-			if (this.camera) return;
-
-			var cameraEl = document.getElementById('camera');
-
-			// This component can exist before the camera is fully set up,
-			// so these checks are required to prevent null references.
-			// This could probably be replaced with a try/catch block.
-			if (!cameraEl) return;
-			if (!cameraEl.components) return;
-			if (!cameraEl.components.camera) return;
-			if (!cameraEl.components.camera.camera) return;
-
-			this.camera = cameraEl.components.camera.camera;
-		},
-
-		/**
-   * Update list of objects to test for intersection.
-   */
-		refreshObjects: function refreshObjects() {
-			// Push meshes onto list of objects to intersect.
-			if (this.data.objects) {
-
-				var objectEls = this.el.sceneEl.querySelectorAll(this.data.objects);
-
-				this.objects = [];
-				for (var i = 0; i < objectEls.length; i++) {
-					this.objects.push(objectEls[i].object3D);
-				}
-			} else {
-				// If objects not defined, intersect with everything.
-				this.objects = this.el.sceneEl.object3D.children;
-			}
-		},
-
-		onControllerChanged: function onControllerChanged(event) {
-			if (this.isRaycasterDeactivated()) return;
-
-			if (!this.controller.getAttribute('visible')) {
-				this.controller.setAttribute('visible', true);
-			}
-			if (event.detail.state.pressed) {
-				this.onControllerButtonDown();
-			} else {
-				this.onControllerButtonUp();
-			}
-		},
-
-		onControllerButtonDown: function onControllerButtonDown() {
-			if (this.isButtonDown) return;
-			this.onMouseDown();
-		},
-
-		onControllerButtonUp: function onControllerButtonUp() {
-			if (!this.isButtonDown) return;
-			this.onMouseUp();
-		},
-
-		onTouch: function onTouch(event) {
-			if (this.isRaycasterDeactivated()) return;
-
-			if (_scene.Scene.controllerType === 'mouse-touch') {
-				this.mouse.x = event.changedTouches[0].clientX / window.innerWidth * 2 - 1;
-				this.mouse.y = -(event.changedTouches[0].clientY / window.innerHeight) * 2 + 1;
-			} else {
-				this.mouse.x = 0;
-				this.mouse.y = 0;
-			}
-
-			var intersections = this.checkIntersections();
-
-			var isTouchOverTerrain = intersections === 'collision';
-			var isTouchOverSky = intersections === 'boundary-sphere';
-
-			if (isTouchOverTerrain || isTouchOverSky || _scene.Scene.modeType === 'vr') {
-				this.mouse.x = 0;
-				this.mouse.y = 0;
-				this.checkIntersections();
-			}
-
-			switch (event.type) {
-				case 'touchstart':
-					this.isTouchActive = true;
-					this.onMouseDown();
-					break;
-				case 'touchend':
-					this.isTouchActive = true;
-					this.onMouseUp();
-					break;
-			}
-		},
-
-		onMouseDown: function onMouseDown(event) {
-			var _this2 = this;
-
-			if (this.isRaycasterDeactivated()) return;
-			if (this.isButtonDown) return;
-
-			var clickConsumed = false;
-			this.buttonHoldTime = 0;
-			this.isButtonDown = true;
-
-			this.el.emit('raycaster-cursor-down', this.intersectedEls, false);
-
-			this.intersectedEls.forEach(function (intersectedEl) {
-				if (!clickConsumed) {
-					intersectedEl.emit('raycaster-cursor-down', {
-						el: _this2.el,
-						buttonHoldTime: _this2.buttonHoldTime
-					});
-
-					if (intersectedEl.hasAttribute('consume-click')) {
-						clickConsumed = true;
-					}
-				}
-			});
-		},
-
-		onMouseUp: function onMouseUp(event) {
-			var _this3 = this;
-
-			if (this.isRaycasterDeactivated()) return;
-
-			var clickConsumed = false;
-			this.isButtonDown = false;
-
-			this.el.emit('raycaster-cursor-up', {
-				buttonHoldTime: this.buttonHoldTime
-			}, false);
-
-			this.intersectedEls.forEach(function (intersectedEl) {
-
-				if (!clickConsumed && intersectedEl.parentNode) {
-					var name = intersectedEl.id === '' ? intersectedEl.parentNode.id : intersectedEl.id;
-					intersectedEl.emit('raycaster-cursor-up', {
-						el: _this3.el,
-						buttonHoldTime: _this3.buttonHoldTime
-					});
-
-					if (intersectedEl.hasAttribute('consume-click')) {
-						clickConsumed = true;
-					}
-				}
-			});
-
-			this.buttonHoldTime = 0;
-		},
-
-		onMouseMove: function onMouseMove(event) {
-			this.mouse.x = event.clientX / window.innerWidth * 2 - 1;
-			this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-			this.checkIntersections();
-		},
-
-		tick: function tick(t, dt) {
-			if (this.isRaycasterDeactivated()) return;
-			if (this.isTickThrottled()) return;
-
-			this.tryGetCamera();
-
-			if (this.isTouchActive) {
-				this.isTouchActive = false;
-				return;
-			}
-
-			if (this.isButtonDown) {
-				this.buttonHoldTime += dt / 1000;
-			}
-
-			if (AFRAME.utils.device.isMobile()) {
-				this.mouse.x = 0;
-				this.mouse.y = 0;
-			}
-
-			this.checkIntersections();
-		},
-
-		sortIntersections: function sortIntersections() {
-			var _this4 = this;
-
-			// Get all elements which do not have the event-priority attribute
-			var elsWithoutPriority = this.intersectedEls.filter(function (el) {
-				return !el.hasAttribute('event-priority');
-			});
-
-			// Get all elements which have the event-priority attribute
-			var elsWithPriority = this.intersectedEls.filter(function (el) {
-				return el.hasAttribute('event-priority');
-			});
-
-			// Sort priority elements by their priority value
-			elsWithPriority.sort(function (a, b) {
-				var priorityA = a.getAttribute('event-priority');
-				var priorityB = b.getAttribute('event-priority');
-				return priorityB - priorityA;
-			});
-
-			// Create new array from sorted priority elements
-			this.intersectedEls = Array.from(elsWithPriority);
-
-			// Add the unsorted elements without priority to the end
-			elsWithoutPriority.forEach(function (el) {
-				_this4.intersectedEls.push(el);
-			});
-
-			return this.intersectedEls;
-		},
-
-		checkIntersections: function checkIntersections() {
-			var _this5 = this;
-
-			if (this.isRaycasterDeactivated()) return;
-			if (!this.el.sceneEl.is('interactive')) return;
-
-			var currentIntersectedEl = 'none';
-
-			this.calcParabolaArc();
-			this.updateOriginDirection();
-
-			var intersections = this.raycaster.intersectObjects(this.objects, this.data.recursive);
-
-			// Store old previously intersected entities.
-			var prevIntersectedEls = Array.from(this.intersectedEls);
-
-			// Only keep intersections against objects that have a reference to an entity.
-			intersections = intersections.filter(function (intersection) {
-				return !!intersection.object.el;
-			});
-
-			// Only keep intersections against objects that are visible
-			intersections = intersections.filter(function (intersection) {
-				return _this5.isParentVisible(intersection.object);
-			});
-
-			// Update intersectedEls
-			this.intersectedEls = intersections.map(function (intersection) {
-				return intersection.object.el;
-			});
-
-			this.intersectedEls = this.sortIntersections();
-
-			var clickConsumed = false;
-			// Emit intersected on intersected entity per intersected entity.
-			intersections.forEach(function (intersection) {
-				var intersectedEl = intersection.object.el;
-				intersectedEl.intersection = intersection;
-
-				if (!clickConsumed) {
-					currentIntersectedEl = intersectedEl.id;
-					intersectedEl.emit('raycaster-intersected', { el: _this5.el, intersection: intersection });
-					if (intersectedEl.hasAttribute('consume-click')) {
-						clickConsumed = true;
-					}
-				} else {
-					var index = _this5.intersectedEls.indexOf(intersectedEl);
-					if (index > -1) {
-						_this5.intersectedEls.splice(index, 1);
-					}
-				}
-			});
-
-			// Emit all intersections at once on raycasting entity.
-			if (intersections.length) {
-				this.el.emit('raycaster-intersection', {
-					els: Array.from(this.intersectedEls),
-					intersections: intersections
-				});
-			}
-
-			// Emit intersection cleared on both entities per formerly intersected entity.
-			prevIntersectedEls.forEach(function (intersectedEl) {
-				if (_this5.intersectedEls.indexOf(intersectedEl) !== -1) return;
-				_this5.el.emit('raycaster-intersection-cleared', { el: intersectedEl });
-				intersectedEl.emit('raycaster-intersected-cleared', { el: _this5.el });
-			});
-
-			return currentIntersectedEl;
-		},
-
-		isParentVisible: function isParentVisible(obj) {
-			if (!obj.parent) return obj.visible;
-			if (obj.parent.visible) return this.isParentVisible(obj.parent);
-			return false;
-		},
-
-		calcParabolaArc: function calcParabolaArc() {
-			if (_scene.Scene.controllerType !== 'controller') return;
-			if (!this.el) return;
-			if (!this.parent) return;
-
-			this.el.object3D.updateMatrixWorld();
-			this.el.object3D.getWorldPosition(this.origin);
-
-			if (this.lastTerrainIntersection !== undefined) {
-				this.parabolaPoints = [];
-				this.parabolicPointer.calcCurve(this.origin, this.lastTerrainIntersection, this.parabolaPoints);
-				this.el.emit('raycaster-parabola-updated', this.parabolaPoints, false);
-			}
-		},
-
-		/**
-   * Set origin and direction of raycaster using entity position and rotation.
-   */
-		updateOriginDirection: function () {
-			var directionHelper = new THREE.Quaternion();
-			var originVec3 = new THREE.Vector3();
-
-			// Closure to make quaternion/vector3 objects private.
-			return function updateOriginDirection() {
-
-				this.tryGetCamera();
-
-				this.camera.updateMatrixWorld(true);
-				this.el.object3D.updateMatrixWorld(true);
-
-				this.el.object3D.matrixWorld.decompose(originVec3, directionHelper, scaleDummy);
-
-				// If the controller type is a mouse or touch device, calculate the ray direction
-				// using the camera's projection matrix and the mouse location. Otherwise, use the
-				// forward vector.
-				if (_scene.Scene.controllerType === 'mouse-touch') {
-					this.direction.set(this.mouse.x, this.mouse.y, 0.5).unproject(this.camera).sub(originVec3).normalize();
-				} else {
-					this.direction.copy(FWD_VECTOR);
-					this.direction.applyQuaternion(directionHelper);
-				}
-
-				this.raycaster.set(originVec3, this.direction);
-			};
-		}(),
-
-		isTickThrottled: function isTickThrottled() {
-			return ++this.tickCount % this.tickIncrement != 0;
-		},
-
-		isRaycasterDeactivated: function isRaycasterDeactivated() {
-			return this.data.controllerType !== _scene.Scene.controllerType;
-		}
-	});
-}
-
-},{"../core/scene":213,"../third_party/biagioli/parabolic-pointer":238,"eventemitter3":127}],176:[function(require,module,exports){
+},{"./c4d-metadata":170}],172:[function(require,module,exports){
 'use strict';
 
 // Copyright 2017 Google Inc.
@@ -93116,539 +91180,7 @@ if (typeof AFRAME !== 'undefined' && AFRAME) {
 	});
 }
 
-},{}],177:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _mathUtils = require('../utils/math-utils');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-var BezierEasing = require('bezier-easing');
-var ControllerRayShader = require('../shaders/controller-ray-shader');
-
-var DASH_SPEED = 2.5;
-var ANIM_IN_DURATION = 0.75;
-var NEAR_DISTANCE_THRESHOLD = 2;
-var EASING = BezierEasing(0.66, 0, 0.33, 1);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('controller-arc', {
-
-		schema: {
-			width: { type: 'number', default: 0.02 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.parentPosition = new THREE.Vector3();
-			this.parentVelocity = new THREE.Vector3();
-			this.cursorPosition = new THREE.Vector3();
-			this.cursorVelocity = new THREE.Vector3();
-			this.targetPosition = new THREE.Vector3();
-			this.distance = 0;
-			this.outOfBounds = 0;
-			this.animIn = 1;
-
-			var geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 64, 1, true, Math.PI * 1.5, Math.PI);
-			geometry.rotateX(Math.PI / -2);
-			geometry.rotateY(Math.PI / -2);
-			geometry.translate(0, 0, 0.5);
-
-			this.material = new THREE.ShaderMaterial({
-				uniforms: THREE.UniformsUtils.clone(ControllerRayShader.uniforms),
-				fragmentShader: ControllerRayShader.fragmentShader,
-				vertexShader: ControllerRayShader.vertexShader,
-				side: THREE.DoubleSide
-			});
-
-			// Set up dash material uniforms
-			this.material.uniforms.axis.value = new THREE.Vector2(1, 0);
-			this.material.uniforms.dashSpacing.value = 0.05;
-
-			this.mesh = new THREE.Mesh(geometry, this.material);
-			this.mesh.visible = false;
-
-			this.group = new THREE.Group();
-			this.group.add(this.mesh);
-			this.el.setObject3D('mesh', this.group);
-
-			// Listen for intersection events
-			this.el.sceneEl.addEventListener('terrain-intersected', this.onIntersected.bind(this));
-			this.el.sceneEl.addEventListener('terrain-intersected-cleared', this.onIntersectClearered.bind(this));
-
-			document.addEventListener('mousemove', this.onMoved.bind(this));
-
-			this.el.sceneEl.addEventListener('stateremoved', function (event) {
-				if (event.target !== _this.el.sceneEl) return;
-				if (event.detail.state !== 'interactive') return;
-
-				_this.mesh.visible = false;
-			});
-
-			this.el.sceneEl.addEventListener('stateadded', function (event) {
-				if (event.target !== _this.el.sceneEl) return;
-				if (event.detail.state !== 'interactive') return;
-
-				_this.mesh.visible = true;
-			});
-
-			// event for exiting vr
-			_scene.Scene.on('on-controls-ready', this.checkForVisibility.bind(this));
-		},
-
-		checkForVisibility: function checkForVisibility() {
-			this.el.setAttribute('visible', _scene.Scene.controllerType === 'mouse-touch');
-		},
-
-
-		update: function update() {
-			this.parent = document.getElementById('arc-dummy');
-		},
-
-		onIntersected: function onIntersected(event) {
-			if (this.controllerType === 'controller') return;
-
-			this.targetPosition = event.detail.point;
-			// this.updateArcPosition( event.detail.point );
-			this.outOfBounds = 2;
-		},
-
-		onIntersectClearered: function onIntersectClearered(event) {
-			this.outOfBounds = -1;
-		},
-
-		onMoved: function onMoved(event) {
-			this.outOfBounds--;
-		},
-
-		tick: function tick(t, dt) {
-			if (!this.parent) return;
-			if (!this.mesh.visible) return;
-
-			dt = dt / 1000;
-
-			// Move mesh to parent's world position
-			this.parent.object3D.getWorldPosition(this.parentPosition);
-
-			// Compensate for camera height
-			this.parentPosition.y -= 1.6;
-
-			// Smooth the cursor and mesh position to remove jitter caused by the tick loop and the cursor
-			// update loop being out of sync.
-			_mathUtils.MathUtils.smooth3D(this.cursorPosition, this.targetPosition, this.cursorVelocity, dt, 0.05, 500);
-			_mathUtils.MathUtils.smooth3D(this.mesh.position, this.parentPosition, this.parentVelocity, dt, 0.05, 500);
-
-			// Update the distanace from the arc to the cursor
-			this.distance = this.parentPosition.distanceTo(this.cursorPosition);
-
-			// As the cursor position gets further away from the camera, the arc becomes taller
-			var height = _mathUtils.MathUtils.clamp(this.distance * 0.75, 1, 10);
-
-			// Set the cylinder's scale and rotation so that it intersects with the cursor point
-			this.mesh.scale.copy(new THREE.Vector3(this.data.width, height, this.distance));
-			this.mesh.lookAt(this.cursorPosition);
-
-			// Only show the cursor if it is inside the valid boundaries
-			if (this.distance > NEAR_DISTANCE_THRESHOLD && this.outOfBounds > 0) {
-				this.animIn = _mathUtils.MathUtils.clamp(this.animIn + dt * (1 / ANIM_IN_DURATION), 0, 1);
-			} else {
-				this.animIn = 0;
-			}
-
-			// Update uniform values
-			this.material.uniforms.dashSpacing.value = 0.5 / this.distance / 2;
-			this.material.uniforms.t.value = t / 1000 * DASH_SPEED;
-			this.material.uniforms.show.value = EASING(this.animIn);
-		}
-	});
-}
-
-},{"../core/scene":213,"../shaders/controller-ray-shader":224,"../utils/math-utils":244,"bezier-easing":14}],178:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _platformUtils = require('../utils/platform-utils');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * controller-dot
- *
- * A dot which serves as the user's cursor pointer.
- * The dot is drawn by a shader on a small plane mesh.
- */
-
-var ControllerDotShader = require('../shaders/controller-dot-shader');
-
-var VECTOR_ONE = new THREE.Vector3(1, 1, 1);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('controller-dot', {
-
-		schema: {
-			color: { type: 'color', default: '#FFF' },
-			size: { type: 'number', default: 25 },
-			scale: { type: 'number', default: 1 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.scale = this.data.scale;
-
-			this.cameraPosition = new THREE.Vector3();
-			this.geometry = new THREE.PlaneBufferGeometry(1, 1);
-
-			this.material = new THREE.ShaderMaterial({
-				uniforms: ControllerDotShader.uniforms,
-				fragmentShader: ControllerDotShader.fragmentShader,
-				vertexShader: ControllerDotShader.vertexShader,
-				depthTest: false,
-				transparent: true
-			});
-
-			this.mesh = new THREE.Mesh(this.geometry, this.material);
-			this.el.setObject3D('mesh', this.mesh);
-			this.el.setAttribute('visible', false);
-
-			this.el.object3D.scale.copy(VECTOR_ONE);
-			this.el.object3D.scale.multiplyScalar(0.0001);
-
-			this.onIntersectedRef = this.onIntersected.bind(this);
-
-			this.tryAddingRaycaster();
-
-			this.el.sceneEl.addEventListener('terrain-intersected', function () {
-				_this.el.setAttribute('visible', false);
-			});
-
-			this.el.sceneEl.addEventListener('terrain-intersected-cleared', function () {
-				_this.el.setAttribute('visible', true);
-			});
-
-			this.camera = document.getElementById('camera');
-
-			this.el.setAttribute('look-at-target', {
-				axis: 'xyz',
-				target: '#camera',
-				alwaysUpdate: true,
-				offset: new THREE.Vector3(0, Math.PI, 0)
-			});
-
-			_scene.Scene.on('on-controls-ready', this.tryAddingRaycaster.bind(this));
-		},
-
-		tryAddingRaycaster: function tryAddingRaycaster() {
-			if (this.raycaster) {
-				this.raycaster.removeEventListener('raycaster-intersection', this.onIntersectedRef);
-			}
-
-			if (_scene.Scene.controllerType === 'mouse-touch') {
-				this.raycaster = document.getElementById('mouse-touch-controller');
-			} else {
-				this.raycaster = document.getElementById('right-hand');
-			}
-
-			this.raycaster.addEventListener('raycaster-intersection', this.onIntersectedRef.bind(this));
-		},
-
-
-		onIntersected: function onIntersected(event) {
-			if (!this.el.getAttribute('visible')) return;
-
-			// Don't update the cursor on in desktop 360 mode. The mouse cursor will change
-			// state when appropriate, which is the expected behavior during normal desktop browsing.
-			if (_scene.Scene.modeType === '360' && !AFRAME.utils.device.isMobile()) return;
-
-			var intersectionPoint = event.detail.intersections[0].point;
-			this.camera.object3D.getWorldPosition(this.cameraPosition);
-
-			// Move the reticle closer to camera to prevent intersections
-			this.el.object3D.position.subVectors(this.cameraPosition, intersectionPoint);
-			this.el.object3D.position.multiplyScalar(0.05).add(intersectionPoint);
-
-			// Calculate the distance between the dot and the camera
-			var d = this.el.object3D.position.distanceTo(this.cameraPosition);
-
-			// Minimize scaling based on distance from the camera.
-			// A bit of scaling is OK, as it helps establish scale, but the dot
-			// still needs to be large enough to be visible at all times.
-			this.el.object3D.scale.copy(VECTOR_ONE);
-			this.el.object3D.scale.multiplyScalar(d / this.data.size);
-			this.el.object3D.scale.multiplyScalar(this.data.scale);
-			this.el.object3D.scale.divideScalar(Math.min(d, 8) / 5);
-		},
-
-		update: function update() {
-			this.material.uniforms.color.value = new THREE.Color(this.data.color);
-			this.material.needsUpdate = true;
-		}
-	});
-}
-
-},{"../core/scene":213,"../shaders/controller-dot-shader":223,"../utils/platform-utils":245}],179:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _meshLineMaterial = require('../third_party/spite/mesh-line-material');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * controller-parabola
- *
- * Parabola arc for teleportation aiming on mobile devices.
- *
- * This handles the display of the parabola arc in the scene;
- * better-raycaster emits parabola update events which are calculated
- * by the ParabolicPointer class: third_party/biagoioli/parabolic-pointer
- */
-
-var BezierEasing = require('bezier-easing');
-var MeshLine = require('../third_party/spite/mesh-line').MeshLine;
-
-var DASH_SPEED = 2.5;
-var SHOW_SPEED = 0.2;
-var SHOW_EASING = BezierEasing(0.66, 0, 0.33, 1);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('controller-parabola', {
-
-		schema: {
-			width: { default: 0.015 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.parabolaPoints = [];
-			this.show = 1;
-			this.isOverTerrain = false;
-			this.resolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-
-			this.raycasterEl = document.getElementById('right-hand');
-
-			// Grab arc point updates from the raycaster
-			this.raycasterEl.addEventListener('raycaster-parabola-updated', function (event) {
-				_this.parabolaPoints = event.detail;
-			});
-
-			// Show the arc when the user presses the controller button
-			this.raycasterEl.addEventListener('raycaster-cursor-down', function (event) {
-				if (_scene.Scene.controllerType !== 'controller') return;
-				if (!_this.el.sceneEl.is('interactive')) return;
-				if (_this.el.sceneEl.is('modal')) return;
-				if (!event.detail) return;
-				if (event.detail[0].id !== 'collider') return;
-
-				_this.mesh.visible = true;
-			});
-
-			// Listen for intersection events
-			this.el.sceneEl.addEventListener('terrain-intersected', function () {
-				if (_scene.Scene.controllerType !== 'controller') return;
-				if (!_this.el.sceneEl.is('interactive')) return;
-				_this.isOverTerrain = true;
-				_this.mesh.visible = true;
-			});
-
-			this.el.sceneEl.addEventListener('terrain-intersected-cleared', function () {
-				_this.isOverTerrain = false;
-				_this.mesh.visible = false;
-			});
-
-			// Hide the arc whenever the scene is not interactive
-			this.el.sceneEl.addEventListener('stateremoved', function (event) {
-				if (event.target !== _this.el.sceneEl) return;
-				if (event.detail.state === 'interactive') _this.mesh.visible = false;
-			});
-
-			// event for exiting vr
-			_scene.Scene.on('on-controls-ready', this.checkForVisibility.bind(this));
-		},
-
-		checkForVisibility: function checkForVisibility() {
-			this.el.setAttribute('visible', _scene.Scene.controllerType === 'controller');
-		},
-
-
-		play: function play() {
-			this.numPoints = this.raycasterEl.getAttribute('better-raycaster').numArcPoints;
-
-			// Populate  mesh vertices with zero vectors. It will be filled with
-			// actual vectors when the cursor is updated
-			this.geometry = new THREE.Geometry();
-			for (var i = 0; i < this.numPoints + 1; i++) {
-				this.geometry.vertices.push(new THREE.Vector3());
-			}
-
-			this.line = new MeshLine();
-			this.line.setGeometry(this.geometry);
-
-			this.material = new _meshLineMaterial.MeshLineMaterial({
-				color: new THREE.Color(0xFFFFFF),
-				lineWidth: this.data.width,
-				resolution: this.resolution
-			});
-
-			this.mesh = new THREE.Mesh(this.line.geometry, this.material);
-			this.mesh.frustumCulled = false;
-			this.mesh.visible = false;
-			this.el.setObject3D('mesh', this.mesh);
-
-			window.addEventListener('resize', this.onResize.bind(this));
-		},
-
-		onResize: function onResize() {
-			// Update the resolution material property required by MeshLine
-			this.resolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-			this.material.uniforms.resolution.value = this.resolution;
-			this.material.needsUpdate = true;
-		},
-
-		tick: function tick(t, dt) {
-			var _this2 = this;
-
-			if (_scene.Scene.controllerType !== 'controller') return;
-			if (!this.mesh) return;
-			if (!this.mesh.visible) return;
-			if (!this.parabolaPoints.length) return;
-			if (!this.isOverTerrain) return;
-
-			// Transfer updated parabola points to the mesh vertices
-			this.geometry.vertices = this.geometry.vertices.map(function (v, i) {
-				return _this2.parabolaPoints[Math.min(i, _this2.parabolaPoints.length - 1)];
-			});
-
-			this.line.setGeometry(this.geometry);
-
-			// Update material
-			this.material.uniforms.visibility.value = SHOW_EASING(this.show);
-			this.material.uniforms.t.value = t / 1000 * DASH_SPEED;
-			this.material.needsUpdate = true;
-		}
-	});
-}
-
-},{"../core/scene":213,"../third_party/spite/mesh-line":240,"../third_party/spite/mesh-line-material":239,"bezier-easing":14}],180:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('controller-ray', {
-
-		schema: {
-			width: { default: 0.005 },
-			length: { default: 1 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.isInteractive = false;
-
-			this.geometry = new THREE.PlaneBufferGeometry(this.data.width, this.data.length);
-			this.geometry.rotateX(Math.PI / -2);
-			this.geometry.translate(0, 0, this.data.length / -2);
-
-			this.material = new THREE.MeshBasicMaterial();
-			this.mesh = new THREE.Mesh(this.geometry, this.material);
-			this.el.setObject3D('mesh', this.mesh);
-			this.el.setAttribute('visible', false);
-			this.el.sceneEl.addEventListener('terrain-intersected-cleared', function () {
-				if (!_this.isInteractive) return;
-				if (_scene.Scene.controllerType === 'mouse-touch') return;
-				_this.el.setAttribute('visible', true);
-			});
-
-			this.el.sceneEl.addEventListener('terrain-intersected', function () {
-				if (!_this.isInteractive) return;
-				if (_scene.Scene.controllerType === 'mouse-touch') return;
-				_this.el.setAttribute('visible', false);
-			});
-
-			this.el.sceneEl.addEventListener('stateadded', function (event) {
-				if (event.detail.state === 'interactive') _this.isInteractive = true;
-				if (event.target !== _this.el.sceneEl) return;
-			});
-
-			this.el.sceneEl.addEventListener('stateremoved', function (event) {
-				if (event.detail.state === 'interactive') _this.isInteractive = false;
-				if (event.target !== _this.el.sceneEl) return;
-			});
-		},
-
-		play: function play() {}
-	});
-} // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * controller-ray
- *
- * Ray line indicator for VR hand controllers.
- *
- * This replaces the parabola arc whenever the user is not holding the
- * controller button down.
- */
-
-},{"../core/scene":213}],181:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 'use strict';
 
 // Copyright 2017 Google Inc.
@@ -93665,3870 +91197,18 @@ if (typeof AFRAME !== 'undefined' && AFRAME) {
 //   See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 /**
- * debug-trace
- *
- * Prints position and rotation info to the console.
+ * sky-shader
  */
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('debug-trace', {
-
-		init: function init() {
-			this.position = new THREE.Vector3();
-			this.rotation = new THREE.Euler();
-		},
-
-		tick: function tick(t, dt) {
-
-			this.position.copy(this.el.object3D.position);
-			this.rotation.copy(this.el.object3D.rotation);
-
-			console.log('Position: [ ' + this.position.x + ', ' + this.position.y + ', ' + this.position.z + ' ]\n' + 'Rotation: [ ' + this.rotation.x + ', ' + this.rotation.y + ', ' + this.rotation.z + ' ]');
-		}
-
-	});
-}
-
-},{}],182:[function(require,module,exports){
-'use strict';
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * fade-to-black
- *
- * A black sphere which encloses the camera and can
- * be faded in and out during scene transitions.
- *
- * It is triggered automatically by the 'visible' state
- * of the AFRAME scene
- */
-
-// Duration of the fade transition, in seconds
-var FADE_DURATION = 1.25;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('fade-to-black', {
-
-		dependencies: ['visible'],
-
-		init: function init() {
-			var _this = this;
-
-			this.opacity = 1;
-			this.geometry = new THREE.SphereBufferGeometry(1.5);
-			this.material = new THREE.MeshBasicMaterial({
-				color: new THREE.Color(0),
-				opacity: this.opacity,
-				side: THREE.BackSide,
-				transparent: true
-			});
-
-			this.mesh = new THREE.Mesh(this.geometry, this.material);
-			this.mesh.renderOrder = 8;
-			this.el.setObject3D('mesh', this.mesh);
-
-			// When the scene's visible state is ADDED, fade the sphere out
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail !== 'visible') return;
-				_this.el.emit('transition-in-begin', null, false);
-			});
-
-			// When the scene's visible state is REMOVED, fade the sphere in
-			this.el.addEventListener('stateremoved', function (event) {
-				if (event.detail == 'visible') return;
-				_this.el.emit('transition-out-begin', null, false);
-			});
-		},
-
-		tick: function tick(t, dt) {
-			dt = dt / 1000 * (1 / FADE_DURATION);
-			var updateTransition = false;
-			var deltaOpacity = 0;
-
-			if (this.el.is('visible')) {
-				updateTransition = this.opacity < 1;
-				deltaOpacity = +dt;
-			} else {
-				updateTransition = this.opacity > 0;
-				deltaOpacity = -dt;
-			}
-
-			// Hide the mesh itself if it's at 0 opacity, so it doesn't
-			// get rendered while it's invisible.
-			if (this.opacity <= 0) {
-				this.el.setAttribute('visible', false);
-			} else {
-				this.el.setAttribute('visible', true);
-			}
-
-			// Only update the material if the opacity value is being changed
-			if (updateTransition) {
-				this.opacity = Math.min(Math.max(this.opacity + deltaOpacity, 0), 1);
-				this.material.opacity = this.opacity;
-				this.material.needsUpdate = true;
-
-				if (this.opacity <= 0) {
-					this.el.emit('transition-out-complete', null, false);
-					return;
-				}
-
-				if (this.opacity >= 1) {
-					this.el.emit('transition-in-complete', null, false);
-				}
-			}
-		}
-	});
-}
-
-},{}],183:[function(require,module,exports){
-'use strict';
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * frustum
- *
- * Calculates the frustum of the element's camera component and
- * throws a 'frustum-updated' event every frame with the updated 
- * frustum object.
- *
- * Used for determining which POI markers are in view of the camera.
- */
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('frustum', {
-
-		init: function init() {
-			this.matrix = new THREE.Matrix4();
-			this.frustum = new THREE.Frustum();
-		},
-
-		tick: function tick() {
-			if (!this.camera) {
-				this.camera = this.el.components.camera.camera;
-			}
-
-			if (!this.camera) return;
-
-			this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
-			this.matrix.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
-			this.frustum.setFromMatrix(this.matrix);
-
-			this.el.emit('frustum-updated', { frustum: this.frustum }, false);
-		}
-	});
-}
-
-},{}],184:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var _scene = require('../core/scene');
-
-var _platformUtils = require('../utils/platform-utils');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * hitbox
- *
- * A box collision component which acts as a single mesh
- * for hit-testing against scene elements with multiple
- * children. This simplifies collision detection, as an
- * element will only need to listen for collision events
- * from its hitbox, rather than from each of its child
- * elements.
- *
- * The size of the box is calculated from the bounding box
- * of the element it is attached to, with an added expansion
- * parameter.
- *
- * The box can also change the controller-dot color and size
- * on intersection. TODO: maybe a separate component should
- * do this.
- */
-
-var HITBOX_GEOMETRY = new THREE.PlaneBufferGeometry(1, 1);
-// const HITBOX_MATERIAL = new THREE.MeshBasicMaterial( { color: 0xFF00FF, side: THREE.DoubleSide, transparent: true, opacity: 0.25 } );
-var HITBOX_MATERIAL = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('hitbox', {
-
-		dependencies: ['event-priority'],
-
-		schema: {
-			expansion: { default: 20 },
-			cursorScale: { default: 1 },
-			desktopCursorPointer: { default: true }
-		},
-
-		init: function init() {
-
-			this.el.classList.add('clickable');
-			this.el.setAttribute('consume-click', '');
-
-			// Route intersection events to their functions
-			this.el.addEventListener('raycaster-intersected', this.onIntersect.bind(this));
-			this.el.addEventListener('raycaster-intersected-cleared', this.onIntersectionCleared.bind(this));
-
-			// Update the bounding box if any children are added to the parent element
-			this.el.addEventListener('child-attached', this.updateBoundingBox.bind(this));
-			this.el.addEventListener('child-detached', this.updateBoundingBox.bind(this));
-
-			this.cursor = document.getElementById('controller-dot');
-		},
-
-		/**
-   * Calculate the new box scale from the parent element's bounding box
-   */
-		updateBoundingBox: function updateBoundingBox() {
-			// Calculate the new box scale from the parent element's bounding box
-			this.resizeToThis(this.el.parentNode);
-		},
-
-		resizeToThis: function resizeToThis(el) {
-			var obj = el.getObject3D('mesh');
-			if (!obj) return;
-			this.bounds = new THREE.Box3().setFromObject(obj);
-			this.bounds.expandByScalar(this.data.expansion);
-			this.updateHitboxMesh();
-		},
-
-		updateHitboxMesh: function updateHitboxMesh() {
-			this.mesh = new THREE.Mesh(HITBOX_GEOMETRY, HITBOX_MATERIAL);
-			this.mesh.position.copy(this.bounds.getCenter());
-			this.mesh.position.setZ(this.mesh.position.z + 0.02);
-			this.mesh.scale.copy(this.bounds.getSize());
-			this.mesh.scale.setZ(1);
-
-			this.el.setObject3D('mesh', this.mesh);
-
-			// raycaster usually updates when hittests are added
-			// doesn't work on certain objects like info-card
-			_scene.Scene.emit('force-added', null, false);
-		},
-
-		update: function update() {
-			this.updateBoundingBox();
-		},
-
-		onIntersect: function onIntersect() {
-			if (this.data.desktopCursorPointer) {
-				document.body.classList.add('pointer');
-			}
-
-			if (!this.cursor) return;
-			this.cursor.setAttribute('controller-dot', {
-				color: _colors.TextColor,
-				scale: this.data.cursorScale
-			});
-		},
-
-		onIntersectionCleared: function onIntersectionCleared() {
-			document.body.classList.remove('pointer');
-			this.cursor.setAttribute('controller-dot', {
-				color: _colors.WhiteColor,
-				scale: 1
-			});
-		},
-
-		remove: function remove() {
-			this.el.removeObject3D('mesh');
-			document.body.classList.remove('pointer');
-			this.cursor.removeAttribute('controller-dot', 'color');
-			this.cursor.removeAttribute('controller-dot', 'scale');
-		}
-	});
-}
-
-},{"../core/colors":211,"../core/scene":213,"../utils/platform-utils":245}],185:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _colors = require('../core/colors');
-
-var _audioManager = require('../core/audio-manager');
-
-var GradientShader = require('../shaders/gradient-shader'); // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * horizon-marker
- *
- * UI component for marking site locations on the horizon.
- * It is built out of several pieces of simple geometry.
- *
- * Position of the marker is specified in spherical coordinates:
- * azimuth and elevation, as it was provided by JPL.
- *
- * Clicking on it transitions the user to the specified location.
- */
-
-var ColorMaskShader = require('../shaders/color-mask-shader');
-
-var FLAG_Z = 1;
-var POLE_H = 120;
-var DISTANCE = 75;
-var MARKER_DIAMETER = 40;
-var FLAG_Y_OFFSET = 54;
-var FLAG_Y_CENTER = FLAG_Y_OFFSET + MARKER_DIAMETER / 2;
-var DEG2RAD = Math.PI / 180;
-
-var FLAG_GEOMETRY = new THREE.PlaneBufferGeometry(MARKER_DIAMETER, MARKER_DIAMETER);
-var POLE_GEOMETRY = new THREE.PlaneBufferGeometry(MARKER_DIAMETER, 1);
-POLE_GEOMETRY.translate(0, -0.5, 0);
-
-var POLE_MATERIAL = new THREE.ShaderMaterial({
-	uniforms: GradientShader.uniforms,
-	vertexShader: GradientShader.vertexShader,
-	fragmentShader: GradientShader.fragmentShader,
-	transparent: true
-});
-
-var ICON_MATERIAL = new THREE.ShaderMaterial({
-	uniforms: THREE.UniformsUtils.clone(ColorMaskShader.uniforms),
-	vertexShader: ColorMaskShader.vertexShader,
-	fragmentShader: ColorMaskShader.fragmentShader
-});
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('horizon-marker', {
-
-		dependencies: ['visible', 'look-at-target'],
-
-		schema: {
-			azimuth: { default: 0 },
-			elevation: { default: 0 },
-			site: { type: 'string' },
-			size: { type: 'number', default: 0.1 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.mapCard = document.getElementById('map-card');
-
-			this.el.addState('interactive');
-
-			this.isIntersected = false;
-
-			this.group = new THREE.Group();
-			this.el.setObject3D('mesh', this.group);
-
-			this.iconMesh = new THREE.Mesh(FLAG_GEOMETRY, ICON_MATERIAL);
-			this.iconMesh.scale.multiplyScalar(1.2);
-			this.iconMesh.position.y = FLAG_Y_CENTER;
-			this.iconMesh.position.z = 0.1;
-
-			this.textureLoader = new THREE.TextureLoader();
-			this.textureLoader.load('img/teleport.png', function (texture) {
-				_this.iconMesh.material.uniforms.map.value = texture;
-				_this.iconMesh.material.uniforms.color.value = new THREE.Color(0xFFFFFF);
-				_this.iconMesh.material.needsUpdate = true;
-			});
-
-			this.poleMesh = new THREE.Mesh(POLE_GEOMETRY, POLE_MATERIAL);
-			this.poleMesh.position.z = FLAG_Z;
-			this.poleMesh.position.y = FLAG_Y_CENTER;
-			this.poleMesh.scale.y = POLE_H + 100;
-
-			this.group.add(this.iconMesh);
-			this.group.add(this.poleMesh);
-
-			this.titleLabel = document.createElement('a-entity');
-			this.titleLabel.setAttribute('poi-title-text', {
-				value: 'MAP',
-				yOffset: FLAG_Y_CENTER + MARKER_DIAMETER / 2
-			});
-
-			// Create hitbox
-			this.hitbox = document.createElement('a-entity');
-			this.hitbox.setAttribute('hitbox', '');
-			this.hitbox.setAttribute('event-priority', 100);
-
-			// Add 'em up
-			this.el.appendChild(this.titleLabel);
-			this.el.appendChild(this.hitbox);
-
-			this.el.setAttribute('scale', new THREE.Vector3(-this.data.size, this.data.size, this.data.size));
-
-			// Calculate the marker position from JPL's azimuth and elevation data
-			this.el.setAttribute('position', new THREE.Vector3(Math.sin(this.data.azimuth * DEG2RAD) * DISTANCE, this.data.elevation + 5, Math.cos(this.data.azimuth * DEG2RAD) * DISTANCE));
-
-			// Route raycaster events to their functions
-			this.el.addEventListener('raycaster-intersected', this.onIntersect.bind(this));
-			this.el.addEventListener('raycaster-intersected-cleared', this.onIntersectionCleared.bind(this));
-			this.el.addEventListener('raycaster-cursor-up', this.onClick.bind(this));
-		},
-
-		onClick: function onClick() {
-			if (!this.el.is('interactive')) return;
-			if (!this.el.sceneEl.is('interactive')) return;
-			if (this.el.sceneEl.is('modal')) return;
-			this.el.removeState('visible');
-			this.el.removeState('hover');
-
-			// Open the map card
-			this.mapCard.addState('visible');
-		},
-
-		onIntersect: function onIntersect(event) {
-			if (this.isIntersected) return;
-			if (!this.el.is('interactive')) return;
-
-			if (!this.isIntersected) {
-				_audioManager.AudioManager.playSFX('boop');
-			}
-
-			// Show the label text
-			this.isIntersected = true;
-			this.el.addState('hover');
-			this.titleLabel.setAttribute('poi-title-text', { show: true });
-		},
-
-		onIntersectionCleared: function onIntersectionCleared(event) {
-			// Hide the label text
-			this.isIntersected = false;
-			this.el.removeState('hover');
-			this.titleLabel.setAttribute('poi-title-text', { show: false });
-		}
-	});
-}
-
-},{"../core/audio-manager":210,"../core/colors":211,"../core/scene":213,"../shaders/color-mask-shader":221,"../shaders/gradient-shader":227}],186:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var _mathUtils = require('../utils/math-utils');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * info-card-text
- *
- * UI component for displaying the text on info cards.
- *
- * Because the text takes a frame for layout, its size
- * cannot be absolutely known at construction time.
- * In order to size the parent info card correctly,
- * the text's bounding box is emitted once layout
- * is complete.
- *
- * The text has an animated fade-in/out animation
- * which is triggered when the 'visible' attribute
- * is changed.
- */
-
-function parseText(text) {
-	return text.replace(new RegExp('@s', 'g'), ';');
-}
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('info-card-text', {
-
-		schema: {
-			align: { default: 'left' },
-			antialiasing: { default: 0.25 },
-			baseline: { default: 'top' },
-			color: { type: 'number', default: _colors.TextColorHex },
-			font: { type: 'string' },
-			letterSpacing: { default: 1 },
-			lineHeight: { default: 80 },
-			show: { default: true },
-			transitionInDelay: { default: 0.05 },
-			transitionInDuration: { default: 0.25 },
-			transitionInSpeed: { default: 1 },
-			transitionOutSpeed: { default: 2 },
-			value: { type: 'string' },
-			width: { default: 0.85 },
-			wrapCount: { default: 32 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.boundingBox = new THREE.Box3();
-			this.textGeometry = null;
-			this.size = new THREE.Vector3();
-			this.updateTransition = false;
-			this.geometryUpdated = false;
-			this.opacity = 0;
-			this.multiplier = 1;
-			this.delayCounter = 0;
-
-			this.el.setAttribute('text', {
-				align: this.data.align,
-				anchor: this.data.align,
-				baseline: this.data.baseline,
-				color: new THREE.Color(this.data.color),
-				font: this.data.font,
-				letterSpacing: this.data.letterSpacing,
-				lineHeight: this.data.lineHeight,
-				opacity: 0,
-				shader: 'msdf',
-				value: parseText(this.data.value),
-				width: this.data.width,
-				wrapCount: this.data.wrapCount
-			});
-
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				if (_this.transitionInDelay <= 0) return;
-				_this.delayCounter = 1;
-			});
-
-			this.el.addEventListener('stateremoved', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.delayCounter = 0;
-			});
-		},
-
-		update: function update() {
-			this.el.setAttribute('text', 'letterSpacing', this.data.letterSpacing);
-			this.el.setAttribute('text', 'lineHeight', this.data.lineHeight);
-			this.el.setAttribute('text', 'wrapCount', this.data.wrapCount);
-			this.el.setAttribute('text', 'width', this.data.width);
-			this.el.setAttribute('text', 'value', parseText(this.data.value));
-			this.el.setAttribute('text', 'opacity', Math.max(0, this.opacity));
-			this.size = new THREE.Vector3();
-			this.geometryUpdated = false;
-			this.opacity = 0;
-
-			// Force the text to always be render in front
-			this.text = this.el.object3D.children[0];
-			this.text.material.depthTest = false;
-			this.text.material.transparent = true;
-			this.text.material.needsUpdate = true;
-		},
-
-		tick: function tick(t, dt) {
-			if (this.delayCounter > 0) {
-				dt = dt / 1000 * (1 / this.data.transitionInDelay);
-			} else {
-				dt = dt / 1000 * (1 / this.data.transitionInDuration);
-			}
-
-			if (this.delayCounter > 0) {
-				this.delayCounter -= dt;
-				return;
-			}
-
-			// Update the fade-in transition animation
-			if (this.el.is('visible')) {
-				this.updateTransition = this.opacity < 1;
-				this.opacity += dt * this.data.transitionInSpeed;
-			} else {
-				this.updateTransition = this.opacity > 0;
-				this.opacity -= dt * this.data.transitionOutSpeed;
-			}
-
-			this.opacity = _mathUtils.MathUtils.clamp(this.opacity, 0, 1);
-
-			if (this.updateTransition) {
-				this.el.setAttribute('text', 'opacity', this.opacity);
-			}
-
-			// Wait until the text's geometry has a valid bounding box, which
-			// means the text layout is complete and the dimensions are known.
-			// Emit an event with the dimensions so that the parent info card's
-			// size and the position of other elements can be set correctly.
-			if (!this.geometryUpdated) {
-				if (this.el.object3D.children[0]) {
-					this.textGeometry = this.el.object3D.children[0].geometry;
-
-					if (this.textGeometry.attributes.position) {
-						if (this.textGeometry.attributes.position) {
-							this.textGeometry.computeBoundingBox();
-							this.textGeometry.boundingBox.getSize(this.size);
-							this.size.multiply(this.el.object3D.children[0].scale);
-						}
-					}
-				}
-
-				if (!isNaN(this.size.x) && !isNaN(this.size.y)) {
-					this.geometryUpdated = true;
-					this.el.emit('geometry-updated', {
-						width: this.size.x,
-						height: this.size.y
-					});
-				}
-			}
-		}
-	});
-}
-
-},{"../core/colors":211,"../utils/math-utils":244}],187:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var _scene = require('../core/scene');
-
-var _platformUtils = require('../utils/platform-utils');
-
-var _cardMesh = require('../meshes/card-mesh');
-
-var _cardMeshImage = require('../meshes/card-mesh-image');
-
-var MARGIN = 0.075; // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * info-card
- *
- * UI component for displaying the info cards which are shown
- * when the user clicks on a point-of-interest.
- *
- * Only one card exists in the scene, and its contents change
- * depending on which point-of-interest has been selected.
- *
- * The card can contain an image, a title, and body copy.
- * Size of the card is calculated automatically from the text
- * it needs to contain.
- *
- * The card will position itself towards the camera when shown.
- */
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('info-card', {
-
-		dependencies: ['visible', 'look-at-target'],
-
-		schema: {
-			url: { type: 'string' },
-			width: { type: 'number', default: 1 },
-			title: { type: 'string' },
-			type: { type: 'string', default: 'poi' },
-			text: { type: 'string' },
-			index: { type: 'string', default: '' },
-			poi: { type: 'selector' }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.headerTextSize = new THREE.Vector2();
-			this.bodyTextSize = new THREE.Vector2();
-			this.indexTextSize = new THREE.Vector2();
-
-			this.positionDummy = document.getElementById('ui-dummy');
-			this.camera = document.getElementById('camera');
-			this.player = document.getElementById('player');
-
-			// Set up look-at-target component so that the card faces the camera directly.
-			this.el.setAttribute('look-at-target', {
-				axis: 'xyz',
-				target: '#camera',
-				alwaysUpdate: false,
-				offset: new THREE.Vector3(0, Math.PI, 0)
-			});
-
-			// This group is used to hold the various meshes that aren't represented
-			// by separate entity DOM elements. This includes the background plane,
-			// the image plane, and the close + divider icons.
-			this.group = new THREE.Group();
-			this.el.setObject3D('mesh', this.group);
-
-			// Creat the header text entity
-			this.textHeader = document.createElement('a-entity');
-			this.textHeader.setAttribute('info-card-text', 'font', 'fonts/NowAlt-Bold.json');
-			this.textHeader.setAttribute('info-card-text', 'letterSpacing', 12);
-			this.textHeader.setAttribute('info-card-text', 'wrapCount', 28);
-
-			// Thicken up the body text on mobile so that it's easier to read
-			var bodyFontWeight = AFRAME.utils.device.isMobile() ? 'Bold' : 'Medium';
-
-			// Create the body copy entity
-			this.textBody = document.createElement('a-entity');
-			this.textBody.setAttribute('info-card-text', 'font', 'fonts/NowAlt-Medium.json');
-			this.textBody.setAttribute('info-card-text', 'wrapCount', 32);
-
-			// Create the index number text entity
-			this.textIndex = document.createElement('a-entity');
-			this.textIndex.setAttribute('info-card-text', 'font', 'fonts/NowAlt-Bold.json');
-			this.textIndex.setAttribute('info-card-text', 'wrapCount', 7);
-
-			// Create the background card mesh
-			this.background = new _cardMesh.CardMesh(this.data.width);
-			this.background.setPosition(-0.5, 0);
-
-			// Create the image card mesh
-			this.image = new _cardMeshImage.CardMeshImage(this.data.width);
-			this.image.setPosition(0.5, 0);
-			this.image.setDepth(0.001);
-
-			// Create the close icon mesh
-			this.closeIcon = new _cardMeshImage.CardMeshImage(0.05, 0.05, 'cards/closeIcon.jpg');
-			this.closeIcon.setDepth(0.001);
-
-			// Create the dividing line squiggle mesh
-			this.divider = new _cardMeshImage.CardMeshImage(0.09, 0.02, 'cards/squiggle.jpg');
-			this.divider.setDepth(0.001);
-
-			// Create the hitbox
-			this.hitbox = document.createElement('a-entity');
-			this.hitbox.setAttribute('event-priority', 10);
-			this.hitbox.setAttribute('hitbox', {
-				expansion: 20,
-				cursorScale: 0.4
-			});
-
-			// Add 'em up
-			this.el.appendChild(this.textHeader);
-			this.el.appendChild(this.textBody);
-			this.el.appendChild(this.textIndex);
-			this.el.appendChild(this.hitbox);
-			this.group.add(this.background.mesh);
-			this.group.add(this.image.mesh);
-			this.group.add(this.closeIcon.mesh);
-			this.group.add(this.divider.mesh);
-
-			// Close the card if the user clicks on it
-			this.el.addEventListener('raycaster-cursor-up', function (event) {
-				ga('send', 'event', 'info-card', 'dismissed', '');
-				_this.el.removeState('visible');
-			});
-
-			// Show everything when the 'visible' state is added
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-
-				// Send analytics
-				if (event.target.id === 'info-card') {
-					var prefix = _this.data.type === 'rover' ? 'rover-' : 'poi-';
-					ga('send', 'event', 'info-card', 'opened', _scene.Scene.currentSite + '/' + prefix + _this.data.title.replace(/\s/g, ''));
-				}
-
-				_this.el.sceneEl.addState('modal');
-				_this.textHeader.addState('visible');
-				_this.textBody.addState('visible');
-				_this.textIndex.addState('visible');
-
-				_this.closeIcon.show();
-				_this.divider.show(0.25, 0.2);
-				_this.background.show();
-				_this.image.show();
-			});
-
-			// Hide everything when the 'visible' state is removed
-			this.el.addEventListener('stateremoved', function (event) {
-				if (event.detail.state !== 'visible') return;
-
-				_this.el.sceneEl.removeState('modal');
-				_this.textHeader.removeState('visible');
-				_this.textBody.removeState('visible');
-				_this.textIndex.removeState('visible');
-
-				_this.closeIcon.hide();
-				_this.divider.hide(0.15);
-				_this.background.hide();
-				_this.image.hide();
-			});
-
-			// Bubble the hide-complete event from the background mesh up thru the entity element.
-			this.background.on('hide-complete', function (event) {
-				_this.el.emit('hide-complete', null, false);
-			});
-
-			// Update header text size + entity positions when the header text's text geometry is updated.
-			this.textHeader.addEventListener('geometry-updated', function (event) {
-				_this.headerTextSize.set(event.detail.width, event.detail.height);
-				_this.updateElements();
-			});
-
-			// Update body copy size + entity positions when the body copy's text geometry is updated.
-			this.textBody.addEventListener('geometry-updated', function (event) {
-				_this.bodyTextSize.set(event.detail.width, event.detail.height);
-				_this.updateElements();
-			});
-
-			// Update index number text size + entity positions when the index number text's geometry is updated.
-			this.textIndex.addEventListener('geometry-updated', function (event) {
-				_this.indexTextSize.set(event.detail.width, event.detail.height);
-				_this.updateElements();
-			});
-		},
-
-		update: function update() {
-			var _this2 = this;
-
-			// Apply platform-specific z offset
-			this.positionDummy.setAttribute('position', {
-				x: 0, y: 0, z: _platformUtils.PlatformUtils.getCardZOffset()
-			});
-
-			// Update position and look-at rotation to match the current camera location
-			var uiPosition = this.positionDummy.object3D.getWorldPosition();
-			this.el.setAttribute('position', { x: uiPosition.x, y: uiPosition.y, z: uiPosition.z });
-			this.el.components['look-at-target'].update();
-
-			// Unload the previous image
-			this.image.unloadImage();
-
-			// Load the new image
-			if (this.data.url) {
-				this.image.loadImage(this.data.url).then(function () {
-					_this2.el.emit('load-complete', null, false);
-				});
-			}
-
-			// Set text contents
-			this.textHeader.setAttribute('info-card-text', {
-				value: this.data.title.toUpperCase()
-			});
-
-			this.textBody.setAttribute('info-card-text', {
-				value: this.data.text
-			});
-
-			this.textIndex.setAttribute('info-card-text', {
-				value: this.data.type === 'rover' ? '' : '0' + this.data.index
-			});
-		},
-
-		tick: function tick(t, dt) {
-			this.closeIcon.tick(dt);
-			this.divider.tick(dt);
-			this.background.tick(dt);
-			this.image.tick(dt);
-
-			this.el.setAttribute('visible', this.background.animIn > 0);
-		},
-
-		updateElements: function updateElements() {
-			var margin = MARGIN * this.data.width;
-
-			// Set X icon position
-			this.closeIcon.setPosition(-1.0 + this.closeIcon.mesh.scale.x / 2 + margin, 0.5 - this.closeIcon.mesh.scale.x / 2 - margin);
-
-			// Set body copy position
-			this.textBody.setAttribute('position', {
-				x: -this.data.width + MARGIN,
-				y: -0.5 + Math.abs(this.bodyTextSize.y) + 0.02
-			});
-
-			// Set index position
-			this.textIndex.setAttribute('position', {
-				x: -Math.abs(this.indexTextSize.x) - margin / 2,
-				y: 0.5 - Math.abs(this.indexTextSize.y) - margin / 2
-			});
-
-			// Set squiggle position
-			this.divider.setPosition(-1 + this.divider.mesh.scale.x / 2 + margin, this.textBody.getAttribute('position').y + this.divider.mesh.scale.y / 2 + margin);
-
-			// Set header position
-			this.textHeader.setAttribute('position', {
-				x: -this.data.width + MARGIN,
-				y: this.divider.mesh.position.y + Math.abs(this.headerTextSize.y)
-			});
-		}
-	});
-}
-
-},{"../core/colors":211,"../core/scene":213,"../meshes/card-mesh":218,"../meshes/card-mesh-image":217,"../utils/platform-utils":245}],188:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _eventemitter = require('eventemitter3');
-
-var _platformUtils = require('../utils/platform-utils');
-
-var PRESS_AND_HOLD_TIMER = 1000; // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * intro-player
- *
- * Intro sequencer. Waits for all the intro components to be loaded
- * and ready, then triggers the animation.
- *
- * When the animation is complete, the intro components are removed.
- *
- * Tapping on video brings up skip intro button
- * Tapping on skip intro jumps to rover landing
- *
- * All 3D objects are hidden until video is displayed
- */
-
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('intro-player', {
-
-		init: function init() {
-			var _this = this;
-
-			this.isVR = false;
-			this.isVideoSkipped = false;
-			this.animLoaded = false;
-			this.introComplete = false;
-			this.terrainLoaded = false;
-			this.videoComplete = false;
-			this.isControllerPressed = false;
-
-			this.camera = document.getElementById('camera');
-			this.mapMarkers = document.getElementById('horizMarkers');
-			this.markers = document.getElementById('markers');
-
-			this.rover = _scene.Scene.createRover();
-
-			// HACK
-			// can't inject the video div so both video objects are added.
-			// Removed the unsupported one
-			if (_platformUtils.PlatformUtils.isMp4Supported()) {
-				var webmVideo = document.querySelector('#intro-video-webm');
-				webmVideo.parentNode.removeChild(webmVideo);
-				this.srcVideoId = 'intro-video-mp4';
-			} else {
-				var mp4Video = document.querySelector('#intro-video-mp4');
-				mp4Video.parentNode.removeChild(mp4Video);
-				this.srcVideoId = 'intro-video-webm';
-			}
-
-			this.video = document.createElement('a-entity');
-			this.video.setAttribute('intro-video', { src: this.srcVideoId });
-			this.video.setAttribute('geometry', { primitive: 'plane', width: 16 * 1, height: 9 * 1 });
-			this.video.setAttribute('position', '5.00 1.6 0.0');
-			this.video.setAttribute('material', {
-				color: '#FFF',
-				src: "#" + this.srcVideoId,
-				shader: 'flat',
-				side: 'double'
-			});
-
-			this.skipintroHTML = document.querySelector('#skip-intro');
-			this.holdToSkip = document.createElement('a-entity');
-			this.holdToSkip.setAttribute('position', '0.00 -0.6 -1.25 ');
-			this.holdToSkip.setAttribute('visible', 'false');
-			this.holdToSkip.setAttribute('text', {
-				align: 'center',
-				anchor: 'center',
-				baseline: 'bottom',
-				color: '#999',
-				font: 'fonts/NowAlt-Medium.json',
-				shader: 'msdf',
-				value: 'H O L D  T O  S K I P'
-			});
-
-			this.holdToSkipBar = document.createElement('a-entity');
-			this.holdToSkipBar.setAttribute('geometry', 'primitive: plane; height: 0.005; width: 0.39;');
-			this.holdToSkipBar.setAttribute('material', 'color: #999;');
-			this.holdToSkipBar.setAttribute('position', '0.00 -0.6 -1.25 ');
-			this.holdToSkipBar.setAttribute('scale', { x: 0.0 });
-
-			if (!AFRAME.utils.device.isMobile()) {
-				var videoEl = document.getElementById(this.srcVideoId);
-				videoEl.muted = false;
-			}
-
-			_scene.Scene.on('terrain-loaded', function (event) {
-				_this.terrainLoaded = true;
-				_this.tryPlayAnimation();
-			});
-
-			this.video.addEventListener('video-ended', function (event) {
-				_this.videoComplete = true;
-				_this.tryPlayAnimation();
-			});
-
-			this.rover.addEventListener('load-complete', function (event) {
-				_this.animLoaded = true;
-				_this.tryPlayAnimation();
-			});
-
-			this.rover.addEventListener('complete', function (event) {
-				_this.el.removeState('playing-intro');
-				_this.el.emit('intro-complete', null, false);
-			});
-
-			_scene.Scene.on('on-controls-ready', function (event) {
-				if (_this.introComplete) return;
-
-				if (_scene.Scene.modeType === 'vr') {
-					if (_this.isVR) {
-						return;
-					}
-					_this.skipintroHTML.setAttribute('class', 'invisible');
-					_this.holdToSkip.setAttribute('visible', 'true');
-					_this.isVR = true;
-					_this.tryAddingControllerListeners();
-				} else if (_scene.Scene.modeType === '360') {
-					if (!_this.isVR) {
-						return;
-					}
-					_this.skipintroHTML.removeAttribute('class');
-					_this.holdToSkip.setAttribute('visible', 'false');
-					_this.isVR = false;
-					_this.tryRemovingControllerListeners();
-				}
-			});
-
-			this.skipintroHTML.addEventListener('click', this.onVideoClick.bind(this));
-
-			this.camera.appendChild(this.holdToSkip);
-			this.camera.appendChild(this.holdToSkipBar);
-			this.el.appendChild(this.video);
-
-			_scene.Scene.hideElements();
-
-			this.el.addState('playing-intro');
-		},
-
-		onVideoClick: function onVideoClick() {
-			this.videoComplete = true;
-			this.tryPlayAnimation();
-			ga('send', 'event', 'video-intro', 'skipped', '');
-
-			if (_scene.Scene.controllerType === 'mouse-touch') {
-				this.skipintroHTML.removeAttribute('class');
-			} else {
-				this.holdToSkip.setAttribute('visible', 'true');
-			}
-
-			this.isVideoSkipped = true;
-		},
-
-		tryPlayAnimation: function tryPlayAnimation() {
-			if (!this.animLoaded) return;
-			if (!this.videoComplete) return;
-			if (!this.terrainLoaded) return;
-
-			if (this.introComplete) return;
-			this.introComplete = true;
-
-			// Remove the video element
-			var videoEl = document.getElementById(this.srcVideoId);
-			videoEl.parentNode.removeChild(videoEl);
-			this.el.removeChild(this.video);
-
-			// Remove skip UI elements
-			this.camera.removeChild(this.holdToSkip);
-			this.camera.removeChild(this.holdToSkipBar);
-			this.skipintroHTML.parentNode.removeChild(this.skipintroHTML);
-
-			this.tryRemovingControllerListeners();
-
-			this.el.emit('video-complete');
-
-			// Show the rover and start the animation
-			this.rover.setAttribute('visible', true);
-			this.rover.addState('animate');
-		},
-
-		remove: function remove() {
-			this.el.removeState('playing-intro');
-			_scene.Scene.hideRover();
-		},
-
-		tryAddingControllerListeners: function tryAddingControllerListeners() {
-			this.onControllerChangedRef = this.onControllerChanged.bind(this);
-			var controller = document.getElementById('right-hand');
-			controller.addEventListener('buttonchanged', this.onControllerChangedRef);
-
-			this.onTouchRef = this.onTouch.bind(this);
-
-			if (AFRAME.utils.device.isMobile()) {
-				this.el.sceneEl.addEventListener('touchstart', this.onTouchRef);
-				this.el.sceneEl.addEventListener('touchend', this.onTouchRef);
-			}
-		},
-
-		tryRemovingControllerListeners: function tryRemovingControllerListeners() {
-			var controller = document.getElementById('right-hand');
-			controller.removeEventListener('buttonchanged', this.onControllerChangedRef);
-
-			if (AFRAME.utils.device.isMobile()) {
-				this.el.sceneEl.removeEventListener('touchstart', this.onTouchRef);
-				this.el.sceneEl.removeEventListener('touchend', this.onTouchRef);
-			}
-		},
-
-		onControllerDown: function onControllerDown(event) {
-			if (this.isControllerPressed) return;
-			this.startTime = Date.now();
-			this.isControllerPressed = true;
-			this.timeCheck();
-		},
-
-		onControllerUp: function onControllerUp(event) {
-			if (!this.isControllerPressed) return;
-			this.isControllerPressed = false;
-			this.holdToSkipBar.setAttribute('scale', { x: 0 });
-		},
-
-		onControllerChanged: function onControllerChanged(event) {
-			if (this.introComplete) return;
-			if (event.detail.state.pressed) {
-				this.onControllerDown();
-			} else {
-				this.onControllerUp();
-				var videoEl = document.getElementById(this.srcVideoId);
-				if (videoEl.paused) {
-					videoEl.play();
-				}
-			}
-		},
-
-		onTouch: function onTouch(event) {
-			if (this.introComplete) return;
-			switch (event.type) {
-				case "touchstart":
-					this.onControllerDown();
-					break;
-				case "touchend":
-					this.onControllerUp();
-					var videoEl = document.getElementById(this.srcVideoId);
-					if (videoEl.paused) {
-						videoEl.play();
-					}
-					break;
-			}
-		},
-
-		timeCheck: function timeCheck() {
-			var _this2 = this;
-
-			this.currentTime = Date.now();
-			var deltaTime = this.currentTime - this.startTime;
-			var scale = this.isControllerPressed ? deltaTime / PRESS_AND_HOLD_TIMER : 0;
-			this.holdToSkipBar.setAttribute('scale', { x: scale });
-			if (deltaTime > PRESS_AND_HOLD_TIMER) {
-				this.isControllerPressed = false;
-				this.onVideoClick();
-				return;
-			};
-
-			requestAnimationFrame(function () {
-				if (!_this2.isControllerPressed) return;
-				_this2.timeCheck();
-			});
-		}
-	});
-}
-
-},{"../core/scene":213,"../utils/platform-utils":245,"eventemitter3":127}],189:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('intro-video', {
-
-		schema: {
-			src: { type: 'string', default: 'intro-video-mp4' }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.video = document.querySelector('#' + this.data.src);
-			this.video.setAttribute('crossOrigin', 'anonymous');
-
-			this.video.addEventListener('ended', function (event) {
-				_this.el.emit('video-ended', null, false);
-			});
-
-			if (_scene.Scene.flags.skip_intro) {
-				this.video.pause();
-				this.el.emit('video-ended', null, false);
-			}
-
-			// // force plays video if not already playing
-			// this.video.play();
-			// this.tryPlayingRef = this.tryPlaying.bind(this);
-			// document.addEventListener( 'click', this.tryPlayingRef );
-		}
-
-		// tryPlaying() {
-		// 	this.video.play();
-		// 	document.removeEventListener( 'click', this.tryPlayingRef );
-		// }
-
-	});
-} // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * intro-video
- *
- * Simple wrapper interface for playback of the intro video
- * in a video material.
- *
- * Video materials are not fully exposed to AFRAME, but the
- * 'materialvideoloadeddata' event provides an entry point
- * to grab the video object and set any required parameters.
- */
-
-},{"../core/scene":213}],190:[function(require,module,exports){
-'use strict';
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * look-at-target
- *
- * Camera- and parent-independent look-at component.
- * Target is an element selector.
- *
- * Can limit rotation to a given axis, specified by a string: 
- * 'xyz', 'xy', 'z', etc. Defaults to 'y'.
- */
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('look-at-target', {
-
-		schema: {
-			axis: { type: 'string', default: 'y' },
-			offset: { type: 'vec3', default: new THREE.Vector3() },
-			target: { type: 'string', default: '#camera' },
-			alwaysUpdate: { type: 'boolean', default: true }
-		},
-
-		init: function init() {
-			this.lookAtMatrix = new THREE.Matrix4();
-			this.lookAtEyeVector = new THREE.Vector3();
-			this.lookAtTargetVector = new THREE.Vector3();
-			this.previousEuler = new THREE.Euler();
-			this.euler = new THREE.Euler();
-			this.needsUpdate = true;
-			this.target = null;
-			this.updateTimer = 0;
-		},
-
-		update: function update() {
-			this.target = document.querySelector(this.data.target);
-			this.needsUpdate = true;
-			this.updateTimer = 1;
-		},
-
-		tick: function tick(t, dt) {
-			if (!this.el.object3D) return;
-			if (!this.target.object3D) return;
-			if (!this.data.alwaysUpdate && !this.needsUpdate) return;
-
-			if (this.data.axis === 'y') {
-
-				//Calculate world absolute rotation matrix
-				this.lookAtEyeVector.setFromMatrixPosition(this.el.object3D.matrixWorld);
-				this.lookAtTargetVector.setFromMatrixPosition(this.target.object3D.matrixWorld);
-				this.lookAtMatrix.lookAt(this.lookAtEyeVector, this.lookAtTargetVector, this.el.object3D.up);
-
-				this.el.object3D.quaternion.setFromRotationMatrix(this.lookAtMatrix);
-
-				this.euler.x = this.data.offset.x + (this.data.axis.includes('x') ? this.el.object3D.rotation.x : 0);
-				this.euler.y = this.data.offset.y + (this.data.axis.includes('y') ? this.el.object3D.rotation.y : 0);
-				this.euler.z = this.data.offset.z + (this.data.axis.includes('z') ? this.el.object3D.rotation.z : 0);
-				this.el.object3D.setRotationFromEuler(this.euler);
-			} else {
-				this.el.object3D.lookAt(this.target.object3D.getWorldPosition());
-			}
-
-			this.updateTimer = Math.max(0, this.updateTimer - dt / 1000);
-
-			if (this.updateTimer <= 0) {
-				this.needsUpdate = false;
-			}
-		}
-	});
-}
-
-},{}],191:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var _c4dUtils = require('../c4d/c4d-utils');
-
-var _gltfLoader = require('../loaders/gltf-loader');
-
-var ColorAlphaShader = require('../shaders/color-alpha-shader'); // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-background
- *
- * UI component for displaying the background map geometry 
- * on the map card. The geometry itself is loaded from a GLTF file.
- */
-
-var ANIM_IN_DURATION = 0.25;
-var DELAY_DURATION = 0.18;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('map-background', {
-
-		schema: {
-			width: { type: 'number', default: 2 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.animIn = 0;
-			this.delayCounter = 0;
-
-			// Create a ColorAlphaShader material
-			this.material = new THREE.ShaderMaterial({
-				uniforms: THREE.UniformsUtils.clone(ColorAlphaShader.uniforms),
-				vertexShader: ColorAlphaShader.vertexShader,
-				fragmentShader: ColorAlphaShader.fragmentShader,
-				transparent: true,
-				depthTest: false
-			});
-
-			// Set material uniforms
-			this.material.uniforms.opacity.value = 0;
-			this.material.uniforms.color.value = _colors.BGColor;
-
-			// Load and set up the map path mesh
-			_gltfLoader.GLTFLoader.load('map/map-bg.glb').then(function (result) {
-				_this.mesh = _c4dUtils.C4DUtils.getChildWithType(result.gltf.scene, 'Mesh');
-				_this.mesh.scale.multiplyScalar(_this.data.width / 10);
-				_this.mesh.position.setZ(0.001);
-				_this.mesh.material = _this.material;
-				_this.el.setObject3D('mesh', _this.mesh);
-			});
-
-			// Reset the delay counter when the 'visible' state is added
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.delayCounter = 1;
-			});
-		},
-
-		tick: function tick(t, dt) {
-			if (this.delayCounter > 0) {
-				dt = dt / 1000 * (1 / DELAY_DURATION);
-			} else {
-				dt = dt / 1000 * (1 / ANIM_IN_DURATION);
-			}
-
-			if (this.delayCounter > 0) {
-				this.delayCounter -= dt;
-				return;
-			}
-
-			if (this.el.is('visible')) {
-				this.animIn = Math.min(1, this.animIn + dt);
-			} else {
-				this.animIn = Math.max(0, this.animIn - dt * 2);
-			}
-
-			this.material.uniforms.opacity.value = this.animIn * 100;
-		}
-	});
-}
-
-},{"../c4d/c4d-utils":174,"../core/colors":211,"../loaders/gltf-loader":215,"../shaders/color-alpha-shader":220}],192:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.ASPECT_RATIO = undefined;
-
-var _scene = require('../core/scene');
-
-var _cardMesh = require('../meshes/card-mesh');
-
-var _audioManager = require('../core/audio-manager');
-
-var _platformUtils = require('../utils/platform-utils');
-
-var _colors = require('../core/colors');
-
-var ASPECT_RATIO = exports.ASPECT_RATIO = 0.381714; // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-////   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-card
- *
- * UI component for displaying the map teleportation interface when
- * the user clicks on the horizon marker.
- *
- * The card will position itself towards the camera when shown.
- */
-
-var DESKTOP_Y_OFFSET = 0.3;
-var TEXT_LEFT_PADDING = 0.025;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('map-card', {
-
-		dependencies: ['visible', 'look-at-target'],
-
-		schema: {
-			width: { type: 'number', default: 2 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			// Set up look-at-target component so that the card faces the camera directly.
-			this.el.setAttribute('look-at-target', {
-				axis: 'xyz',
-				target: '#camera',
-				alwaysUpdate: false,
-				offset: new THREE.Vector3(0, Math.PI, 0)
-			});
-
-			// This group is used to hold the various meshes that aren't represented
-			// by separate entity DOM elements. This includes the background plane
-			// and the header plane. This group is assigned to the back-meshes element
-			// so that the background elements are drawn behind the foreground elements
-			// correctly.
-			this.group = new THREE.Group();
-			this.player = document.getElementById('player');
-			this.backEl = document.getElementById('back-meshes');
-			this.backEl.setObject3D('mesh', this.group);
-
-			// Create the background plane mesh
-			this.background = new _cardMesh.CardMesh(this.data.width, this.data.width * ASPECT_RATIO);
-
-			// Create the header plane mesh
-			this.header = new _cardMesh.CardMesh(this.data.width, 0.1);
-			this.header.setPosition(0, 0.445);
-
-			// Create and set up the hitbox
-			this.hitbox = document.createElement('a-entity');
-			this.hitbox.setAttribute('position', { z: -1 });
-			this.hitbox.setAttribute('event-priority', 100);
-			this.hitbox.setAttribute('hitbox', {
-				expansion: 20,
-				cursorScale: 0.3
-			});
-
-			this.backgroundMesh = document.createElement('a-entity');
-			this.backgroundMesh.setAttribute('map-background', '');
-
-			this.path = document.createElement('a-entity');
-			this.path.setAttribute('map-path', '');
-
-			// Create and position the header text entity
-			this.headerEl = document.createElement('a-entity');
-			this.headerEl.setAttribute('position', {
-				x: -this.data.width / 2 + TEXT_LEFT_PADDING,
-				y: 0.445 - 0.1 / 2 + 0.025,
-				z: 0
-			});
-
-			// Create the header number text entity
-			this.numberLabel = document.createElement('a-entity');
-			this.numberLabel.setAttribute('info-card-text', {
-				color: _colors.TextLightColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				width: this.data.width,
-				wrapCount: 64
-			});
-
-			// Create the headersite name text entity
-			this.siteLabel = document.createElement('a-entity');
-			this.siteLabel.setAttribute('position', { x: 0.09, y: 0, z: 0 });
-			this.siteLabel.setAttribute('info-card-text', {
-				color: _colors.TextColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: 6,
-				width: this.data.width,
-				wrapCount: 64
-			});
-
-			this.backEl.appendChild(this.hitbox);
-			this.backEl.appendChild(this.headerEl);
-			this.backEl.appendChild(this.path);
-			this.backEl.appendChild(this.backgroundMesh);
-			this.headerEl.appendChild(this.numberLabel);
-			this.headerEl.appendChild(this.siteLabel);
-			this.group.add(this.background.mesh);
-			this.group.add(this.header.mesh);
-
-			this.positionDummy = document.getElementById('ui-dummy');
-			this.offsetDummy = document.getElementById('map-card-offset');
-			this.camera = document.getElementById('camera');
-
-			// Show the card when the 'visible' state is added
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				ga('send', 'event', 'map-card', 'opened', '');
-				_this.onShow();
-			});
-
-			// Dismiss the card when the 'visible' state is removed
-			this.el.addEventListener('stateremoved', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.onHide();
-			});
-
-			// Dismiss the card if the hitbox is clicked
-			this.backEl.addEventListener('raycaster-cursor-up', function (event) {
-				ga('send', 'event', 'map-card', 'dismissed', '');
-				_this.onHide();
-			});
-
-			// Set the path's site parameter when site card has been hovered over
-			this.el.addEventListener('site-hover', function (event) {
-				_this.path.setAttribute('map-path', {
-					site: event.detail
-				});
-			});
-
-			// Bubble the hide-complete event from the header mesh up thru the entity element.
-			// The header mesh is the last of the meshes to play the transition animation.
-			this.header.on('hide-complete', function (event) {
-				_this.el.emit('hide-complete', null, false);
-			});
-		},
-
-		onShow: function onShow() {
-			// Set visible states for all relevant child entities
-			this.el.sceneEl.addState('modal');
-			this.numberLabel.addState('visible');
-			this.siteLabel.addState('visible');
-			this.path.addState('visible');
-			this.backgroundMesh.addState('visible');
-
-			// Show the background and header meshes. Delay the background mesh
-			// so that the transition feels natural.
-			this.background.show(0.25, 0.05);
-			this.header.show(0.05);
-
-			// Adjust the panel's position depending on platform. On desktop, the
-			// panel needs to be moved closer to the camera and centered
-			var yOffset = AFRAME.utils.device.isMobile() ? 0 : DESKTOP_Y_OFFSET;
-
-			// const zOffset = AFRAME.utils.device.isMobile() ? -2 : -1.75;
-			// this.positionDummy.setAttribute( 'position', { x: 0, y: 0, z: zOffset } );
-
-			this.positionDummy.setAttribute('position', {
-				x: 0, y: 0, z: _platformUtils.PlatformUtils.getCardZOffset()
-			});
-
-			this.offsetDummy.setAttribute('position', { x: 0, y: yOffset, z: 0 });
-
-			// Update position and look-at rotation to match the current camera location
-			var uiPosition = this.positionDummy.object3D.getWorldPosition();
-			this.el.setAttribute('position', { x: uiPosition.x, y: uiPosition.y, z: uiPosition.z });
-			this.el.components['look-at-target'].update();
-
-			// Update the header text with the current scene's name and index number
-			var mapSiteCardData = document.getElementById('map-' + _scene.Scene.currentSite).getAttribute('map-site-card');
-
-			this.siteLabel.setAttribute('info-card-text', {
-				value: mapSiteCardData.title.toUpperCase()
-			});
-
-			this.numberLabel.setAttribute('info-card-text', {
-				value: '0' + mapSiteCardData.index
-			});
-		},
-
-		onHide: function onHide() {
-			// Remove visible states for all relevant child entities
-			this.el.sceneEl.removeState('modal');
-			this.el.removeState('visible');
-			this.numberLabel.removeState('visible');
-			this.siteLabel.removeState('visible');
-			this.path.removeState('visible');
-			this.backgroundMesh.removeState('visible');
-
-			// Hide the background and header meshes. Delay the header
-			// mesh animation so that the transition feels natural.
-			this.background.hide();
-			this.header.hide(0.05, 0.25);
-		},
-
-		tick: function tick(t, dt) {
-			this.background.tick(dt);
-			this.header.tick(dt);
-
-			// Set this element's visiblity property based on the header mesh's
-			// animIn value.
-			this.el.setAttribute('visible', this.header.animIn > 0);
-		}
-	});
-}
-
-},{"../core/audio-manager":210,"../core/colors":211,"../core/scene":213,"../meshes/card-mesh":218,"../utils/platform-utils":245}],193:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var ColorMaskShader = require('../shaders/color-mask-shader'); // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-marker
- *
- * UI component for a single pin-point marker. Used by map-card
- * to mark the location of each terrain site on the rover path.
- */
-
-var BezierEasing = require('bezier-easing');
-
-var PLANE_GEO = new THREE.PlaneBufferGeometry(1, 1);
-var EASING = BezierEasing(0.66, 0, 0.33, 1);
-var XFADE_DURATION = 0.4;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('map-marker', {
-
-		schema: {
-			index: { default: 1 },
-			site: { type: 'string' }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.animIn = 0;
-			this.crossfade = 0;
-			this.color = _colors.TextLightColor.clone();
-			this.parentCard = document.getElementById('map-card');
-
-			// Create the material for the marker icon
-			this.material = new THREE.ShaderMaterial({
-				uniforms: THREE.UniformsUtils.clone(ColorMaskShader.uniforms),
-				vertexShader: ColorMaskShader.vertexShader,
-				fragmentShader: ColorMaskShader.fragmentShader,
-				transparent: true,
-				depthTest: false
-			});
-
-			// Load the marker icon texture
-			var textureLoader = new THREE.TextureLoader();
-			textureLoader.load('img/go-icon.png', function (texture) {
-				_this.material.uniforms.map.value = texture;
-				_this.material.uniforms.color.value = _this.color;
-				_this.material.needsUpdate = true;
-			});
-
-			// Create the marker icon mesh
-			this.mesh = new THREE.Mesh(PLANE_GEO, this.material);
-			this.mesh.scale.multiplyScalar(0.075);
-			this.el.setObject3D('mesh', this.mesh);
-
-			// Create number text entity
-			this.numberLabel = document.createElement('a-entity');
-			this.numberLabel.setAttribute('position', { x: 0, y: 0.01, z: 0 });
-			this.numberLabel.setAttribute('info-card-text', {
-				align: 'center',
-				baseline: 'bottom',
-				color: _colors.TextLightColorHex,
-				font: 'fonts/NowAlt-Medium.json',
-				letterSpacing: 3,
-				value: '0' + this.data.index,
-				width: 0.32,
-				wrapCount: 8
-			});
-
-			this.el.appendChild(this.numberLabel);
-
-			// Add the 'visible' state to the child entities whenever the parent card adds it.
-			this.parentCard.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.numberLabel.addState('visible');
-			});
-
-			// Remove the 'visible' state to the child entities whenever the parent card removes it.
-			this.parentCard.addEventListener('stateremoved', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.numberLabel.removeState('visible');
-			});
-
-			// Listen for site-hover events from the map-card component and set the selected
-			// state if the matching map-site-card has been hovered over.
-			this.parentCard.addEventListener('site-hover', function (event) {
-				if (event.detail === _this.data.site) {
-					_this.el.addState('selected');
-				} else {
-					_this.el.removeState('selected');
-				}
-			});
-		},
-
-		update: function update() {
-			// Update the number label's value
-			this.numberLabel.setAttribute('text', {
-				value: '0' + this.data.index
-			});
-		},
-
-		tick: function tick(t, dt) {
-			dt = dt / 1000 * (1 / XFADE_DURATION);
-
-			if (this.el.is('selected')) {
-				this.crossfade = Math.min(1, this.crossfade + dt);
-			} else {
-				this.crossfade = Math.max(0, this.crossfade - dt * 2);
-			}
-
-			if (this.parentCard.is('visible')) {
-				this.animIn = Math.min(1, this.animIn + dt);
-			} else {
-				this.animIn = Math.max(0, this.animIn - dt * 2);
-			}
-
-			this.color = _colors.TextLightColor.clone();
-			this.color.lerp(_colors.TextColor, EASING(this.crossfade));
-
-			this.material.uniforms.color.value = this.color;
-			this.material.uniforms.opacity.value = EASING(this.animIn);
-		}
-	});
-}
-
-},{"../core/colors":211,"../shaders/color-mask-shader":221,"bezier-easing":14}],194:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var _gltfLoader = require('../loaders/gltf-loader');
-
-var _mathUtils = require('../utils/math-utils');
-
-var _c4dUtils = require('../c4d/c4d-utils');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-path
- *
- * UI component for displaying the animated path line on the map card. 
- * 
- * The path line is filled in based on what site marker the 
- * user has selected.
- *
- * The path mesh is loaded from a GLTF file, and the path
- * fill animation is smoothed using a cubic easing curve.
- */
-
-var BezierEasing = require('bezier-easing');
-var MapPathShader = require('../shaders/map-path-shader');
-
-// Line fill percentages for each terrain site
-var SITE_FILLS = {
-	'landing_site': 0,
-	'pahrump_hills': 0.67,
-	'marias_pass': 0.765,
-	'murray_buttes': 0.88,
-	'live_site': 1
-};
-
-var SMOOTH_TIME = 0.25;
-var MAX_SMOOTH_SPEED = 500;
-var ANIM_IN_DURATION = 0.25;
-var EASING = BezierEasing(0.66, 0, 0.33, 1);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('map-path', {
-
-		schema: {
-			site: { type: 'string', default: 'landing_site' },
-			width: { type: 'number', default: 2 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.currentSite = this.data.site;
-			this.currentFillValue = 0;
-			this.targetFillValue = 0;
-			this.fillVelocity = 0;
-			this.animIn = 0;
-
-			// Create a MapPathShader material
-			this.material = new THREE.ShaderMaterial({
-				uniforms: THREE.UniformsUtils.clone(MapPathShader.uniforms),
-				vertexShader: MapPathShader.vertexShader,
-				fragmentShader: MapPathShader.fragmentShader,
-				transparent: true,
-				depthTest: false
-			});
-
-			// Set material uniforms
-			this.material.uniforms.colorA.value = _colors.TextLightColor;
-			this.material.uniforms.colorB.value = _colors.TextColor;
-			this.material.uniforms.opacity.value = 0;
-
-			// Load and set up the map path mesh
-			_gltfLoader.GLTFLoader.load('map/map-path.glb').then(function (result) {
-				_this.mesh = _c4dUtils.C4DUtils.getChildWithType(result.gltf.scene, 'Mesh');
-				_this.mesh.scale.multiplyScalar(_this.data.width / 10);
-				_this.mesh.position.setZ(0.002);
-				_this.mesh.material = _this.material;
-				_this.el.setObject3D('mesh', _this.mesh);
-			});
-		},
-
-		update: function update() {
-			if (this.data.site !== 'current') this.currentSite = this.data.site;
-			this.targetFillValue = SITE_FILLS[this.currentSite];
-		},
-
-		tick: function tick(t, dt) {
-			dt = dt / 1000;
-
-			var dtAnimIn = dt * (1 / ANIM_IN_DURATION);
-
-			if (this.el.is('visible')) {
-				this.animIn = Math.min(1, this.animIn + dtAnimIn);
-			} else {
-				this.animIn = Math.max(0, this.animIn - dtAnimIn * 2);
-			}
-
-			this.material.uniforms.opacity.value = EASING(this.animIn);
-
-			if (this.currentFillValue != this.data.fill) {
-
-				// Calculate a smoothed value for the line stroke length using a cubic polynomial curve.
-				// This allows the user to flip between any of the sites while having the line stroke length
-				// smoothly adjust without having to maintain any delays or time state information.
-				var smooth = _mathUtils.MathUtils.smooth1D(this.currentFillValue, this.targetFillValue, this.fillVelocity, dt, 0.25, 500);
-				this.fillVelocity = smooth.velocity;
-				this.currentFillValue = smooth.value;
-
-				// current, target, velocity, dt, smoothTime smoothMax ) {
-				// const t = 2 / SMOOTH_TIME;
-				// const t2 = t * dt;
-				// const cubic = 1 / ( 1 + t2 + 0.48 * t2 * t2 + 0.235 * t2 * t2 * t2 );
-				// const limit = MAX_SMOOTH_SPEED * SMOOTH_TIME;
-				// const delta = this.currentFillValue - this.targetFillValue;
-				// const error = MathUtils.clamp( delta, -limit, limit );
-				// const d = ( this.fillVelocity + t * error ) * dt;
-				// this.fillVelocity = ( this.fillVelocity - t * d ) * cubic;
-				// this.currentFillValue = ( this.currentFillValue - error ) + ( d + error ) * cubic;
-
-				this.material.uniforms.fill.value = 1.0 - this.currentFillValue;
-			}
-		}
-	});
-}
-
-},{"../c4d/c4d-utils":174,"../core/colors":211,"../loaders/gltf-loader":215,"../shaders/map-path-shader":229,"../utils/math-utils":244,"bezier-easing":14}],195:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var _mapCard = require('./map-card');
-
-var _audioManager = require('../core/audio-manager');
-
-var _scene = require('../core/scene');
-
-var _cardMesh = require('../meshes/card-mesh');
-
-var _cardMeshBorder = require('../meshes/card-mesh-border');
-
-var _cardMeshImage = require('../meshes/card-mesh-image');
-
-var MARGIN = 0.015; // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-site-card
- *
- * UI component which represents a single terrain site info card
- * shown at the bottom of the map-card.
- *
- * Clicking on this card will send the user to the terrain site
- * specified on the card.
- */
-
-var TEXT_PADDING = 0.042;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('map-site-card', {
-
-		schema: {
-			index: { type: 'string' },
-			title: { type: 'string' },
-			site: { type: 'string' },
-			distance: { type: 'string' },
-			height: { type: 'number', default: 0.42 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			// this.hoverAmount = 0;
-			this.mapCard = document.getElementById('map-card');
-			this.index = Array.from(this.el.parentNode.children).indexOf(this.el);
-
-			// Create the background card mesh
-			this.background = new _cardMeshBorder.CardMeshBorder();
-
-			// Create and set up the hitbox
-			this.hitbox = document.createElement('a-entity');
-			this.hitbox.setAttribute('event-priority', 100);
-			this.hitbox.setAttribute('hitbox', {
-				expansion: 0,
-				cursorScale: 0.3
-			});
-
-			// Create the title label text entity
-			this.siteLabel = document.createElement('a-entity');
-			this.siteLabel.setAttribute('info-card-text', {
-				color: _colors.TextColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: 3,
-				transitionInDelay: 0.2,
-				transitionOutSpeed: 3,
-				value: this.data.title.toUpperCase(),
-				width: 0.32,
-				wrapCount: 10
-			});
-
-			// Create the distance label text entity
-			this.distanceLabel = document.createElement('a-entity');
-			this.distanceLabel.setAttribute('info-card-text', {
-				baseline: 'bottom',
-				color: _colors.TextColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: 3,
-				transitionInDelay: 0.2,
-				transitionOutSpeed: 3,
-				value: this.data.distance,
-				width: 0.32,
-				wrapCount: 10
-			});
-
-			// Create the index number label text entity
-			this.numberLabel = document.createElement('a-entity');
-			this.numberLabel.setAttribute('info-card-text', {
-				align: 'right',
-				color: _colors.TextLightColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: 3,
-				transitionInDelay: 0.2,
-				transitionOutSpeed: 3,
-				value: '0' + (this.index + 1),
-				width: 0.32,
-				wrapCount: 10
-			});
-
-			// Create the squiggle divider mesh
-			this.divider = new _cardMeshImage.CardMeshImage(0.225, 0.06, 'cards/squiggle.jpg');
-			this.divider.setPosition(-0.5 + 0.2 + TEXT_PADDING, -0.5 + 0.3);
-			this.divider.setDepth(0.001);
-
-			// Create the background card mesh
-			this.background.mesh.add(this.divider.mesh);
-
-			// Create an entity to contain the card's text content and add the text entities to it.
-			this.contentEl = document.createElement('a-entity');
-			this.contentEl.appendChild(this.distanceLabel);
-			this.contentEl.appendChild(this.numberLabel);
-			this.contentEl.appendChild(this.siteLabel);
-
-			// Create an entity to contain the card's background mesh. This ensures that background mesh
-			// is behind the content so that the render order is correct.
-			this.backEl = document.createElement('a-entity');
-			this.backEl.setObject3D('mesh', this.background.mesh);
-			this.backEl.appendChild(this.hitbox);
-
-			// Add 'em up
-			this.el.appendChild(this.backEl);
-			this.el.appendChild(this.contentEl);
-
-			// Bind raycaster events
-			this.el.addEventListener('raycaster-intersected', this.onIntersect.bind(this));
-			this.el.addEventListener('raycaster-intersected-cleared', this.onIntersectionCleared.bind(this));
-			this.el.addEventListener('raycaster-cursor-up', this.onClick.bind(this));
-
-			// Bubble the visible state up to all child entities when it is added to the map card
-			this.mapCard.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.distanceLabel.addState('visible');
-				_this.numberLabel.addState('visible');
-				_this.siteLabel.addState('visible');
-				_this.background.show(0.1, 0.2);
-				_this.divider.show(0.05, 0.25);
-			});
-
-			// Bubble the visible state up to all child entities when it is removed from the map card
-			this.mapCard.addEventListener('stateremoved', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.distanceLabel.removeState('visible');
-				_this.numberLabel.removeState('visible');
-				_this.siteLabel.removeState('visible');
-				_this.el.removeState('hover');
-				_this.background.hide(0.1);
-				_this.divider.hide(0.05);
-			});
-
-			this.el.addEventListener('selected', function (event) {
-				_this.el.addState('hover');
-				_this.mapCard.emit('site-hover', _this.data.site, false);
-			});
-		},
-
-		onIntersect: function onIntersect() {
-			// Prevent the boop sound from retriggering every time the cursor moves over the hitbox.
-			if (!this.el.is('hover')) _audioManager.AudioManager.playSFX('boop');
-
-			this.el.addState('hover');
-			this.background.hover = true;
-			this.mapCard.emit('site-hover', this.data.site, false);
-		},
-
-		onIntersectionCleared: function onIntersectionCleared() {
-			this.el.removeState('hover');
-			this.background.hover = false;
-		},
-
-		onClick: function onClick(event) {
-			_audioManager.AudioManager.playSFX('map');
-
-			// No need to jump if the same scene is selected
-			if (this.data.site === _scene.Scene.nextSite) {
-				event.stopPropagation();
-				event.preventDefault();
-				return;
-			}
-
-			// Tell the scene that the user wants to load the site specified by this card
-			this.el.sceneEl.emit('on-map-clicked', this.data.site, false);
-		},
-
-		update: function update() {
-			var parentWidth = this.mapCard.getAttribute('map-card').width;
-			var nChildren = this.el.parentNode.childElementCount;
-			var cardWidth = parentWidth / nChildren - (MARGIN - MARGIN / nChildren);
-			var halfCardWidth = cardWidth / 2;
-			var startX = -1 + halfCardWidth;
-			var halfHeight = this.data.height / 2;
-			var textXAnchor = -halfCardWidth + TEXT_PADDING;
-
-			this.background.setSize(cardWidth, this.data.height);
-
-			this.el.setAttribute('position', {
-				x: startX + (cardWidth + MARGIN) * this.index,
-				y: -_mapCard.ASPECT_RATIO - halfHeight - MARGIN,
-				z: 0
-			});
-
-			this.siteLabel.setAttribute('position', {
-				x: textXAnchor,
-				y: halfHeight / 12,
-				z: 0
-			});
-
-			this.numberLabel.setAttribute('position', {
-				x: halfCardWidth - TEXT_PADDING,
-				y: halfHeight - 0.095,
-				z: 0
-			});
-
-			this.distanceLabel.setAttribute('position', {
-				x: textXAnchor,
-				y: -halfHeight,
-				z: 0
-			});
-		},
-
-		tick: function tick(t, dt) {
-			this.background.tick(dt);
-			this.divider.tick(dt);
-		}
-	});
-}
-
-},{"../core/audio-manager":210,"../core/colors":211,"../core/scene":213,"../meshes/card-mesh":218,"../meshes/card-mesh-border":216,"../meshes/card-mesh-image":217,"./map-card":192}],196:[function(require,module,exports){
-'use strict';
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * opacity
- * 
- * Sets opacity of all child elements
- */
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('opacity', {
-
-		schema: { type: 'number', default: 1.0 },
-
-		update: function update() {
-			var _this = this;
-
-			this.el.object3D.children.forEach(function (child) {
-				child.material.opacity = _this.data;
-				child.material.transparent = true;
-				child.material.needsUpdate = true;
-			});
-		}
-	});
-}
-
-},{}],197:[function(require,module,exports){
-'use strict';
-
-var _cardMeshImage = require('../meshes/card-mesh-image');
-
-var _colors = require('../core/colors');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-////   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-card
- *
- * UI component for displaying the map teleportation interface when
- * the user clicks on the horizon marker.
- *
- * The card will position itself towards the camera when shown.
- */
-
-var MARGIN = 0.075;
-var IMAGE_ASPECT_RATIO = 1 / 1.2;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('orientation-card-column', {
-
-		dependencies: ['visible'],
-
-		schema: {
-			title: { type: 'string' },
-			img: { type: 'string' },
-			text: { type: 'string' },
-			width: { type: 'number', default: 2 * (1 / 3) }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.index = Array.from(this.el.parentNode.children).indexOf(this.el) - 1;
-
-			this.group = new THREE.Group();
-			this.el.setObject3D('mesh', this.group);
-
-			// Create the image mesh
-			this.imageMesh = new _cardMeshImage.CardMeshImage(1, 1, 'cards/' + this.data.img + '.jpg');
-			this.imageMesh.setDepth(0.001);
-
-			// Create the squiggle divider mesh
-			this.divider = new _cardMeshImage.CardMeshImage(0.07, 0.025, 'cards/squiggle.jpg');
-			this.divider.setDepth(0.001);
-
-			// Create the title text entity
-			this.headerText = document.createElement('a-entity');
-			this.headerText.setAttribute('info-card-text', {
-				color: _colors.TextColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: 12,
-				value: this.data.title.toUpperCase(),
-				width: this.data.width - MARGIN,
-				wrapCount: 18
-			});
-
-			// Create the body text entity
-			this.bodyText = document.createElement('a-entity');
-			this.bodyText.setAttribute('info-card-text', {
-				color: _colors.TextColorHex,
-				font: 'fonts/NowAlt-Medium.json',
-				letterSpacing: 6,
-				lineHeight: 90,
-				value: this.data.text,
-				width: this.data.width - MARGIN * 2,
-				wrapCount: 26
-			});
-
-			// Add 'em up
-			this.group.add(this.imageMesh.mesh);
-			this.group.add(this.divider.mesh);
-			this.el.appendChild(this.headerText);
-			this.el.appendChild(this.bodyText);
-
-			this.el.parentNode.addEventListener('stateadded', function (event) {
-				if (event.detail.state === 'visible') _this.onShow();
-			});
-
-			this.el.parentNode.addEventListener('stateremoved', function (event) {
-				if (event.detail.state === 'visible') _this.onHide();
-			});
-		},
-
-		update: function update() {
-			var parentWidth = this.el.parentNode.getAttribute('orientation-card').width;
-			var parentHeight = this.el.parentNode.getAttribute('orientation-card').height;
-
-			var startX = parentWidth / -2;
-			var columnWidth = parentWidth / 3;
-			var imageWidth = columnWidth - MARGIN * 2;
-			var imageHeight = imageWidth * IMAGE_ASPECT_RATIO;
-			var halfImageHeight = imageHeight / 2;
-			var headerHeight = 0.05;
-
-			// Set the parent element's position
-			this.el.setAttribute('position', {
-				x: startX + columnWidth * this.index,
-				y: 0,
-				z: 0
-			});
-
-			// Set the image mesh's size
-			this.imageMesh.setSize(imageWidth, imageHeight);
-
-			// Set the image mesh's position
-			this.imageMesh.setPosition(imageWidth / 2 + MARGIN, parentHeight / 2 - halfImageHeight - MARGIN);
-
-			var textStartY = this.imageMesh.getY() - halfImageHeight - headerHeight - MARGIN;
-
-			// Set the divider mesh's position
-			this.divider.setPosition(MARGIN + 0.03 + 0.007, textStartY - 0.015 - 0.02);
-
-			// Set the header text's position
-			this.headerText.setAttribute('position', {
-				x: MARGIN,
-				y: textStartY,
-				z: 0
-			});
-
-			// Set the body text's position
-			this.bodyText.setAttribute('position', {
-				x: MARGIN,
-				y: textStartY - 0.04 - MARGIN,
-				z: 0
-			});
-		},
-
-		onShow: function onShow() {
-			this.headerText.addState('visible');
-			this.bodyText.addState('visible');
-			this.imageMesh.show(0.15, 0.1);
-			this.divider.show(0.05, 0.25);
-		},
-
-		onHide: function onHide() {
-			this.headerText.removeState('visible');
-			this.bodyText.removeState('visible');
-			this.imageMesh.hide(0.15, 0.1);
-			this.divider.hide(0.05);
-		},
-
-		tick: function tick(t, dt) {
-			this.imageMesh.tick(dt);
-			this.divider.tick(dt);
-		}
-	});
-}
-
-},{"../core/colors":211,"../meshes/card-mesh-image":217}],198:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _cardMesh = require('../meshes/card-mesh');
-
-var _colors = require('../core/colors');
-
-var _platformUtils = require('../utils/platform-utils');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-////   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-card
- *
- * UI component for displaying the map teleportation interface when
- * the user clicks on the horizon marker.
- *
- * The card will position itself towards the camera when shown.
- */
-
-var DESKTOP_Y_OFFSET = 0.3;
-var HEADER_HEIGHT = 0.1;
-var HEADER_Y_OFFSET = 0.566;
-var TEXT_LEFT_PADDING = 0.025;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('orientation-card', {
-
-		dependencies: ['visible', 'look-at-target'],
-
-		schema: {
-			height: { type: 'number', default: 1 },
-			width: { type: 'number', default: 2 },
-			title: { type: 'string' }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.positionDummy = document.getElementById('ui-dummy');
-			this.offsetDummy = document.getElementById('map-card-offset');
-			this.camera = document.getElementById('camera');
-
-			// Set up look-at-target component so that the card faces the camera directly.
-			this.el.setAttribute('look-at-target', {
-				axis: 'xyz',
-				target: '#camera',
-				alwaysUpdate: false,
-				offset: new THREE.Vector3(0, Math.PI, 0)
-			});
-
-			// This group is used to hold the various meshes that aren't represented
-			// by separate entity DOM elements. This includes the background plane
-			// and the header plane. This group is assigned to the back-meshes element
-			// so that the background elements are drawn behind the foreground elements
-			// correctly.
-			this.group = new THREE.Group();
-			this.backEl = document.getElementById('orientation-back-meshes');
-			this.backEl.setObject3D('mesh', this.group);
-
-			// Create the background plane mesh
-			this.background = new _cardMesh.CardMesh(this.data.width, this.data.height);
-
-			// Create the header plane mesh
-			this.header = new _cardMesh.CardMesh(this.data.width, HEADER_HEIGHT);
-			this.header.setPosition(0, HEADER_Y_OFFSET);
-
-			// Create and set up the hitbox
-			this.hitbox = document.createElement('a-entity');
-			this.hitbox.setAttribute('position', { z: -1 });
-			this.hitbox.setAttribute('event-priority', 100);
-			this.hitbox.setAttribute('hitbox', {
-				expansion: 20,
-				cursorScale: 0.3
-			});
-
-			// Create and position the header text entity
-			this.headerEl = document.createElement('a-entity');
-			this.headerEl.setAttribute('position', {
-				x: -this.data.width / 2 + TEXT_LEFT_PADDING,
-				y: HEADER_Y_OFFSET - HEADER_HEIGHT / 2 + 0.025,
-				z: 0
-			});
-
-			// Create the title text entity
-			this.headerText = document.createElement('a-entity');
-			this.headerText.setAttribute('info-card-text', {
-				color: _colors.TextColorHex,
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: 6,
-				value: this.data.title.toUpperCase(),
-				width: this.data.width,
-				wrapCount: 64
-			});
-
-			// Add 'em up
-			this.backEl.appendChild(this.hitbox);
-			this.backEl.appendChild(this.headerEl);
-			this.headerEl.appendChild(this.headerText);
-			this.group.add(this.background.mesh);
-			this.group.add(this.header.mesh);
-
-			// Show the card when the 'visible' state is added
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				ga('send', 'event', 'orientation-card', 'opened', '');
-				_this.onShow();
-			});
-
-			// Dismiss the card when the 'visible' state is removed
-			this.el.addEventListener('stateremoved', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.onHide();
-			});
-
-			// Dismiss the card if the hitbox is clicked
-			this.backEl.addEventListener('raycaster-cursor-up', function (event) {
-				ga('send', 'event', 'orientation-card', 'dismissed', '');
-				_this.onHide();
-			});
-
-			// Bubble the hide-complete event from the header mesh up thru the entity element.
-			// The header mesh is the last of the meshes to play the transition animation.
-			this.header.on('hide-complete', function (event) {
-				_this.el.emit('hide-complete', null, false);
-			});
-		},
-
-		onShow: function onShow() {
-			// Set visible states for all relevant child entities
-			this.el.sceneEl.addState('modal');
-			this.headerText.addState('visible');
-
-			// Show the background and header meshes. Delay the background mesh
-			// so that the transition feels natural.
-			this.background.show(0.25, 0.05);
-			this.header.show(0.05);
-
-			// Apply platform-specific z offset
-			this.positionDummy.setAttribute('position', { x: 0, y: 0, z: _platformUtils.PlatformUtils.getCardZOffset() });
-
-			// Update position and look-at rotation to match the current camera location
-			var uiPosition = this.positionDummy.object3D.getWorldPosition();
-			this.el.setAttribute('position', { x: uiPosition.x, y: uiPosition.y, z: uiPosition.z });
-			this.el.components['look-at-target'].update();
-		},
-
-		onHide: function onHide() {
-			// Remove visible states for all relevant child entities
-			this.el.sceneEl.removeState('modal');
-			this.el.removeState('visible');
-			this.headerText.removeState('visible');
-
-			// Hide the background and header meshes. Delay the header
-			// mesh animation so that the transition feels natural.
-			this.background.hide();
-			this.header.hide(0.05, 0.25);
-		},
-
-		tick: function tick(t, dt) {
-			this.background.tick(dt);
-			this.header.tick(dt);
-
-			// Set this element's visiblity property based on the header mesh's
-			// animIn value. 
-			this.el.setAttribute('visible', this.header.animIn > 0);
-		}
-	});
-}
-
-},{"../core/colors":211,"../core/scene":213,"../meshes/card-mesh":218,"../utils/platform-utils":245}],199:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.POIAnimInDelay = undefined;
-
-var _scene = require('../core/scene');
-
-var _colors = require('../core/colors');
-
-var _audioManager = require('../core/audio-manager');
-
-var MARKER_DIAMETER = 30; // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * poi-marker
- *
- * Point-of-interest marker. Placed in the scene at certain locations.
- *
- * Clicking on one will open the info-card and populate it with the text
- * and image specified in the attributes.
- */
-
-var FLAG_Y_OFFSET = 100;
-var FLAG_Y_CENTER = FLAG_Y_OFFSET + MARKER_DIAMETER / 2;
-
-var POIAnimInDelay = exports.POIAnimInDelay = 0.5;
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('poi-marker', {
-
-		dependencies: ['visible'],
-
-		schema: {
-			label: { type: 'string' },
-			img: { type: 'string' },
-			vo: { type: 'string' },
-			title: { type: 'string' },
-			text: { type: 'string' },
-			size: { type: 'number', default: 0.03 }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			// Get the site name from the parent node's ID
-			this.site = this.el.parentNode.id.split('_markers')[0];
-
-			this.titleOpacity = 0;
-			this.updateTitleOpacity = false;
-			this.isIntersected = false;
-
-			this.camera = document.getElementById('camera');
-
-			this.el.addState('interactive');
-
-			this.group = new THREE.Group();
-			this.el.setObject3D('mesh', this.group);
-
-			this.childIndex = Array.from(this.el.parentNode.children).indexOf(this.el) + 1;
-
-			// Create spin widget mesh
-			this.spinWidget = document.createElement('a-entity');
-			this.spinWidget.setAttribute('position', new THREE.Vector3(0, FLAG_Y_CENTER, 0));
-			this.spinWidget.setAttribute('poi-spin-widget', this.site);
-			this.spinWidget.setAttribute('scale', { x: MARKER_DIAMETER, y: MARKER_DIAMETER, z: MARKER_DIAMETER });
-
-			// Create pole mesh
-			this.pole = document.createElement('a-entity');
-			this.pole.setAttribute('position', new THREE.Vector3(0, FLAG_Y_CENTER, 0));
-			this.pole.setAttribute('poi-pole', '');
-			this.pole.setAttribute('scale', { x: MARKER_DIAMETER, y: MARKER_DIAMETER, z: MARKER_DIAMETER });
-
-			// Create title label text
-			this.titleLabel = document.createElement('a-entity');
-			this.titleLabel.setAttribute('poi-title-text', {
-				value: this.data.title.toUpperCase(),
-				yOffset: FLAG_Y_CENTER + MARKER_DIAMETER * 2 + 16
-			});
-
-			// Add 'em up
-			this.el.appendChild(this.titleLabel);
-			this.el.appendChild(this.spinWidget);
-			this.el.appendChild(this.pole);
-
-			// Wait for the pole element to be loaded before the hitbox is added. 
-			// Otherwise, the hitbox will have an incorrect size.
-			this.pole.addEventListener('load-complete', function (event) {
-				_this.group.add(_this.pole.object3D);
-
-				_this.hitbox = document.createElement('a-entity');
-				_this.hitbox.setAttribute('hitbox', { expansion: 10 });
-				_this.hitbox.setAttribute('event-priority', 100);
-
-				_this.el.appendChild(_this.hitbox);
-				_this.el.setAttribute('scale', new THREE.Vector3(-_this.data.size, _this.data.size, _this.data.size));
-
-				// Postpone adding the look-at-target dependency until after the hitbox is generated.
-				// Otherwise the hitbox generation will not work properly.
-				_this.el.setAttribute('look-at-target', '');
-
-				// Now that the hitbox is sized correctly, give the pole meshes back to the pole mesh entity.
-				_this.pole.emit('reassign-meshes', {
-					ringMesh: _this.pole.ringMesh,
-					poleMesh: _this.pole.poleMesh
-				}, false);
-			});
-
-			// Show the pole and spin widget when the scene is done loading
-			this.el.sceneEl.addEventListener('initial-load-complete', function (event) {
-
-				// Set the pole and spin widget as visible only when they're within the camera's view frustum.
-				// This allows the transition animation to play out so the user can see the POIs being added.
-				var onFrustumUpdated = function onFrustumUpdated(event) {
-					if (event.detail.frustum.containsPoint(_this.el.object3D.getWorldPosition())) {
-						_this.pole.addState('visible');
-						_this.spinWidget.addState('visible');
-						_this.camera.removeEventListener('frustum-updated', onFrustumUpdated);
-					}
-				};
-
-				if (_this.el.parentNode.getAttribute('visible')) {
-					_this.camera.addEventListener('frustum-updated', onFrustumUpdated);
-				} else {
-					_this.pole.removeState('visible');
-					_this.spinWidget.removeState('visible');
-				}
-			});
-
-			this.el.addEventListener('raycaster-intersected', this.onIntersect.bind(this));
-			this.el.addEventListener('raycaster-intersected-cleared', this.onIntersectionCleared.bind(this));
-			this.el.addEventListener('raycaster-cursor-up', this.onClick.bind(this));
-		},
-
-		onClick: function onClick() {
-			if (!this.el.is('interactive')) return;
-			if (!this.el.sceneEl.is('interactive')) return;
-
-			this.onClickShowCard();
-		},
-
-		onIntersect: function onIntersect(event) {
-			if (this.isIntersected) return;
-			if (!this.el.is('interactive')) return;
-			if (!this.el.sceneEl.is('interactive')) return;
-
-			if (!this.isIntersected) {
-				_audioManager.AudioManager.playSFX('boop');
-			}
-
-			this.isIntersected = true;
-
-			this.spinWidget.addState('hover');
-			this.el.addState('hover');
-
-			this.titleLabel.setAttribute('poi-title-text', { show: true });
-		},
-
-		onIntersectionCleared: function onIntersectionCleared(event) {
-			this.isIntersected = false;
-
-			this.spinWidget.removeState('hover');
-			this.el.removeState('hover');
-
-			this.titleLabel.setAttribute('poi-title-text', { show: false });
-		},
-
-		onClickShowCard: function onClickShowCard() {
-			var _this2 = this;
-
-			this.el.removeState('interactive');
-			this.titleLabel.setAttribute('poi-title-text', { show: false });
-			_audioManager.AudioManager.playSFX('ui-click');
-
-			_audioManager.AudioManager.playVO(this.data.vo);
-
-			this.infoCard = document.getElementById('info-card');
-			this.infoCard.setAttribute('info-card', {
-				url: this.data.img,
-				title: this.data.title,
-				text: this.el.textContent,
-				type: 'poi',
-				// text: this.data.text,
-				index: this.childIndex.toString()
-			});
-			this.infoCard.addState('visible');
-			this.infoCard.components['info-card'].update(); // forces info card to update even if clicking on the same marker
-
-			// Restore the scene's interactive state when the child info card is hidden
-			var onInfoCardHideComplete = function onInfoCardHideComplete(event) {
-				_this2.infoCard.removeEventListener('hide-complete', onInfoCardHideComplete);
-				// this.numberLabel.setAttribute( 'visible', true );
-				_this2.el.addState('interactive');
-				_audioManager.AudioManager.stopVO();
-			};
-
-			this.infoCard.addEventListener('hide-complete', onInfoCardHideComplete);
-		}
-	});
-}
-
-},{"../core/audio-manager":210,"../core/colors":211,"../core/scene":213}],200:[function(require,module,exports){
-'use strict';
-
-var _c4dExportLoader = require('../c4d/c4d-export-loader');
-
-var _c4dUtils = require('../c4d/c4d-utils');
-
-var _mathUtils = require('../utils/math-utils');
-
-var _poiMarker = require('./poi-marker');
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * poi-pole
- *
- * Pole & Ring mesh for the POI markers. Handles loading the mesh
- * and updating the animated transitions
- */
-
-var BezierEasing = require('bezier-easing');
-var UVHighpassShader = require('../shaders/uv-highpass-shader');
-
-var POLE_ANIM_IN_DURATION = 0.5;
-var RING_ANIM_IN_DURATION = 0.65;
-var RING_ANIM_IN_DELAY = 0.2;
-var POLE_ANIM_IN_EASING = BezierEasing(0.3, 0, 0.6, 1);
-var RING_ANIM_IN_EASING = BezierEasing(0.7, 0, 0.2, 1);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('poi-pole', {
-
-		init: function init() {
-			var _this = this;
-
-			this.poleAnimIn = 0;
-			this.ringAnimIn = 0;
-
-			// Listen for a special event which is triggered by poi-marker. 
-			// The poleMesh and ringMesh are reassigned as direct children of 
-			// their parent poi-marker element such that the auto-generated
-			// hitbox generation can work correctly. This element still needs
-			// a reference to them though, in order to animate them. This event
-			// reassigns that reference.
-			this.el.addEventListener('reassign-meshes', function (event) {
-				_this.el.ringMesh = event.detail.ringMesh;
-				_this.el.poleMesh = event.detail.poleMesh;
-			});
-
-			var loader = new _c4dExportLoader.C4DExportLoader();
-			loader.load('markers/pole.glb').then(function (response) {
-
-				_this.scene = response.scene;
-				_this.el.setObject3D('mesh', _this.scene);
-
-				_this.scene.traverse(function (node) {
-
-					if (!node.metadata) return;
-
-					// Get the ring mesh out of the scene
-					if (node.metadata.type === 'RING') {
-						_this.el.ringMesh = _c4dUtils.C4DUtils.getChildWithType(node, 'Mesh');
-						return;
-					}
-
-					// Get the pole mesh out of the ring
-					if (node.metadata.type === 'POLE') {
-						_this.el.poleMesh = _c4dUtils.C4DUtils.getChildWithType(node, 'Mesh');
-						return;
-					}
-				});
-
-				// Set up ring material
-				_this.el.ringMesh.material = new THREE.ShaderMaterial({
-					uniforms: THREE.UniformsUtils.clone(UVHighpassShader.uniforms),
-					vertexShader: UVHighpassShader.vertexShader,
-					fragmentShader: UVHighpassShader.fragmentShader
-				});
-
-				// Set up pole material
-				_this.el.poleMesh.material = new THREE.ShaderMaterial({
-					uniforms: THREE.UniformsUtils.clone(UVHighpassShader.uniforms),
-					vertexShader: UVHighpassShader.vertexShader,
-					fragmentShader: UVHighpassShader.fragmentShader
-				});
-
-				_this.reset();
-
-				_this.el.emit('load-complete', null, false);
-			});
-
-			// Offset the ring's "timeline" by the delay constant
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state !== 'visible') return;
-				_this.reset();
-			});
-		},
-
-		reset: function reset() {
-			this.ringAnimIn = -(RING_ANIM_IN_DELAY + _poiMarker.POIAnimInDelay);
-			this.poleAnimIn = -_poiMarker.POIAnimInDelay;
-		},
-
-		/**
-   * Update the transition animation state
-   */
-		tick: function tick(t, dt) {
-			// Adjust delta time so that it is 0..1 over ANIM_IN_DURATION seconds
-			var dtRing = dt / 1000 * (1 / RING_ANIM_IN_DURATION);
-			var dtPole = dt / 1000 * (1 / POLE_ANIM_IN_DURATION);
-
-			// Roll the transition animation forward to 1 if this element is visible,
-			// otherwise roll it back to 0.
-			if (this.el.is('visible')) {
-				this.poleAnimIn += dtPole;
-				this.ringAnimIn += dtRing;
-			} else {
-				this.poleAnimIn -= dtPole;
-				this.ringAnimIn -= dtRing;
-			}
-
-			this.updateRingMeshMaterial();
-			this.updatePoleMeshMaterial();
-		},
-
-		/**
-   * Update the ring mesh's material with the value from ringAnimIn
-   */
-		updateRingMeshMaterial: function updateRingMeshMaterial() {
-			if (!this.el.ringMesh) return;
-			if (!this.el.ringMesh.material) return;
-
-			var clampedRingAnimIn = _mathUtils.MathUtils.clamp(this.ringAnimIn, 0, 1);
-			this.el.ringMesh.material.uniforms.cutoff.value = RING_ANIM_IN_EASING(clampedRingAnimIn);
-		},
-
-		/**
-   * Update the pole mesh's material with the value from poleAnimIn
-   */
-		updatePoleMeshMaterial: function updatePoleMeshMaterial() {
-			if (!this.el.poleMesh) return;
-			if (!this.el.poleMesh.material) return;
-
-			var clampedPoleAnimIn = _mathUtils.MathUtils.clamp(this.poleAnimIn * 1.75, 0, 1);
-			this.el.poleMesh.material.uniforms.cutoff.value = clampedPoleAnimIn;
-		}
-	});
-}
-
-},{"../c4d/c4d-export-loader":170,"../c4d/c4d-utils":174,"../shaders/uv-highpass-shader":235,"../utils/math-utils":244,"./poi-marker":199,"bezier-easing":14}],201:[function(require,module,exports){
-'use strict';
-
-var _scene = require('../core/scene');
-
-var _c4dExportLoader = require('../c4d/c4d-export-loader');
-
-var _c4dUtils = require('../c4d/c4d-utils');
-
-var _mathUtils = require('../utils/math-utils');
-
-var _poiMarker = require('./poi-marker');
-
-var BezierEasing = require('bezier-easing'); // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * poi-spin-widget
- *
- * Spinning icon mesh used by the POI markers. Handles loading
- * the icon model and any animation.
- */
-
-var FLIP_X_VECTOR = new THREE.Vector3(-1, 1, 1);
-
-var ANIM_IN_DURATION = 0.7;
-var ANIM_IN_DELAY = 0.25;
-var ANIM_IN_EASING = BezierEasing(0.6, 0, 0.3, 1);
-
-var START_Y_OFFSET = -1.5;
-var BASE_ROT_SPEED = 0.01;
-
-var HOVER_ROT = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI + Math.PI / 4, 0));
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('poi-spin-widget', {
-
-		schema: { type: 'string' },
-
-		init: function init() {
-			var _this = this;
-
-			this.animIn = 0;
-			this.prevAnimIn = 0;
-			this.hoverIn = 0;
-			this.prevHoverIn = 0;
-			this.rotSpeed = 0.01;
-
-			var loader = new _c4dExportLoader.C4DExportLoader();
-			loader.load('markers/' + this.data + '.glb').then(function (response) {
-
-				_this.iconObject = response.scene;
-				_this.iconObject.scale.copy(FLIP_X_VECTOR);
-				_this.el.setObject3D('mesh', _this.iconObject);
-				_this.el.emit('load-complete', null, false);
-
-				// Save the icon's initial scale, which is used later during animation.
-				_this.initialScale = _this.iconObject.children[0].scale.clone();
-
-				_this.reset();
-			});
-
-			this.el.addEventListener('stateadded', function (event) {
-				if (event.detail.state === 'visible') {
-					_this.reset();
-				}
-
-				if (event.detail.state === 'hover') {
-					_this.initialRot = _this.iconObject.quaternion;
-				}
-			});
-		},
-
-		/**
-   * Reset mesh's scale and position to the offset values. Epsilon is used here
-   * to prevent a scale of zero while still being too small to see from reasonable
-   * camera distances.
-   */
-		reset: function reset() {
-			if (!this.iconObject) return;
-			this.animIn = -(ANIM_IN_DELAY + _poiMarker.POIAnimInDelay);
-			this.iconObject.children[0].scale.set(1, 1, 1).multiplyScalar(Number.EPSILON);
-			this.iconObject.children[0].position.set(0, START_Y_OFFSET, 0);
-		},
-
-		tick: function tick(t, dt) {
-			if (!this.el.parentNode.parentNode.getAttribute('visible')) return;
-			if (!this.el.is('visible')) return;
-			if (!this.iconObject) return;
-
-			// Adjust delta time so that it is 0..1 over ANIM_IN_DURATION seconds
-			dt = dt / 1000 * (1 / ANIM_IN_DURATION);
-
-			// Roll the transition animation forward to 1 if this element is visible,
-			// otherwise roll it back to 0.
-			if (this.el.is('visible')) {
-				this.animIn += dt;
-			} else {
-				this.animIn -= dt;
-			}
-
-			// Roll the hover animation forward to 1 if this element is hovered,
-			// otherwise reset it to zero immediately.
-			if (this.el.is('hover')) {
-				this.hoverIn += dt;
-			} else {
-				this.hoverIn = 0;
-			}
-
-			// Clamp and apply easing to the animIn and hoverIn value
-			var easedAnimIn = ANIM_IN_EASING(_mathUtils.MathUtils.clamp(this.animIn, 0, 1));
-			var easedHoverIn = ANIM_IN_EASING(_mathUtils.MathUtils.clamp(this.hoverIn, 0, 1));
-
-			// Update object's animated scale. Again, epsilon is added here to prevent a scale of zero.
-			var scale = Number.EPSILON + easedAnimIn;
-			this.iconObject.children[0].scale.copy(this.initialScale).multiplyScalar(scale);
-
-			// Update object's animated position on the y-axis. 
-			// This is interpolated between the offset constant and 0.
-			this.iconObject.children[0].position.set(0, _mathUtils.MathUtils.lerp(START_Y_OFFSET, 0, easedAnimIn), 0);
-
-			// Update the object's rotation speed. Use a sine to get a curve that starts at 0, ramps to 1, 
-			// and ramps down to 0 again, between easedAnimIn = 0..1. That curve is multiplied by a 
-			// factor of the BASE_ROT_SPEED to give a nice acceleration and deceleration.
-			this.rotSpeed = BASE_ROT_SPEED + 20 * BASE_ROT_SPEED * Math.sin(Math.PI * easedAnimIn);
-
-			// Spin it right round, but ease it out on hover
-			this.iconObject.rotateY(this.rotSpeed * (1 - easedHoverIn));
-
-			// Slerp the rotation to a static 45º rotation on hover
-			if (this.hoverIn > 0) {
-				THREE.Quaternion.slerp(this.initialRot, HOVER_ROT, this.iconObject.quaternion, easedHoverIn);
-			}
-		}
-	});
-}
-
-},{"../c4d/c4d-export-loader":170,"../c4d/c4d-utils":174,"../core/scene":213,"../utils/math-utils":244,"./poi-marker":199,"bezier-easing":14}],202:[function(require,module,exports){
-'use strict';
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * poi-title-text
- *
- * UI component for displaying point-of-interest title text.
- *
- * The text has an animated fade-in/out animation which is triggered
- * when the 'visible' attribute is changed.
- */
-
-var BezierEasing = require('bezier-easing');
-
-var ACTIVE_TIME = 0.5;
-var ACTIVE_Y = 10;
-var EASING = BezierEasing(0.7, 0, 0.2, 1);
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('poi-title-text', {
-
-		schema: {
-			align: { default: 'center' },
-			anchor: { default: 'center' },
-			letterSpacing: { default: 12 },
-			value: { type: 'string' },
-			yOffset: { type: 'number' },
-			show: { default: false },
-			showTime: { default: ACTIVE_TIME },
-			width: { default: 750 },
-			wrapCount: { default: 40 }
-		},
-
-		init: function init() {
-			this.opacity = 0;
-			this.yOffset = 0;
-			this.updateOpacity = false;
-			this.updateYOffset = false;
-
-			this.el.setAttribute('text', {
-				align: this.data.align,
-				alphaTest: 0.5,
-				anchor: this.data.anchor,
-				color: new THREE.Color(0xFFFFFF),
-				font: 'fonts/NowAlt-Bold.json',
-				letterSpacing: this.data.letterSpacing,
-				shader: 'msdf',
-				transparent: true,
-				opacity: this.opacity,
-				value: this.data.value,
-				width: this.data.width,
-				wrapCount: this.data.wrapCount
-			});
-		},
-
-		update: function update() {
-			this.el.setAttribute('text', {
-				align: this.data.align,
-				alphaTest: 0.5,
-				anchor: this.data.anchor,
-				letterSpacing: this.data.letterSpacing,
-				value: this.data.value,
-				width: this.data.width,
-				wrapCount: this.data.wrapCount
-			});
-
-			this.el.setAttribute('position', {
-				y: this.data.yOffset - ACTIVE_Y
-			});
-		},
-
-		tick: function tick(t, dt) {
-			dt = dt / 1000 * (1 / this.data.showTime);
-
-			if (this.data.show) {
-				this.updateOpacity = this.opacity < 1;
-				this.updateYOffset = this.yOffset < 1;
-				this.opacity = Math.min(1, this.opacity + dt);
-				this.yOffset = Math.min(1, this.yOffset + dt);
-			} else {
-				this.updateOpacity = this.opacity > 0;
-				this.updateYOffset = this.yOffset > 0;
-				this.opacity = Math.max(0, this.opacity - dt);
-				this.yOffset = Math.max(0, this.yOffset - dt);
-			}
-
-			this.el.setAttribute('visible', this.opacity > 0);
-
-			if (this.updateOpacity) {
-				this.el.setAttribute('text', {
-					opacity: EASING(this.opacity)
-				});
-			}
-
-			if (this.updateYOffset) {
-				this.el.setAttribute('position', {
-					y: this.data.yOffset - (ACTIVE_Y - EASING(this.yOffset) * ACTIVE_Y)
-				});
-			}
-		}
-	});
-}
-
-},{"bezier-easing":14}],203:[function(require,module,exports){
-'use strict';
-
-var _audioManager = require('../core/audio-manager');
-
-var _scene = require('../core/scene');
-
-var _colors = require('../core/colors');
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('rover-poi', {
-
-		dependencies: ['visible'],
-
-		schema: {
-			vo: { type: 'string' },
-			img: { type: 'string' },
-			title: { type: 'string' },
-			text: { type: 'string' },
-			target: { type: 'string' },
-			channel: { type: 'string' }
-		},
-
-		init: function init() {
-			var _this = this;
-
-			this.titleOpacity = 0;
-			this.updateTitleOpacity = false;
-			this.isIntersected = false;
-			this.targetMaterials = [];
-
-			// The POI's hitbox is added thru a mesh-added event which 
-			// passes in the relevant hitbox mesh from the rover scene.
-			this.el.addEventListener('mesh-added', function (event) {
-				_this.metadata = event.detail.metadata;
-				_this.mesh = event.detail.children[0];
-				_this.mesh.material.visible = false;
-
-				_this.el.setObject3D('mesh', _this.mesh);
-
-				// Apply scale and rotation to match the rover mesh
-				_this.el.object3D.scale.multiplyScalar(0.01);
-				_this.el.object3D.rotation.y += Math.PI / 2.0;
-
-				_this.el.classList.add('clickable');
-				_this.el.addState('interactive');
-				_this.el.setAttribute('consume-click', '');
-				_this.el.sceneEl.emit('mesh-added', null, false);
-			});
-
-			this.el.addEventListener('materials-added', function (event) {
-				_this.targetMaterials = Array.from(event.detail);
-			});
-
-			this.el.addEventListener('raycaster-intersected', this.onIntersect.bind(this));
-			this.el.addEventListener('raycaster-intersected-cleared', this.onIntersectionCleared.bind(this));
-			this.el.addEventListener('raycaster-cursor-up', this.onClick.bind(this));
-
-			this.childIndex = Array.from(this.el.parentNode.children).indexOf(this.el) + 1;
-			this.cursor = document.getElementById('controller-dot');
-		},
-
-		update: function update() {
-			switch (this.data.channel) {
-				case 'r':
-					this.channelSelect = new THREE.Vector3(1, 0, 0);break;
-				case 'g':
-					this.channelSelect = new THREE.Vector3(0, 1, 0);break;
-				case 'b':
-					this.channelSelect = new THREE.Vector3(0, 0, 1);break;
-				default:
-					this.channelSelect = new THREE.Vector3(1, 1, 1);break;
-			}
-		},
-
-		onClick: function onClick() {
-			if (!this.el.is('interactive')) return;
-			if (!this.el.sceneEl.is('interactive')) return;
-
-			this.onClickShowCard();
-		},
-
-		onIntersect: function onIntersect(event) {
-			var _this2 = this;
-
-			if (this.isIntersected) return;
-			if (!this.el.is('interactive')) return;
-			if (!this.el.sceneEl.is('interactive')) return;
-			if (!this.cursor) return;
-
-			// Delay the highlight state by a frame. The rover chassis part has multiple
-			// highlight zones which all share a material. If the user hovers over one, then
-			// moves to another without selecting a non-chassis part in-between, the highlight
-			// state will not be applied correctly. This delay allows the chassis material
-			// to update before changing the highlight state.
-			setTimeout(function () {
-				document.body.classList.add('pointer');
-
-				_this2.cursor.setAttribute('controller-dot', {
-					color: _colors.TextColor
-				});
-
-				if (!_this2.isIntersected) {
-					_audioManager.AudioManager.playSFX('boop');
-				}
-
-				_this2.isIntersected = true;
-				_this2.el.addState('hover');
-
-				_this2.targetMaterials.forEach(function (mesh) {
-					mesh.material.uniforms.activeHighlightColor.value = _this2.channelSelect;
-					mesh.material.uniforms.activeHighlightOpacity.value = 1;
-					mesh.material.needsUpdate = true;
-				});
-			}, 5);
-		},
-
-		onIntersectionCleared: function onIntersectionCleared(event) {
-			document.body.classList.remove('pointer');
-
-			this.isIntersected = false;
-			this.el.removeState('hover');
-
-			// Reset the cursor color
-			this.cursor.setAttribute('controller-dot', {
-				color: _colors.WhiteColor
-			});
-
-			// Clear the highlight opacity for all target materials
-			this.targetMaterials.forEach(function (mesh) {
-				mesh.material.uniforms.activeHighlightOpacity.value = 0;
-				mesh.material.needsUpdate = true;
-			});
-		},
-
-		onClickShowCard: function onClickShowCard() {
-			var _this3 = this;
-
-			this.el.removeState('interactive');
-
-			_audioManager.AudioManager.playVO(this.data.vo);
-
-			this.infoCard = document.getElementById('info-card');
-			this.infoCard.setAttribute('info-card', {
-				url: this.data.img,
-				title: this.data.title,
-				text: this.el.textContent,
-				type: 'rover',
-				index: this.childIndex.toString()
-			});
-
-			this.infoCard.addState('visible');
-
-			// Forces info card to update even if the user clicks on the same marker. This
-			// allows the transition to reset correctly.
-			this.infoCard.components['info-card'].update();
-
-			// Set up event listener to restore the interactive state when the card
-			// is closed.
-			var onInfoCardHideComplete = function onInfoCardHideComplete(event) {
-				_this3.infoCard.removeEventListener('hide-complete', onInfoCardHideComplete);
-				_this3.el.addState('interactive');
-				_audioManager.AudioManager.stopVO();
-			};
-
-			this.infoCard.addEventListener('hide-complete', onInfoCardHideComplete);
-		}
-	});
-} // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * rover-poi
- *
- * Point-of-interest component for rover parts. Specified
- * in the scene with a given set of target mesh names,
- * and info similar to the poi-marker component.
- *
- * Clicking on one will populate the info-card with the
- * given header text, body copy, and image, if any.
- *
- * Hitbox meshes are provided by the rover component from the
- * rover scene file.
- *
- * Rover parts with POI's are given an RGB selection mask
- * texture, which segements texture areas with various
- * colored masks. The rover-poi's "channel" attribute is used
- * to determine which color should be used as a mask for
- * highlighting the appropriate part on the rover when
- * the POI is selected with the raycaster.
- */
-
-},{"../core/audio-manager":210,"../core/colors":211,"../core/scene":213}],204:[function(require,module,exports){
-'use strict';
-
-var _c4dSceneManager = require('../c4d/c4d-scene-manager');
-
-var _audioManager = require('../core/audio-manager');
-
-var _scene = require('../core/scene');
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('rover', {
-
-		dependencies: ['visible'],
-
-		init: function init() {
-			var _this = this;
-
-			this.scene = new _c4dSceneManager.C4DSceneManager();
-			this.scene.load('rover/scene.glb', 'rover/xref/', 'rover/tex/').then(function (sceneObject) {
-				_this.el.setObject3D('mesh', sceneObject);
-
-				// Listen for the animate state and begin playback
-				_this.el.addEventListener('stateadded', function (event) {
-					if (event.detail.state === 'animate') {
-						_this.startAnimation();
-					}
-
-					if (event.detail.state === 'complete') {
-						_this.jumpToEndAnimation();
-					}
-				});
-
-				// If the rover is marked as being complete, jump to the end of the animation
-				// once the rover is loaded.
-				if (_this.el.is('complete')) {
-					_this.jumpToEndAnimation();
-				}
-
-				_this.el.emit('load-complete', null, false);
-			});
-
-			this.progress = 0;
-			this.playingArmUpSound = false;
-			this.playingCamClickSound = false;
-			this.playingCamRotateSound = false;
-			this.playingJetsSound = false;
-		},
-
-		startAnimation: function startAnimation() {
-			this.scene.play();
-			this.scene.hidePartTextures();
-		},
-		jumpToEndAnimation: function jumpToEndAnimation() {
-			this.scene.stopAtLastFrame();
-			this.onSceneComplete();
-		},
-
-
-		tick: function tick(t, dt) {
-			if (!this.el.is('animate')) return;
-
-			// Skip to the last frame if the skip_intro flag is set
-			if (_scene.Scene.flags.skip_intro) {
-				this.scene.tick(this.scene.duration, this.scene.duration);
-				this.progress = this.scene.duration;
-			} else {
-				this.scene.tick(t / 1000, dt / 1000);
-			}
-
-			// If we are skipping the intro animation, no need to play the sounds below
-			if (_scene.Scene.flags.skip_intro) {
-				this.onSceneComplete();
-				return;
-			}
-
-			// SFX event: jets
-			if (this.progress > 0.1 && !this.playingJetsSound) {
-				_audioManager.AudioManager.playSFX('jets');
-				this.playingJetsSound = true;
-			}
-
-			// SFX event: arm up
-			if (this.progress > 11 && !this.playingArmUpSound) {
-				_audioManager.AudioManager.playSFX('arm_up');
-				this.playingArmUpSound = true;
-			}
-
-			// SFX event: camera click
-			if (this.progress > 17.7 && !this.playingCamClickSound) {
-				_audioManager.AudioManager.playSFX('camera');
-				this.playingCamClickSound = true;
-			}
-
-			// SFX event: camera rotate
-			// if ( this.progress > 20.3 && !this.playingCamRotateSound ) {
-			// 	AudioManager.playSFX( 'cam_rotate' );
-			// 	this.playingCamRotateSound = true;
-			// }
-
-			// Update and check progress
-			this.progress += dt / 1000;
-			if (this.progress >= this.scene.duration) {
-				this.onSceneComplete();
-			}
-		},
-
-		onSceneComplete: function onSceneComplete() {
-			this.scene.showPartTextures();
-			this.scene.removeObjectsWithType('LINES');
-			this.scene.removeObjectsWithType('SKYCRANE');
-			this.scene.removeObjectsWithType('IMAGEPLANE');
-
-			this.el.removeState('animate');
-			this.el.emit('complete', null, false);
-		}
-	});
-} // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * rover
- *
- * Rover host component. Loads and controls the timeline for the rover
- * intro animation.
- */
-
-},{"../c4d/c4d-scene-manager":173,"../core/audio-manager":210,"../core/scene":213}],205:[function(require,module,exports){
-'use strict';
-
-var _audioManager = require('../core/audio-manager');
-
-var _colors = require('../core/colors');
-
-var _scene = require('../core/scene');
-
-var _eventemitter = require('eventemitter3');
-
-var _tween = require('tween.js');
-
-var _tween2 = _interopRequireDefault(_tween);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-{
-
-	var loadingText = "LOADING:";
-	var buildingText = "Building Terrain Geometry...";
-	var fontName = 'fonts/NowAlt-Bold.json';
-
-	var labels = void 0;
-
-	var createLabel = function createLabel(params) {
-		var label = document.createElement('a-entity');
-
-		params.align = params.align || "left";
-		params.anchor = params.anchor || "left";
-		params.baseline = params.baseline || "bottom";
-		params.color = params.color || new THREE.Color(0xFFFFFF);
-		params.font = fontName;
-
-		params.shader = 'msdf';
-
-		label.setAttribute('text', params);
-		return label;
-	};
-
-	var progress = 0;
-	var progressBarWidth = 32;
-
-	if (typeof AFRAME !== 'undefined' && AFRAME) {
-		AFRAME.registerComponent('scene-intro-label', {
-
-			init: function init() {
-				var _this = this;
-
-				if (!labels) {
-
-					labels = {};
-
-					var labelsEl = [].concat(_toConsumableArray(document.querySelectorAll('.scene-intro-labels li')));
-					labelsEl.forEach(function (l) {
-						var site = l.getAttribute("data-site");
-						var text = l.innerHTML.trim().split("; ");
-						var index = text[0];
-						var name = text[1];
-						var credit = text[2];
-						var date = text[3];
-
-						labels[site] = { index: index, name: name, credit: credit, date: date };
-					});
-				}
-				this.progress = 0;
-				this.targetOpacity = 0;
-				this.opacity = 0;
-
-				this.progressBg = this.el.querySelector('.progress-bg');
-				this.progressBar = this.el.querySelector('.progress');
-
-				this.loadingLabel = createLabel({
-					letterSpacing: 20,
-					value: loadingText,
-					width: 60,
-					wrapCount: 100
-				});
-
-				this.siteNameLabel = createLabel({
-					letterSpacing: 8,
-					width: 200,
-					wrapCount: 150
-				});
-
-				this.creditLabel = createLabel({
-					letterSpacing: 4,
-					width: 50,
-					wrapCount: 74
-				});
-
-				this.buildingLabel = createLabel({
-					letterSpacing: 4,
-					value: buildingText,
-					width: 50,
-					wrapCount: 74
-				});
-
-				this.loadingLabel.setAttribute("position", { y: 4 });
-				this.siteNameLabel.setAttribute("position", { x: -0.25, y: 0 });
-				this.creditLabel.setAttribute("position", { y: -1.1 });
-				this.buildingLabel.setAttribute("position", { y: -7.0 });
-				this.siteNameLabel.setAttribute('text', { value: '00 SITE NAME LABEL' });
-				this.creditLabel.setAttribute('text', { value: 'CREDIT LABEL' });
-
-				this.groupEl = document.createElement('a-entity');
-				this.groupEl.setAttribute("position", { x: -progressBarWidth / 2 });
-				this.el.appendChild(this.groupEl);
-				if (!AFRAME.utils.device.isMobile()) {
-					this.el.setAttribute('position', '0, 0, -1');
-				} else {
-					this.el.setAttribute('position', '0, 0, -1.25');
-				}
-
-				this.groupEl.appendChild(this.loadingLabel);
-				this.groupEl.appendChild(this.siteNameLabel);
-				this.groupEl.appendChild(this.creditLabel);
-				this.groupEl.appendChild(this.buildingLabel);
-
-				_scene.Scene.on('site-changed', function (site) {
-					_this.targetOpacity = _scene.Scene.hasSeenIntro ? 1 : 0;
-					_this.setProgress(0);
-					var opacity = { value: _this.opacity };
-					_this.opacityTween = new _tween2.default.Tween(opacity).to({ value: _this.targetOpacity }, 1000).easing(_tween2.default.Easing.Linear.None).onUpdate(function () {
-						_this.setOpacity(opacity.value);
-					}).start();
-
-					_this.siteNameLabel.setAttribute('text', { value: labels[site].index + ' ' + labels[site].name.toUpperCase() });
-					_this.creditLabel.setAttribute('text', { value: labels[site].credit + ' ' + labels[site].date });
-					_this.progressBar.setAttribute('scale', { x: 0 });
-					_this.isLoading = true;
-				});
-
-				_scene.Scene.on('site-load-progress', function (progress) {
-					_this.progress = progress;
-				});
-
-				_scene.Scene.on('site-loaded', function () {
-					var opacity = { value: _this.opacity };
-					_this.opacityTween = new _tween2.default.Tween(opacity).to({ value: 0 }, 500).easing(_tween2.default.Easing.Linear.None).onUpdate(function () {
-						_this.setOpacity(opacity.value);
-					}).start();
-				});
-
-				this.setOpacity(0);
-			},
-
-			setOpacity: function setOpacity(v) {
-				this.opacity = v;
-				this.loadingLabel.setAttribute('text', { opacity: v });
-				this.siteNameLabel.setAttribute('text', { opacity: v });
-				this.creditLabel.setAttribute('text', { opacity: v });
-				this.buildingLabel.setAttribute('text', { opacity: v });
-
-				this.progressBar.setAttribute('material', { opacity: v });
-				this.progressBg.setAttribute('material', { opacity: v });
-
-				this.el.setAttribute('visible', v < 0.05 ? false : true);
-			},
-			tick: function tick() {
-				if (!this.isLoading) return;
-				this.setProgress(this.progress);
-			},
-			setProgress: function setProgress(p) {
-				var x = progressBarWidth * 0.5 * (1 - p) * -1;
-
-				this.progressBar.setAttribute('position', { x: x });
-				this.progressBar.setAttribute('scale', { x: p });
-			}
-		});
-	}
-};
-
-function tweenUpdate() {
-	requestAnimationFrame(tweenUpdate);
-	_tween2.default.update();
-}
-tweenUpdate();
-
-},{"../core/audio-manager":210,"../core/colors":211,"../core/scene":213,"eventemitter3":127,"tween.js":167}],206:[function(require,module,exports){
-'use strict';
-
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
 
 var R = 6000 * 2;
 var BLACKOUT_SKY_GEO = new THREE.SphereBufferGeometry(6000, 64, 20);
 
 var SkyShader = require('../shaders/sky-shader');
 
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	// AFRAME.registerComponent( 'sky-blackout', {
+if (typeof AFRAME !== 'undefined' && AFRAME) {}
 
-	// 	dependencies: [ 'visible' ],
-
-	// 	init: function() {
-	// 		this.material = new THREE.ShaderMaterial({
-	// 			uniforms: THREE.UniformsUtils.clone( SkyShader.uniforms ),
-	// 			vertexShader: SkyShader.vertexShader,
-	// 			fragmentShader: SkyShader.fragmentShader,
-	// 			side: THREE.DoubleSide,
-	// 			fog: false
-	// 		});
-
-	// 		this.material.uniforms.startColor.value = new THREE.Color( 0x35312E ); 
-	// 		this.material.uniforms.endColor.value = new THREE.Color( 0x141312 );
-	// 		this.material.uniforms.animIn.value = 1;
-	// 		this.material.needsUpdate = true;
-
-	// 		this.mesh = new THREE.Mesh( BLACKOUT_SKY_GEO, this.material );
-	// 		this.el.setObject3D( 'mesh', this.mesh );
-	// 	}
-	// });
-}
-
-},{"../shaders/sky-shader":232}],207:[function(require,module,exports){
+},{"../shaders/sky-shader":188}],174:[function(require,module,exports){
 'use strict';
 
 var _scene = require('../core/scene');
@@ -97628,51 +91308,7 @@ if (typeof AFRAME !== 'undefined' && AFRAME) {
 	});
 }
 
-},{"../core/colors":211,"../core/scene":213,"../shaders/sky-shader":232,"bezier-easing":14}],208:[function(require,module,exports){
-'use strict';
-
-var _colors = require('../core/colors');
-
-var WIRE_SKY_GEO = new THREE.IcosahedronBufferGeometry(5400, 2); // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * sky-wireframe
- *
- * A skybox sphere rendered in wireframe, used as a 
- * "pallate cleanser" skybox during site transitions.
- */
-
-if (typeof AFRAME !== 'undefined' && AFRAME) {
-	AFRAME.registerComponent('sky-wireframe', {
-
-		dependencies: ['visible'],
-
-		init: function init() {
-			this.material = new THREE.MeshBasicMaterial({
-				color: _colors.FogColor,
-				wireframe: true
-			});
-
-			this.mesh = new THREE.Mesh(WIRE_SKY_GEO, this.material);
-			this.el.setObject3D('mesh', this.mesh);
-		}
-	});
-}
-
-},{"../core/colors":211}],209:[function(require,module,exports){
+},{"../core/colors":177,"../core/scene":179,"../shaders/sky-shader":188,"bezier-easing":14}],175:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // Copyright 2017 Google Inc.
@@ -98464,7 +92100,7 @@ var SimpleTerrain = function () {
 	return SimpleTerrain;
 }();
 
-},{"../c4d/c4d-export-loader":170,"../c4d/c4d-utils":174,"../core/common-tex":212,"../core/scene":213,"../shaders/edge-shader":225,"../shaders/terrain-shader":233,"../utils/math-utils":244,"../workers/jpeg-worker":247}],210:[function(require,module,exports){
+},{"../c4d/c4d-export-loader":168,"../c4d/c4d-utils":171,"../core/common-tex":178,"../core/scene":179,"../shaders/edge-shader":184,"../shaders/terrain-shader":189,"../utils/math-utils":196,"../workers/jpeg-worker":199}],176:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -98566,7 +92202,7 @@ var StaticAudioManager = function () {
 
 var AudioManager = exports.AudioManager = new StaticAudioManager();
 
-},{"./scene":213,"sono":147}],211:[function(require,module,exports){
+},{"./scene":179,"sono":146}],177:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -98603,7 +92239,7 @@ var TextColor = exports.TextColor = new THREE.Color(TextColorHex);
 var TextLightColor = exports.TextLightColor = new THREE.Color(TextLightColorHex);
 var WhiteColor = exports.WhiteColor = new THREE.Color(WhiteColorHex);
 
-},{}],212:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -98691,7 +92327,7 @@ function loadTexture(name, url) {
 
 var CommonTex = exports.CommonTex = new StaticCommonTex();
 
-},{}],213:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -98763,7 +92399,7 @@ var StaticScene = function (_EventEmitter) {
 		_this.isShowingInfoCard = false;
 		_this.nextSite = 'landing_site';
 		_this.firstLoad = true;
-		_this.hasSeenIntro = false;
+		_this.hasSeenIntro = true; // Skip intro - go directly to Mars VR
 		_this.hasSeenOrientation = false;
 		_this.firstVOPlayed = false;
 		_this.isPageRefresh = false;
@@ -98800,12 +92436,12 @@ var StaticScene = function (_EventEmitter) {
 			this.roverMarkers = document.getElementById('rover-markers');
 			this.terrainContainer = document.getElementById('terrain-container');
 
-			// flags
-			_audioManager.AudioManager.disableAudio = !!this.flags.disableAudio;
-			_audioManager.AudioManager.disableVO = !!this.flags.disableVO || _audioManager.AudioManager.disableAudio;
-			_audioManager.AudioManager.disableSFX = !!this.flags.disableSFX || _audioManager.AudioManager.disableAudio;
-			_audioManager.AudioManager.disableAtmosphere = !!this.flags.disableAtmosphere || _audioManager.AudioManager.disableAudio;
-			_audioManager.AudioManager.disableIntroVO = !!this.flags.disableIntroVO || _audioManager.AudioManager.disableAudio;
+			// flags - disable all audio for minimal terrain experience
+			_audioManager.AudioManager.disableAudio = true;
+			_audioManager.AudioManager.disableVO = true;
+			_audioManager.AudioManager.disableSFX = true;
+			_audioManager.AudioManager.disableAtmosphere = true;
+			_audioManager.AudioManager.disableIntroVO = true;
 			this.wireframe = !!this.flags.wireframe || this.wireframe;
 			this.nextSite = this.flags.site || this.nextSite;
 			this.hasSeenOrientation = !!this.flags.hasSeenOrientation || this.hasSeenOrientation;
@@ -98988,7 +92624,8 @@ var StaticScene = function (_EventEmitter) {
 			this.horizMarkers = document.getElementById(this.currentSite + '_horizMarkers');
 
 			// Only show rover markers in the landing site
-			this.roverMarkers.setAttribute('visible', site === 'landing_site');
+			// Removed rover markers for minimal terrain experience
+			// this.roverMarkers.setAttribute( 'visible', site === 'landing_site' );
 
 			this.scene.object3D.background = new THREE.Color('#000');
 
@@ -99020,10 +92657,12 @@ var StaticScene = function (_EventEmitter) {
 					// the current session.
 					_this3.hasSeenIntro = true;
 					_this3.tryEnablingInteraction();
-					_this3.tryPlayingAudio();
+					// Removed audio for minimal terrain experience
+					// this.tryPlayingAudio();
 
 					if (_this3.firstLoad) {
-						_this3.showMarkers();
+						// Removed markers for minimal terrain experience
+						// this.showMarkers();
 						_this3.firstLoad = false;
 					}
 				});
@@ -99034,9 +92673,11 @@ var StaticScene = function (_EventEmitter) {
 				this.player.setAttribute('position', this.playerStartPos);
 				this.player.setAttribute('rotation', this.playerStartRot);
 
-				this.createRover();
+				// Removed rover creation for minimal terrain experience
+				// this.createRover();
 				this.tryEnablingInteraction();
-				this.tryPlayingAudio();
+				// Removed audio for minimal experience
+				// this.tryPlayingAudio();
 
 				// Loading of sites: Pahrump Hills, Murray Buttes and Marias Pass
 			} else {
@@ -99079,10 +92720,11 @@ var StaticScene = function (_EventEmitter) {
 						_this3.emit('terrain-loaded');
 						_this3.emit('site-loaded');
 
-						// Enable interaction, audio, and rover display
+						// Enable interaction only for minimal terrain experience
 						_this3.tryEnablingInteraction();
-						_this3.tryPlayingAudio();
-						_this3.tryShowRover();
+						// Removed audio and rover for minimal experience
+						// this.tryPlayingAudio();
+						// this.tryShowRover();
 
 						resolve();
 					});
@@ -99104,17 +92746,18 @@ var StaticScene = function (_EventEmitter) {
 			if (!this.scene.is('loaded')) return;
 			if (this.scene.is('playing-intro')) return;
 
-			// Play the tile loading sound
-			if (!this.isLinkFromiOS) {
-				_audioManager.AudioManager.playSFX('tile-loadD');
-			}
+			// Play the tile loading sound - removed for minimal terrain experience
+			// if ( !this.isLinkFromiOS ) {
+			// 	AudioManager.playSFX( 'tile-loadD' );
+			// }
 
 			// Show orientation card if the user hasn't seen it yet
-			if (!this.hasSeenOrientation) {
-				this.hasSeenOrientation = true;
-				this.orientationCard.addState('visible');
-				this.orientationCard.components['orientation-card'].update();
-			}
+			// Removed orientation card for minimal terrain experience
+			// if ( !this.hasSeenOrientation ) {
+			// 	this.hasSeenOrientation = true;
+			// 	this.orientationCard.addState( 'visible' );
+			// 	this.orientationCard.components[ 'orientation-card' ].update();
+			// }
 
 			// Hide the simplified terrain and show the full terrain
 			this.terrain.removeState('show-simple');
@@ -99132,7 +92775,8 @@ var StaticScene = function (_EventEmitter) {
 
 			this.scene.addState('interactive');
 
-			this.showMarkers();
+			// Removed markers for minimal terrain experience
+			// this.showMarkers();
 			this.enableTeleport = true;
 
 			// checks visibility of controls
@@ -99242,42 +92886,42 @@ var StaticScene = function (_EventEmitter) {
 			// Closer tiles get updated first.
 			this.tileManager.updatePlayerPosition(point);
 		}
-	}, {
-		key: 'createRover',
-		value: function createRover() {
-			if (this.rover) return this.rover;
 
-			this.rover = document.createElement('a-entity');
-			this.rover.setAttribute('rover', '');
-			this.rover.setAttribute('rotation', { x: 0, y: 90, z: 0 });
-			this.rover.id = 'rover';
+		// Removed rover creation for minimal terrain experience
+		// createRover() {
+		// 	if ( this.rover ) return this.rover;
 
-			this.terrainContainer.appendChild(this.rover);
+		// 	this.rover = document.createElement( 'a-entity' );
+		// 	this.rover.setAttribute( 'rover', '' );
+		// 	this.rover.setAttribute( 'rotation', { x: 0, y: 90, z: 0 } );
+		// 	this.rover.id = 'rover';
 
-			return this.rover;
-		}
-	}, {
-		key: 'tryShowRover',
-		value: function tryShowRover() {
-			if (!this.rover) return;
-			if (!this.isPageRefresh && !this.hasSeenIntro) return;
+		// 	this.terrainContainer.appendChild( this.rover );
 
-			// The rover should only be visible on the landing site. Since this function
-			// is only called when returning to the landing site after having seen the intro,
-			// set the rover's complete state so that it shows up already in position.
-			if (this.currentSite === 'landing_site') {
-				this.rover.setAttribute('visible', true);
-				this.rover.addState('complete');
-			} else {
-				this.hideRover();
-			}
-		}
-	}, {
-		key: 'hideRover',
-		value: function hideRover() {
-			if (!this.rover) return;
-			this.rover.setAttribute('visible', false);
-		}
+		// 	return this.rover;
+		// }
+
+		// Removed rover methods for minimal terrain experience
+		// tryShowRover() {
+		// 	if( !this.rover ) return;
+		// 	if( !this.isPageRefresh && !this.hasSeenIntro ) return;
+
+		// 	// The rover should only be visible on the landing site. Since this function
+		// 	// is only called when returning to the landing site after having seen the intro,
+		// 	// set the rover's complete state so that it shows up already in position.
+		// 	if ( this.currentSite === 'landing_site' ) {
+		// 		this.rover.setAttribute( 'visible', true );
+		// 		this.rover.addState( 'complete' );
+		// 	} else {
+		// 		this.hideRover();
+		// 	}
+		// }
+
+		// hideRover() {
+		// 	if ( !this.rover ) return;
+		// 	this.rover.setAttribute( 'visible', false );
+		// }
+
 	}, {
 		key: 'showMarkers',
 		value: function showMarkers() {
@@ -99298,7 +92942,7 @@ var StaticScene = function (_EventEmitter) {
 
 var Scene = exports.Scene = new StaticScene();
 
-},{"../utils/platform-utils":245,"./audio-manager":210,"./tile-manager":214,"eventemitter3":127}],214:[function(require,module,exports){
+},{"../utils/platform-utils":197,"./audio-manager":176,"./tile-manager":180,"eventemitter3":125}],180:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -99419,7 +93063,7 @@ var TileManager = exports.TileManager = function () {
 	return TileManager;
 }();
 
-},{}],215:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -99523,467 +93167,7 @@ var StaticGLTFLoader = function (_EventEmitter) {
 
 var GLTFLoader = exports.GLTFLoader = new StaticGLTFLoader();
 
-},{"eventemitter3":127}],216:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.CardMeshBorder = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _cardMesh = require('./card-mesh');
-
-var _colors = require('../core/colors');
-
-var _mathUtils = require('../utils/math-utils');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * CardMeshBorder
- *
- * Same as CardMesh, but with a extra border mesh which animates in 
- * when the hover variable is set.
- */
-
-var CardMeshBorderShader = require('../shaders/card-mesh-border-shader');
-
-var HOVER_DURATION = 0.3;
-
-var CardMeshBorder = exports.CardMeshBorder = function (_CardMesh) {
-	_inherits(CardMeshBorder, _CardMesh);
-
-	function CardMeshBorder(width, height, depthTest) {
-		_classCallCheck(this, CardMeshBorder);
-
-		var _this = _possibleConstructorReturn(this, (CardMeshBorder.__proto__ || Object.getPrototypeOf(CardMeshBorder)).call(this, width, height, depthTest));
-
-		_this.hoverIn = 0;
-
-		// Creat the border material
-		_this.borderMaterial = new THREE.ShaderMaterial({
-			uniforms: THREE.UniformsUtils.clone(CardMeshBorderShader.uniforms),
-			vertexShader: CardMeshBorderShader.vertexShader,
-			fragmentShader: CardMeshBorderShader.fragmentShader
-		});
-
-		// Disable depth test if required
-		if (depthTest === false || depthTest === undefined) {
-			_this.borderMaterial.depthTest = false;
-			_this.borderMaterial.transparent = true;
-		}
-
-		// Set border color
-		_this.borderMaterial.uniforms.color.value = _colors.TextColor;
-
-		// Create border mesh with empty geometry. The geometry will be created
-		// in the setSize() function.	
-		_this.borderGeometry = new THREE.BufferGeometry();
-		_this.borderMesh = new THREE.Mesh(_this.borderGeometry, _this.borderMaterial);
-		_this.mesh.add(_this.borderMesh);
-		return _this;
-	}
-
-	_createClass(CardMeshBorder, [{
-		key: 'setSize',
-		value: function setSize(width, height) {
-			_get(CardMeshBorder.prototype.__proto__ || Object.getPrototypeOf(CardMeshBorder.prototype), 'setSize', this).call(this, width, height);
-
-			var w = width;
-			var h = height;
-			var d = 0.001; // z offset
-			var t = 0.04; // border thickness
-
-			var normals = [];
-
-			var vertices = [-w, -h, d, -w, h, d, w, -h, d, w, h, d, -w + t, -h + t, d, -w + t, h - t, d, w - t, -h + t, d, w - t, h - t, d];
-
-			var indices = [4, 5, 1, 6, 4, 0, 7, 6, 2, 5, 7, 3, 0, 4, 1, 2, 6, 0, 3, 7, 2, 1, 5, 3];
-
-			// The X coordinate of the UVs is used for the animIn mask effect.
-			// The Y coordinate is used to animate the thickness of the border.
-			var uvs = [1, 0.03, 0, 0.03, 1, 0.03, 0, 0.03, 1 - t, 0.99, 0 + t, 0.99, 1 - t, 0.99, 0 + t, 0.99];
-
-			// Normals are constant for each vertex
-			for (var i = 0; i < 8; i++) {
-				normals.push(0, 0, 1);
-			}
-
-			// Create a new BufferGeometry object and add the required attributes to it
-			this.borderGeometry = new THREE.BufferGeometry();
-			this.borderGeometry.setIndex(indices);
-			this.borderGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-			this.borderGeometry.addAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-			this.borderGeometry.addAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-
-			// Update the border mesh geometry
-			this.borderMesh.geometry = this.borderGeometry;
-
-			// Counteract the parent mesh's scaling
-			this.borderMesh.scale.setX(1 / this.mesh.scale.x / 2);
-			this.borderMesh.scale.setY(1 / this.mesh.scale.y / 2);
-		}
-	}, {
-		key: 'tick',
-		value: function tick(dt) {
-			_get(CardMeshBorder.prototype.__proto__ || Object.getPrototypeOf(CardMeshBorder.prototype), 'tick', this).call(this, dt);
-
-			dt = dt / 1000 * (1 / HOVER_DURATION);
-
-			if (this.hover) {
-				this.hoverIn += dt;
-			} else {
-				this.hoverIn -= dt;
-			}
-
-			this.hoverIn = _mathUtils.MathUtils.clamp(this.hoverIn, 0, 1);
-
-			this.borderMaterial.uniforms.animIn.value = this.easing(this.animIn);
-			this.borderMaterial.uniforms.hoverIn.value = this.easing(this.hoverIn);
-		}
-	}]);
-
-	return CardMeshBorder;
-}(_cardMesh.CardMesh);
-
-},{"../core/colors":211,"../shaders/card-mesh-border-shader":219,"../utils/math-utils":244,"./card-mesh":218}],217:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.CardMeshImage = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _colors = require('../core/colors');
-
-var _cardMesh = require('./card-mesh');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * CardMeshImage
- *
- * Same as CardMesh, except it can load and display an image.
- */
-
-var CardMeshImage = exports.CardMeshImage = function (_CardMesh) {
-	_inherits(CardMeshImage, _CardMesh);
-
-	function CardMeshImage(width, height, imageURL, depthTest) {
-		_classCallCheck(this, CardMeshImage);
-
-		var _this = _possibleConstructorReturn(this, (CardMeshImage.__proto__ || Object.getPrototypeOf(CardMeshImage)).call(this, width, height, depthTest));
-
-		_this.material.uniforms.color.value = _colors.BGColor;
-
-		_this.textureLoader = new THREE.TextureLoader();
-
-		if (imageURL) {
-			_this.loadImage(imageURL);
-		}
-		return _this;
-	}
-
-	/**
-  * Loads and displays an image at a given URL.
-  * Returns a promise which resolves when the image is loaded.
-  */
-
-
-	_createClass(CardMeshImage, [{
-		key: 'loadImage',
-		value: function loadImage(imageURL) {
-			var _this2 = this;
-
-			return new Promise(function (resolve, reject) {
-				_this2.textureLoader.load('img/' + imageURL, function (texture) {
-					_this2.texture = texture;
-					_this2.texture.minFilter = THREE.LinearMipMapNearestFilter;
-
-					// Set image texture
-					_this2.material.uniforms.map.value = _this2.texture;
-					_this2.material.uniforms.color.value = new THREE.Color(0);
-					_this2.material.needsUpdate = true;
-
-					resolve();
-				});
-			});
-		}
-
-		/**
-   * Unloads the card image and resets the material color.
-   */
-
-	}, {
-		key: 'unloadImage',
-		value: function unloadImage() {
-			this.material.uniforms.color.value = _colors.BGColor;
-			this.material.uniforms.map.value = null;
-			this.material.needsUpdate = true;
-			this.texture = null;
-		}
-	}]);
-
-	return CardMeshImage;
-}(_cardMesh.CardMesh);
-
-},{"../core/colors":211,"./card-mesh":218}],218:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.CardMesh = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _eventemitter = require('eventemitter3');
-
-var _mathUtils = require('../utils/math-utils');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * CardMesh
- *
- * Class which contains the backing mesh used by the info-card and map-card components.
- * Encapsulates mesh setup and management of transition animations.
- */
-
-var BezierEasing = require('bezier-easing');
-var InfoCardShader = require('../shaders/info-card-flat-shader');
-
-var PLANE_GEO = new THREE.PlaneBufferGeometry(1, 1);
-
-var CardMesh = exports.CardMesh = function (_EventEmitter) {
-	_inherits(CardMesh, _EventEmitter);
-
-	function CardMesh(width, height, depthTest) {
-		_classCallCheck(this, CardMesh);
-
-		var _this = _possibleConstructorReturn(this, (CardMesh.__proto__ || Object.getPrototypeOf(CardMesh)).call(this));
-
-		_this.easing = BezierEasing(0.66, 0, 0.33, 1);
-		_this.animIn = 0;
-		_this.delay = 0;
-		_this.delayCounter = 0;
-
-		_this.visible = false;
-		_this.hideComplete = false;
-
-		// Create InfoCardShader material
-		_this.material = new THREE.ShaderMaterial({
-			uniforms: THREE.UniformsUtils.clone(InfoCardShader.uniforms),
-			vertexShader: InfoCardShader.vertexShader,
-			fragmentShader: InfoCardShader.fragmentShader
-		});
-
-		// Disable depth test if required
-		if (depthTest === false || depthTest === undefined) {
-			_this.material.depthTest = false;
-			_this.material.transparent = true;
-		}
-
-		// Set material uniforms
-		_this.material.uniforms.animIn.value = _this.animIn;
-		_this.material.uniforms.color.value = new THREE.Color(0xFFFFFF);
-
-		// Create and scale the plane mesh
-		_this.mesh = new THREE.Mesh(PLANE_GEO, _this.material);
-		_this.mesh.scale.setX(width);
-		_this.mesh.scale.setY(height || width);
-		return _this;
-	}
-
-	_createClass(CardMesh, [{
-		key: 'setVisibility',
-		value: function setVisibility(visibility, duration, delay) {
-			if (visibility) {
-				this.show(duration, delay);
-			} else {
-				this.hide(duration);
-			}
-		}
-	}, {
-		key: 'show',
-		value: function show(duration, delay) {
-			if (this.visible) return;
-			this.setTimings(duration, delay);
-			this.animIn = 0;
-			this.visible = true;
-		}
-	}, {
-		key: 'hide',
-		value: function hide(duration, delay) {
-			if (!this.visible) return;
-			this.setTimings(duration, delay);
-			this.visible = false;
-			this.hideComplete = false;
-		}
-	}, {
-		key: 'setTimings',
-		value: function setTimings(duration, delay) {
-			this.transitionDuration = duration === undefined ? 0.25 : duration;
-			this.delay = delay === undefined ? 0 : delay;
-			this.delayCounter = this.delay ? 1 : 0;
-		}
-	}, {
-		key: 'setSize',
-		value: function setSize(width, height) {
-			this.mesh.scale.setX(width);
-			this.mesh.scale.setY(height || width);
-		}
-	}, {
-		key: 'setPosition',
-		value: function setPosition(x, y) {
-			this.mesh.position.setX(x);
-			this.mesh.position.setY(y);
-		}
-	}, {
-		key: 'setDepth',
-		value: function setDepth(depth) {
-			this.mesh.position.setZ(depth);
-		}
-	}, {
-		key: 'getX',
-		value: function getX() {
-			return this.mesh.position.x;
-		}
-	}, {
-		key: 'getY',
-		value: function getY() {
-			return this.mesh.position.y;
-		}
-	}, {
-		key: 'tick',
-		value: function tick(dt) {
-			// Scale delta-time so that it is a number from 0..1 over the 
-			// number of seconds set by transitionDuration.
-			if (this.delayCounter > 0) {
-				dt = dt / 1000 * (1 / this.delay);
-			} else {
-				dt = dt / 1000 * (1 / this.transitionDuration);
-			}
-
-			if (this.delayCounter > 0) {
-				this.delayCounter -= dt;
-				return;
-			}
-
-			if (this.visible) {
-				this.animIn += dt;
-			} else {
-				this.animIn -= dt;
-			}
-
-			this.animIn = _mathUtils.MathUtils.clamp(this.animIn, 0, 1);
-			this.material.uniforms.animIn.value = this.easing(this.animIn);
-
-			// Emit hide-complete event when the out animation is completed
-			if (!this.hideComplete && this.animIn <= 0) {
-				this.hideComplete = true;
-				this.emit('hide-complete');
-			}
-		}
-	}]);
-
-	return CardMesh;
-}(_eventemitter.EventEmitter);
-
-},{"../shaders/info-card-flat-shader":228,"../utils/math-utils":244,"bezier-easing":14,"eventemitter3":127}],219:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * card-mesh-border-shader
- * 
- */
-
-var uniforms = exports.uniforms = {
-	color: { value: new THREE.Color() },
-	animIn: { value: 1 },
-	hoverIn: { value: 1 }
-};
-
-var vertexShader = exports.vertexShader = ['varying vec2 vUV;', 'void main() {', 'vUV = uv;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform vec3 color;', 'uniform float animIn;', 'uniform float hoverIn;', 'varying vec2 vUV;', 'void main() {', 'if ( vUV.y >= hoverIn || vUV.x >= animIn ) discard;', 'gl_FragColor = vec4( color, 1.0 );', '}'].join('\n');
-
-},{}],220:[function(require,module,exports){
+},{"eventemitter3":125}],182:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100019,45 +93203,7 @@ var vertexShader = exports.vertexShader = ['void main() {', 'gl_Position = proje
 
 var fragmentShader = exports.fragmentShader = ['uniform float opacity;', 'uniform vec3 color;', 'void main() {', 'gl_FragColor = vec4( color, opacity / 100.0 );', '}'].join('\n');
 
-},{}],221:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * color-mask-shader
- *
- * Uses a given texture as an alpha mask with a given color 
- * and opacity. Used by the icon components.
- */
-
-var uniforms = exports.uniforms = {
-	map: { type: 't' },
-	color: { value: new THREE.Color() },
-	opacity: { value: 1 }
-};
-
-var vertexShader = exports.vertexShader = ['varying vec2 vUV;', 'void main() {', 'vUV = uv;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform sampler2D map;', 'uniform vec3 color;', 'uniform float opacity;', 'varying vec2 vUV;', 'void main() {', 'vec4 t = texture2D( map, vUV );', 'if ( t.a < 0.5 ) discard;', 'gl_FragColor = vec4( color * t.rgb, t.a * opacity );', '}'].join('\n');
-
-},{}],222:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100092,76 +93238,7 @@ var vertexShader = exports.vertexShader = ['void main() {', 'gl_Position = proje
 
 var fragmentShader = exports.fragmentShader = ['uniform vec3 color;', 'void main() {', 'gl_FragColor = vec4( color, 1.0 );', '}'].join('\n');
 
-},{}],223:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * controller-dot-shader
- *
- * Draws a colored ring of a given radius. 
- * Used by controller-dot. 
- */
-
-var uniforms = exports.uniforms = {
-	color: { value: new THREE.Color(0xFFFFFF) },
-	innerRadius: { value: 0.30 }
-};
-
-var vertexShader = exports.vertexShader = ['varying vec2 vUV;', 'void main() {', 'vUV = uv;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform vec3 color;', 'uniform float innerRadius;', 'varying vec2 vUV;', 'void main() {', 'float d = length( vUV - 0.5 );', 'if ( d > 0.5 || d < innerRadius ) discard;', 'gl_FragColor = vec4( color, 1.0 );', '}'].join('\n');
-
-},{}],224:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-var uniforms = exports.uniforms = {
-	dashSpacing: { value: 0.3 },
-	dashSize: { value: 0.5 },
-	t: { value: 0.0 },
-	axis: { value: new THREE.Vector2(0, 1) },
-	show: { value: 1.0 }
-};
-
-var vertexShader = exports.vertexShader = ['varying vec2 vUV;', 'void main() {', 'vUV = uv;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform float rayLength;', 'uniform float dashSpacing;', 'uniform float dashSize;', 'uniform float t;', 'uniform float show;', 'uniform vec2 axis;', 'varying vec2 vUV;', 'void main() {', 'float uv = length( vUV * axis );', 'if ( uv > show ) discard;', 'float d = fract( uv * ( 1.0 / dashSpacing ) - t );', 'if ( d < 1.0 - dashSize ) discard;', 'gl_FragColor = vec4( 1.0 );', '}'].join('\n');
-
-},{}],225:[function(require,module,exports){
+},{}],184:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100208,7 +93285,7 @@ var vertexShader = exports.vertexShader = ['attribute vec3 center;', _shaderChun
 
 var fragmentShader = exports.fragmentShader = ['uniform vec3 lineColor;', 'uniform vec3 fillColor;', 'uniform float thickness;', _shaderChunks.FogParamsFrag, 'varying vec3 vCenter;', 'void main() {', 'vec3 a3 = smoothstep( vec3( 0.0 ), fwidth( vCenter.xyz ) * thickness, vCenter.xyz );', 'float edgeFactor = min( min( a3.x, a3.y ), a3.z );', 'gl_FragColor = vec4( mix( lineColor, fillColor, edgeFactor ), 1.0 );', _shaderChunks.FogFrag, '}'].join('\n');
 
-},{"./shader-chunks":231}],226:[function(require,module,exports){
+},{"./shader-chunks":187}],185:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100247,123 +93324,7 @@ var vertexShader = exports.vertexShader = ['varying float vUVY;', 'void main() {
 
 var fragmentShader = exports.fragmentShader = ['uniform float start;', 'uniform float end;', 'uniform float opacity;', 'uniform vec3 color;', 'varying float vUVY;', 'void main() {', 'bool discardStart = (  vUVY ) < ( start / 100.0 );', 'bool discardEnd = ( 1.0 - vUVY ) < 1.0 - ( end / 100.0 );', 'if ( discardStart || discardEnd ) discard;', 'gl_FragColor = vec4( color, opacity / 100.0 );', '}'].join('\n');
 
-},{}],227:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * gradient-shader
- *
- * Draws a one-color alpha gradient along the UV.y axis.
- * Used for the base of the horizon-markers.
- */
-
-var uniforms = exports.uniforms = {
-	color: { type: 'c', value: new THREE.Color(0xFFFFFF) },
-	alpha: { type: '1f', value: 0.5 }
-};
-
-var vertexShader = exports.vertexShader = ['varying float vUVy;', 'void main() {', 'vUVy = uv.y;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform float alpha;', 'uniform vec3 color;', 'varying float vUVy;', 'void main() {', 'gl_FragColor = vec4( color, mix( 0.0, alpha, 1.0 - vUVy ) );', '}'].join('\n');
-
-},{}],228:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * info-card-flat-shader
- *
- * Flat color shader used for the background of info-cards.
- *
- * Has an 'animIn' parameter for controlling a mask-in transition 
- * animation.
- */
-
-var uniforms = exports.uniforms = {
-	map: { type: 't' },
-	animIn: { value: 1 },
-	color: { value: new THREE.Color(0) }
-};
-
-var vertexShader = exports.vertexShader = ['varying vec2 vUV;', 'void main() {', 'vUV = uv;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform float animIn;', 'uniform vec3 color;', 'uniform sampler2D map;', 'varying vec2 vUV;', 'void main() {', 'float d = length( vUV - 0.5 );', 'if ( vUV.y < 1.0 - animIn ) discard;', 'gl_FragColor = vec4( texture2D( map, vUV ).rgb + color, 1.0 );', '}'].join('\n');
-
-},{}],229:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * map-path-shader
- *
- * Flat color shader which masks two colors along the UV.x axis,
- * based on a fill parameter. Used by map-path.
- */
-
-var uniforms = exports.uniforms = {
-	fill: { value: 0.5 },
-	colorA: { value: new THREE.Color() },
-	colorB: { value: new THREE.Color(0xFF00FF) },
-	opacity: { value: 1 }
-};
-
-var vertexShader = exports.vertexShader = ['varying float xUV;', 'void main() {', 'xUV = uv.x;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform float fill;', 'uniform vec3 colorA;', 'uniform vec3 colorB;', 'uniform float opacity;', 'varying float xUV;', 'void main() {', 'gl_FragColor.rgb = mix( colorA, colorB, step( fill, xUV ) );', 'gl_FragColor.a = opacity;', '}'].join('\n');
-
-},{}],230:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100423,7 +93384,7 @@ var fragmentShader = exports.fragmentShader = ['#define HIGHLIGHT_COLOR vec3( 0.
 // Cinema4D's COLLADA exporter flips the y-axis of the UV coordinates...
 'vec2 uv = vec2( vUV.x, 1.0 + -vUV.y );', 'float highlight = length( texture2D( highlightMap, uv ).rgb * activeHighlightColor );', 'gl_FragColor.rgb = texture2D( map, uv ).rgb * irradience;', 'gl_FragColor.rgb += HIGHLIGHT_COLOR * activeHighlightOpacity * highlight;', 'gl_FragColor.rgb *= color;', 'gl_FragColor.a = 1.0;', _shaderChunks.FogFrag, '}'].join('\n');
 
-},{"../core/colors":211,"./shader-chunks":231}],231:[function(require,module,exports){
+},{"../core/colors":177,"./shader-chunks":187}],187:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100460,7 +93421,7 @@ var FogParamsFrag = exports.FogParamsFrag = ['#define LOG2 1.442695', 'uniform v
 // Fog fragment shader calculations
 var FogFrag = exports.FogFrag = ['float fogFactor = 1.0 - saturate( exp2( -fogDensity * fogDensity * fogDepth * fogDepth * LOG2 ) );', 'gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor );'].join('\n');
 
-},{}],232:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100498,7 +93459,7 @@ var vertexShader = exports.vertexShader = ['varying vec2 vUVa;', 'varying vec2 v
 
 var fragmentShader = exports.fragmentShader = ['uniform vec3 startColor;', 'uniform vec3 endColor;', 'uniform float animIn;', 'varying vec2 vUVa;', 'varying vec2 vUVb;', 'void main() {', 'if ( vUVb.y > animIn ) discard;', 'gl_FragColor = vec4( mix( startColor, endColor, vUVa.y ), 1.0 );', '}'].join('\n');
 
-},{}],233:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100552,7 +93513,7 @@ var fragmentShader = exports.fragmentShader = ['uniform sampler2D terrainTex;', 
 // Cinema4D's COLLADA exporter flips the y-axis of the UV coordinates...
 'vec2 uv = vec2( vUV.x, 1.0 + -vUV.y );', 'float triangle = texture2D( triangleTex, fract( vLocalUV ) ).r;', 'if ( triangle >= animIn ) discard;', 'gl_FragColor = vec4( texture2D( terrainTex, uv ).rgb + ( texture2D( gridTex, gridUV ).rgb ) * gridOpacity, 1.0 );', _shaderChunks.FogFrag, '}'].join('\n');
 
-},{"../core/colors":211,"./shader-chunks":231}],234:[function(require,module,exports){
+},{"../core/colors":177,"./shader-chunks":187}],190:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100588,44 +93549,7 @@ var vertexShader = exports.vertexShader = ['varying vec2 vUV;', 'void main() {',
 
 var fragmentShader = exports.fragmentShader = ['uniform sampler2D map;', 'varying vec2 vUV;', 'void main() {', 'gl_FragColor = vec4( texture2D( map, vUV ).rgb, 1.0 );', '}'].join('\n');
 
-},{}],235:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Copyright 2017 Google Inc.
-//
-//   Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//   You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-//   Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//   See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * uv-highpass-shader
- *
- * Solid color shader which discards all fragments below a given
- * uv.y value. Used by the POI marker rings.
- */
-
-var uniforms = exports.uniforms = {
-	cutoff: { value: 1 },
-	color: { value: new THREE.Color(0xFFFFFF) }
-};
-
-var vertexShader = exports.vertexShader = ['varying float vUVY;', 'void main() {', 'vUVY = uv.y;', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n');
-
-var fragmentShader = exports.fragmentShader = ['uniform float cutoff;', 'uniform vec3 color;', 'varying float vUVY;', 'void main() {', 'if ( vUVY < 1.0 - cutoff ) discard;', 'gl_FragColor = vec4( color, 1.0 );', '}'].join('\n');
-
-},{}],236:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100648,6 +93572,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * See the License for the specific language governing permissions and
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * limitations under the License.
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
+
+/**
+ * exit-button
+ *
+ */
 
 var _platformUtils = require('../utils/platform-utils');
 
@@ -100716,7 +93645,7 @@ var ExitButton = exports.ExitButton = function () {
 	return ExitButton;
 }();
 
-},{"../utils/platform-utils":245,"screenfull":141}],237:[function(require,module,exports){
+},{"../utils/platform-utils":197,"screenfull":141}],192:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100749,6 +93678,11 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 //   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //   See the License for the specific language governing permissions and
 // limitations under the License.
+
+/**
+ * splash
+ *
+ */
 
 var screenfull = require('screenfull');
 
@@ -100971,614 +93905,7 @@ function initSplash() {
     return splash;
 }
 
-},{"../core/scene":213,"../utils/platform-utils":245,"./exit-button":236,"qs":137,"screenfull":141,"webvr-ui/build/webvr-ui":168}],238:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Modified from https://github.com/Flafla2/Vive-Teleporter
- */
-
-var UP_VECTOR = new THREE.Vector3(0, 1, 0);
-var RAD_45 = Math.PI / 4;
-
-var BezierEasing = require('bezier-easing');
-var SHOW_EASING = BezierEasing(0.66, 0, 0.33, 1);
-
-var ParabolicPointer = exports.ParabolicPointer = function () {
-	function ParabolicPointer() {
-		_classCallCheck(this, ParabolicPointer);
-
-		this.velocityFwd = new THREE.Vector3();
-		this.vectorRight = new THREE.Vector3();
-		this.vectorCross = new THREE.Vector3();
-		this.tempVectorA = new THREE.Vector3();
-		this.normal = new THREE.Vector3();
-		this.deriv = new THREE.Vector3();
-		this.next = new THREE.Vector3();
-		this.last = new THREE.Vector3();
-		this.hit = new THREE.Vector3();
-
-		this.raycaster = new THREE.Raycaster();
-		this.direction = new THREE.Vector3();
-	}
-
-	_createClass(ParabolicPointer, [{
-		key: 'parabola1D',
-		value: function parabola1D(p, v, a, t) {
-			return p + v * t + 0.5 * a * t * t;
-		}
-	}, {
-		key: 'parabolaDeriv1D',
-		value: function parabolaDeriv1D(v, a, t) {
-			return v + a * t;
-		}
-	}, {
-		key: 'parabola3D',
-		value: function parabola3D(p, v, a, t, result) {
-			result = result || new THREE.Vector3();
-			result.x = this.parabola1D(p.x, v.x, a.x, t);
-			result.y = this.parabola1D(p.y, v.y, a.y, t);
-			result.z = this.parabola1D(p.z, v.z, a.z, t);
-			return result;
-		}
-	}, {
-		key: 'parabolaDeriv3D',
-		value: function parabolaDeriv3D(v, a, t, result) {
-			result = result || new THREE.Vector3();
-			result.x = this.parabolaDeriv1D(v.x, a.x, t);
-			result.y = this.parabolaDeriv1D(v.y, a.y, t);
-			result.z = this.parabolaDeriv1D(v.z, a.z, t);
-			return result;
-		}
-	}, {
-		key: 'getInitialVelocity1D',
-		value: function getInitialVelocity1D(th, y, a, x) {
-			// var yxtan = y - x * Math.tan( th );
-			// var b = x * Math.sqrt( -a * yxtan );
-			// var c = Math.sqrt( 2 ) * Math.cos( th ) * yxtan;
-			// return b / c;
-			// var b = 0.5 * a * d * d;
-			// var c = d * Math.tan( th ) + y;
-			// return ( 1 / Math.cos( th ) ) * Math.sqrt( b / c );
-			var ct = Math.cos(th);
-			var st = Math.sin(th);
-			var b = 2 * y * a * ct * ct;
-			var c = 2 * a * x * ct * st;
-			return a * x / Math.sqrt(Math.abs(b + c));
-		}
-	}, {
-		key: 'calcCurve',
-		value: function calcCurve(start, end, pts) {
-			pts.push(start.clone());
-
-			var midpoint = new THREE.Vector3();
-			var d = start.distanceTo(end);
-			var y = 0.2 + d / 35;
-			var ease = BezierEasing(0, 0, 1 - Math.min(d / 35, 0.7), 1);
-
-			for (var i = 0, t = 0; i < 50; i++) {
-				t = i / 50;
-				midpoint.lerpVectors(start, end, t);
-				midpoint.y += Math.sin(ease(t) * Math.PI) * y;
-				pts.push(midpoint.clone());
-			}
-		}
-	}, {
-		key: 'calcParabolicCurve',
-		value: function calcParabolicCurve(p, v, a, dist, n, mesh, pts) {
-			pts.push(p.clone());
-
-			this.last.copy(p);
-
-			for (var i = 0, t = 0; i < n; i++) {
-				this.parabolaDeriv3D(v, a, t, this.deriv);
-				t += dist / this.deriv.length();
-				this.parabola3D(p, v, a, t, this.next);
-
-				this.direction.subVectors(this.next, this.last);
-				this.direction.normalize();
-
-				this.raycaster.far = this.next.distanceTo(this.last);
-				this.raycaster.set(this.last, this.direction);
-
-				var intersections = this.raycaster.intersectObject(mesh, true);
-
-				if (intersections.length) {
-					var intersection = intersections[0];
-					pts.push(intersection.point.clone());
-					return intersection;
-				} else {
-					pts.push(this.next.clone());
-				}
-
-				this.last.copy(this.next);
-			}
-
-			return null;
-		}
-	}, {
-		key: 'calcParabolaParameters',
-		value: function calcParabolaParameters(velocity) {
-			this.velocityFwd.copy(velocity);
-			this.velocityFwd.projectOnPlane(UP_VECTOR);
-
-			var angle = this.velocityFwd.angleTo(velocity);
-
-			this.vectorRight.crossVectors(UP_VECTOR, this.velocityFwd);
-			this.vectorCross.crossVectors(this.velocityFwd, velocity);
-
-			if (this.vectorRight.dot(this.vectorCross) > 0) {
-				angle *= -1;
-			}
-
-			return angle;
-		}
-	}]);
-
-	return ParabolicPointer;
-}();
-
-},{"bezier-easing":14}],239:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-// Modified to allow animated dashed line rendering
-
-var MeshLineMaterial = exports.MeshLineMaterial = function MeshLineMaterial(parameters) {
-
-	var vertexShaderSource = ['precision mediump float;', '', 'attribute vec3 position;', 'attribute vec3 previous;', 'attribute vec3 next;', 'attribute float side;', 'attribute float width;', 'attribute vec2 uv;', 'attribute float counters;', '', 'uniform mat4 projectionMatrix;', 'uniform mat4 modelViewMatrix;', 'uniform vec2 resolution;', 'uniform float lineWidth;', 'uniform vec3 color;', 'uniform float opacity;', 'uniform float sizeAttenuation;', '', 'varying vec2 vUV;', 'varying vec4 vColor;', 'varying float vCounters;', '', 'vec2 fix( vec4 i, float aspect ) {', '', '    vec2 res = i.xy / i.w;', '    res.x *= aspect;', '	 vCounters = counters;', '    return res;', '', '}', '', 'void main() {', '', '    float aspect = resolution.x / resolution.y;', '	 float pixelWidthRatio = 1. / (resolution.x * projectionMatrix[0][0]);', '', '    vColor = vec4( color, opacity );', '    vUV = uv;', '', '    mat4 m = projectionMatrix * modelViewMatrix;', '    vec4 finalPosition = m * vec4( position, 1.0 );', '    vec4 prevPos = m * vec4( previous, 1.0 );', '    vec4 nextPos = m * vec4( next, 1.0 );', '', '    vec2 currentP = fix( finalPosition, aspect );', '    vec2 prevP = fix( prevPos, aspect );', '    vec2 nextP = fix( nextPos, aspect );', '', '	 float pixelWidth = finalPosition.w * pixelWidthRatio;', '    float w = 1.8 * pixelWidth * lineWidth * width;', '', '    if( sizeAttenuation == 1. ) {', '        w = 1.8 * lineWidth * width;', '    }', '', '    vec2 dir;', '    if( nextP == currentP ) dir = normalize( currentP - prevP );', '    else if( prevP == currentP ) dir = normalize( nextP - currentP );', '    else {', '        vec2 dir1 = normalize( currentP - prevP );', '        vec2 dir2 = normalize( nextP - currentP );', '        dir = normalize( dir1 + dir2 );', '', '        vec2 perp = vec2( -dir1.y, dir1.x );', '        vec2 miter = vec2( -dir.y, dir.x );', '        //w = clamp( w / dot( miter, perp ), 0., 4. * lineWidth * width );', '', '    }', '', '    vec2 normal = vec2( -dir.y, dir.x );', '    normal.x /= aspect;', '    normal *= 0.5 * w;', '', '    vec4 offset = vec4( normal * side, 0.0, 1.0 );', '    finalPosition.xy += offset.xy;', '', '    gl_Position = finalPosition;', '', '}'];
-
-	var fragmentShaderSource = ['#extension GL_OES_standard_derivatives : enable', '', 'precision mediump float;', '', 'uniform float visibility;', 'uniform float alphaTest;', 'uniform vec2 repeat;', 'uniform float dashSpacing;', 'uniform float dashSize;', 'uniform vec2 dashAxis;', 'uniform float t;', '', 'varying vec2 vUV;', 'varying vec4 vColor;', 'varying float vCounters;', '', 'void main() {', '', '    vec4 c = vColor;', '	 if( c.a < alphaTest ) discard;', '	 float uv = length( vUV * dashAxis );', '	 float d = fract( uv * ( 1.0 / dashSpacing ) - t );', ' 	 if ( d < 1.0 - dashSize ) discard;', '    gl_FragColor = vec4( c.rgb, 1.0 );', '	 gl_FragColor.a *= step(vCounters,visibility);', '}'];
-
-	function check(v, d) {
-		if (v === undefined) return d;
-		return v;
-	}
-
-	THREE.Material.call(this);
-
-	parameters = parameters || {};
-
-	this.lineWidth = check(parameters.lineWidth, 1);
-	this.color = check(parameters.color, new THREE.Color(0xffffff));
-	this.opacity = check(parameters.opacity, 1);
-	this.resolution = check(parameters.resolution, new THREE.Vector2(1, 1));
-	this.sizeAttenuation = check(parameters.sizeAttenuation, 1);
-	this.visibility = check(parameters.visibility, 1);
-	this.alphaTest = check(parameters.alphaTest, 0);
-	this.repeat = check(parameters.repeat, new THREE.Vector2(1, 1));
-	this.dashSpacing = check(parameters.dashSpacing, 0.05);
-	this.dashSize = check(parameters.dashSize, 0.5);
-	this.dashAxis = check(parameters.dashAxis, new THREE.Vector2(1, 0));
-	this.t = check(parameters.t, 0);
-
-	var material = new THREE.RawShaderMaterial({
-		uniforms: {
-			lineWidth: { type: 'f', value: this.lineWidth },
-			color: { type: 'c', value: this.color },
-			opacity: { type: 'f', value: this.opacity },
-			resolution: { type: 'v2', value: this.resolution },
-			sizeAttenuation: { type: 'f', value: this.sizeAttenuation },
-			visibility: { type: 'f', value: this.visibility },
-			alphaTest: { type: 'f', value: this.alphaTest },
-			repeat: { type: 'v2', value: this.repeat },
-			dashSpacing: { type: 'f', value: this.dashSpacing },
-			dashSize: { type: 'f', value: this.dashSize },
-			dashAxis: { type: 'v2', value: this.dashAxis },
-			t: { type: 'f', value: this.t }
-		},
-		vertexShader: vertexShaderSource.join('\r\n'),
-		fragmentShader: fragmentShaderSource.join('\r\n')
-	});
-
-	delete parameters.lineWidth;
-	delete parameters.color;
-	delete parameters.opacity;
-	delete parameters.resolution;
-	delete parameters.sizeAttenuation;
-	delete parameters.alphaTest;
-	delete parameters.repeat;
-	delete parameters.dashSpacing;
-	delete parameters.dashSize;
-	delete parameters.dashAxis;
-	delete parameters.t;
-
-	material.type = 'MeshLineMaterial';
-
-	material.setValues(parameters);
-
-	return material;
-};
-
-MeshLineMaterial.prototype = Object.create(THREE.Material.prototype);
-MeshLineMaterial.prototype.constructor = MeshLineMaterial;
-
-MeshLineMaterial.prototype.copy = function (source) {
-
-	THREE.Material.prototype.copy.call(this, source);
-
-	this.lineWidth = source.lineWidth;
-	this.color.copy(source.color);
-	this.opacity = source.opacity;
-	this.resolution.copy(source.resolution);
-	this.sizeAttenuation = source.sizeAttenuation;
-	this.visibility = source.visibility;
-	this.alphaTest = source.alphaTest;
-	this.repeat.copy(source.repeat);
-	this.dashSpacing = source.dashSpacing;
-	this.dashSize = source.dashSize;
-	this.dashAxis.copy(source.dashAxis);
-	this.t = source.t;
-
-	return this;
-};
-
-},{}],240:[function(require,module,exports){
-'use strict';
-
-;(function () {
-
-	"use strict";
-
-	var root = window;
-
-	var has_require = typeof require !== 'undefined';
-
-	var THREE = root.THREE; // || has_require && require('three')
-	if (!THREE) throw new Error('MeshLine requires three.js');
-
-	function MeshLine() {
-
-		this.positions = [];
-
-		this.previous = [];
-		this.next = [];
-		this.side = [];
-		this.width = [];
-		this.indices_array = [];
-		this.uvs = [];
-		this.counters = [];
-		this.geometry = new THREE.BufferGeometry();
-
-		this.widthCallback = null;
-	}
-
-	MeshLine.prototype.setGeometry = function (g, c) {
-
-		this.widthCallback = c;
-
-		this.positions = [];
-		this.counters = [];
-
-		if (g instanceof THREE.Geometry) {
-			for (var j = 0; j < g.vertices.length; j++) {
-				var v = g.vertices[j];
-				var c = j / g.vertices.length;
-				this.positions.push(v.x, v.y, v.z);
-				this.positions.push(v.x, v.y, v.z);
-				this.counters.push(c);
-				this.counters.push(c);
-			}
-		}
-
-		if (g instanceof THREE.BufferGeometry) {
-			// read attribute positions ?
-		}
-
-		if (g instanceof Float32Array || g instanceof Array) {
-			for (var j = 0; j < g.length; j += 3) {
-				var c = j / g.length;
-				this.positions.push(g[j], g[j + 1], g[j + 2]);
-				this.positions.push(g[j], g[j + 1], g[j + 2]);
-				this.counters.push(c);
-				this.counters.push(c);
-			}
-		}
-
-		this.process();
-	};
-
-	MeshLine.prototype.compareV3 = function (a, b) {
-
-		var aa = a * 6;
-		var ab = b * 6;
-		return this.positions[aa] === this.positions[ab] && this.positions[aa + 1] === this.positions[ab + 1] && this.positions[aa + 2] === this.positions[ab + 2];
-	};
-
-	MeshLine.prototype.copyV3 = function (a) {
-
-		var aa = a * 6;
-		return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]];
-	};
-
-	MeshLine.prototype.process = function () {
-
-		var l = this.positions.length / 6;
-
-		this.previous = [];
-		this.next = [];
-		this.side = [];
-		this.width = [];
-		this.indices_array = [];
-		this.uvs = [];
-
-		for (var j = 0; j < l; j++) {
-			this.side.push(1);
-			this.side.push(-1);
-		}
-
-		var w;
-		for (var j = 0; j < l; j++) {
-			if (this.widthCallback) w = this.widthCallback(j / (l - 1));else w = 1;
-			this.width.push(w);
-			this.width.push(w);
-		}
-
-		for (var j = 0; j < l; j++) {
-			this.uvs.push(j / (l - 1), 0);
-			this.uvs.push(j / (l - 1), 1);
-		}
-
-		var v;
-
-		if (this.compareV3(0, l - 1)) {
-			v = this.copyV3(l - 2);
-		} else {
-			v = this.copyV3(0);
-		}
-		this.previous.push(v[0], v[1], v[2]);
-		this.previous.push(v[0], v[1], v[2]);
-		for (var j = 0; j < l - 1; j++) {
-			v = this.copyV3(j);
-			this.previous.push(v[0], v[1], v[2]);
-			this.previous.push(v[0], v[1], v[2]);
-		}
-
-		for (var j = 1; j < l; j++) {
-			v = this.copyV3(j);
-			this.next.push(v[0], v[1], v[2]);
-			this.next.push(v[0], v[1], v[2]);
-		}
-
-		if (this.compareV3(l - 1, 0)) {
-			v = this.copyV3(1);
-		} else {
-			v = this.copyV3(l - 1);
-		}
-		this.next.push(v[0], v[1], v[2]);
-		this.next.push(v[0], v[1], v[2]);
-
-		for (var j = 0; j < l - 1; j++) {
-			var n = j * 2;
-			this.indices_array.push(n, n + 1, n + 2);
-			this.indices_array.push(n + 2, n + 1, n + 3);
-		}
-
-		if (!this.attributes) {
-			this.attributes = {
-				position: new THREE.BufferAttribute(new Float32Array(this.positions), 3),
-				previous: new THREE.BufferAttribute(new Float32Array(this.previous), 3),
-				next: new THREE.BufferAttribute(new Float32Array(this.next), 3),
-				side: new THREE.BufferAttribute(new Float32Array(this.side), 1),
-				width: new THREE.BufferAttribute(new Float32Array(this.width), 1),
-				uv: new THREE.BufferAttribute(new Float32Array(this.uvs), 2),
-				index: new THREE.BufferAttribute(new Uint16Array(this.indices_array), 1),
-				counters: new THREE.BufferAttribute(new Float32Array(this.counters), 1)
-			};
-		} else {
-			this.attributes.position.copyArray(new Float32Array(this.positions));
-			this.attributes.position.needsUpdate = true;
-			this.attributes.previous.copyArray(new Float32Array(this.previous));
-			this.attributes.previous.needsUpdate = true;
-			this.attributes.next.copyArray(new Float32Array(this.next));
-			this.attributes.next.needsUpdate = true;
-			this.attributes.side.copyArray(new Float32Array(this.side));
-			this.attributes.side.needsUpdate = true;
-			this.attributes.width.copyArray(new Float32Array(this.width));
-			this.attributes.width.needsUpdate = true;
-			this.attributes.uv.copyArray(new Float32Array(this.uvs));
-			this.attributes.uv.needsUpdate = true;
-			this.attributes.index.copyArray(new Uint16Array(this.indices_array));
-			this.attributes.index.needsUpdate = true;
-		}
-
-		this.geometry.addAttribute('position', this.attributes.position);
-		this.geometry.addAttribute('previous', this.attributes.previous);
-		this.geometry.addAttribute('next', this.attributes.next);
-		this.geometry.addAttribute('side', this.attributes.side);
-		this.geometry.addAttribute('width', this.attributes.width);
-		this.geometry.addAttribute('uv', this.attributes.uv);
-		this.geometry.addAttribute('counters', this.attributes.counters);
-
-		this.geometry.setIndex(this.attributes.index);
-	};
-
-	function memcpy(src, srcOffset, dst, dstOffset, length) {
-		var i;
-
-		src = src.subarray || src.slice ? src : src.buffer;
-		dst = dst.subarray || dst.slice ? dst : dst.buffer;
-
-		src = srcOffset ? src.subarray ? src.subarray(srcOffset, length && srcOffset + length) : src.slice(srcOffset, length && srcOffset + length) : src;
-
-		if (dst.set) {
-			dst.set(src, dstOffset);
-		} else {
-			for (i = 0; i < src.length; i++) {
-				dst[i + dstOffset] = src[i];
-			}
-		}
-
-		return dst;
-	}
-
-	/**
-  * Fast method to advance the line by one position.  The oldest position is removed.
-  * @param position
-  */
-	MeshLine.prototype.advance = function (position) {
-
-		var positions = this.attributes.position.array;
-		var previous = this.attributes.previous.array;
-		var next = this.attributes.next.array;
-		var l = positions.length;
-
-		// PREVIOUS
-		memcpy(positions, 0, previous, 0, l);
-
-		// POSITIONS
-		memcpy(positions, 6, positions, 0, l - 6);
-
-		positions[l - 6] = position.x;
-		positions[l - 5] = position.y;
-		positions[l - 4] = position.z;
-		positions[l - 3] = position.x;
-		positions[l - 2] = position.y;
-		positions[l - 1] = position.z;
-
-		// NEXT
-		memcpy(positions, 6, next, 0, l - 6);
-
-		next[l - 6] = position.x;
-		next[l - 5] = position.y;
-		next[l - 4] = position.z;
-		next[l - 3] = position.x;
-		next[l - 2] = position.y;
-		next[l - 1] = position.z;
-
-		this.attributes.position.needsUpdate = true;
-		this.attributes.previous.needsUpdate = true;
-		this.attributes.next.needsUpdate = true;
-	};
-
-	function MeshLineMaterial(parameters) {
-
-		var vertexShaderSource = ['precision highp float;', '', 'attribute vec3 position;', 'attribute vec3 previous;', 'attribute vec3 next;', 'attribute float side;', 'attribute float width;', 'attribute vec2 uv;', 'attribute float counters;', '', 'uniform mat4 projectionMatrix;', 'uniform mat4 modelViewMatrix;', 'uniform vec2 resolution;', 'uniform float lineWidth;', 'uniform vec3 color;', 'uniform float opacity;', 'uniform float near;', 'uniform float far;', 'uniform float sizeAttenuation;', '', 'varying vec2 vUV;', 'varying vec4 vColor;', 'varying float vCounters;', '', 'vec2 fix( vec4 i, float aspect ) {', '', '    vec2 res = i.xy / i.w;', '    res.x *= aspect;', '	 vCounters = counters;', '    return res;', '', '}', '', 'void main() {', '', '    float aspect = resolution.x / resolution.y;', '	 float pixelWidthRatio = 1. / (resolution.x * projectionMatrix[0][0]);', '', '    vColor = vec4( color, opacity );', '    vUV = uv;', '', '    mat4 m = projectionMatrix * modelViewMatrix;', '    vec4 finalPosition = m * vec4( position, 1.0 );', '    vec4 prevPos = m * vec4( previous, 1.0 );', '    vec4 nextPos = m * vec4( next, 1.0 );', '', '    vec2 currentP = fix( finalPosition, aspect );', '    vec2 prevP = fix( prevPos, aspect );', '    vec2 nextP = fix( nextPos, aspect );', '', '	 float pixelWidth = finalPosition.w * pixelWidthRatio;', '    float w = 1.8 * pixelWidth * lineWidth * width;', '', '    if( sizeAttenuation == 1. ) {', '        w = 1.8 * lineWidth * width;', '    }', '', '    vec2 dir;', '    if( nextP == currentP ) dir = normalize( currentP - prevP );', '    else if( prevP == currentP ) dir = normalize( nextP - currentP );', '    else {', '        vec2 dir1 = normalize( currentP - prevP );', '        vec2 dir2 = normalize( nextP - currentP );', '        dir = normalize( dir1 + dir2 );', '', '        vec2 perp = vec2( -dir1.y, dir1.x );', '        vec2 miter = vec2( -dir.y, dir.x );', '        //w = clamp( w / dot( miter, perp ), 0., 4. * lineWidth * width );', '', '    }', '', '    //vec2 normal = ( cross( vec3( dir, 0. ), vec3( 0., 0., 1. ) ) ).xy;', '    vec2 normal = vec2( -dir.y, dir.x );', '    normal.x /= aspect;', '    normal *= .5 * w;', '', '    vec4 offset = vec4( normal * side, 0.0, 1.0 );', '    finalPosition.xy += offset.xy;', '', '    gl_Position = finalPosition;', '', '}'];
-
-		var fragmentShaderSource = ['#extension GL_OES_standard_derivatives : enable', 'precision mediump float;', '', 'uniform sampler2D map;', 'uniform sampler2D alphaMap;', 'uniform float useMap;', 'uniform float useAlphaMap;', 'uniform float useDash;', 'uniform vec2 dashArray;', 'uniform float visibility;', 'uniform float alphaTest;', 'uniform vec2 repeat;', '', 'varying vec2 vUV;', 'varying vec4 vColor;', 'varying float vCounters;', '', 'void main() {', '', '    vec4 c = vColor;', '    if( useMap == 1. ) c *= texture2D( map, vUV * repeat );', '    if( useAlphaMap == 1. ) c.a *= texture2D( alphaMap, vUV * repeat ).a;', '	 if( c.a < alphaTest ) discard;', '	 if( useDash == 1. ){', '	 	 ', '	 }', '    gl_FragColor = c;', '	 gl_FragColor.a *= step(vCounters,visibility);', '}'];
-
-		function check(v, d) {
-			if (v === undefined) return d;
-			return v;
-		}
-
-		THREE.Material.call(this);
-
-		parameters = parameters || {};
-
-		this.lineWidth = check(parameters.lineWidth, 1);
-		this.map = check(parameters.map, null);
-		this.useMap = check(parameters.useMap, 0);
-		this.alphaMap = check(parameters.alphaMap, null);
-		this.useAlphaMap = check(parameters.useAlphaMap, 0);
-		this.color = check(parameters.color, new THREE.Color(0xffffff));
-		this.opacity = check(parameters.opacity, 1);
-		this.resolution = check(parameters.resolution, new THREE.Vector2(1, 1));
-		this.sizeAttenuation = check(parameters.sizeAttenuation, 1);
-		this.near = check(parameters.near, 1);
-		this.far = check(parameters.far, 1);
-		this.dashArray = check(parameters.dashArray, []);
-		this.useDash = this.dashArray !== [] ? 1 : 0;
-		this.visibility = check(parameters.visibility, 1);
-		this.alphaTest = check(parameters.alphaTest, 0);
-		this.repeat = check(parameters.repeat, new THREE.Vector2(1, 1));
-
-		var material = new THREE.RawShaderMaterial({
-			uniforms: {
-				lineWidth: { type: 'f', value: this.lineWidth },
-				map: { type: 't', value: this.map },
-				useMap: { type: 'f', value: this.useMap },
-				alphaMap: { type: 't', value: this.alphaMap },
-				useAlphaMap: { type: 'f', value: this.useAlphaMap },
-				color: { type: 'c', value: this.color },
-				opacity: { type: 'f', value: this.opacity },
-				resolution: { type: 'v2', value: this.resolution },
-				sizeAttenuation: { type: 'f', value: this.sizeAttenuation },
-				near: { type: 'f', value: this.near },
-				far: { type: 'f', value: this.far },
-				dashArray: { type: 'v2', value: new THREE.Vector2(this.dashArray[0], this.dashArray[1]) },
-				useDash: { type: 'f', value: this.useDash },
-				visibility: { type: 'f', value: this.visibility },
-				alphaTest: { type: 'f', value: this.alphaTest },
-				repeat: { type: 'v2', value: this.repeat }
-			},
-			vertexShader: vertexShaderSource.join('\r\n'),
-			fragmentShader: fragmentShaderSource.join('\r\n')
-		});
-
-		delete parameters.lineWidth;
-		delete parameters.map;
-		delete parameters.useMap;
-		delete parameters.alphaMap;
-		delete parameters.useAlphaMap;
-		delete parameters.color;
-		delete parameters.opacity;
-		delete parameters.resolution;
-		delete parameters.sizeAttenuation;
-		delete parameters.near;
-		delete parameters.far;
-		delete parameters.dashArray;
-		delete parameters.visibility;
-		delete parameters.alphaTest;
-		delete parameters.repeat;
-
-		material.type = 'MeshLineMaterial';
-
-		material.setValues(parameters);
-
-		return material;
-	};
-
-	MeshLineMaterial.prototype = Object.create(THREE.Material.prototype);
-	MeshLineMaterial.prototype.constructor = MeshLineMaterial;
-
-	MeshLineMaterial.prototype.copy = function (source) {
-
-		THREE.Material.prototype.copy.call(this, source);
-
-		this.lineWidth = source.lineWidth;
-		this.map = source.map;
-		this.useMap = source.useMap;
-		this.alphaMap = source.alphaMap;
-		this.useAlphaMap = source.useAlphaMap;
-		this.color.copy(source.color);
-		this.opacity = source.opacity;
-		this.resolution.copy(source.resolution);
-		this.sizeAttenuation = source.sizeAttenuation;
-		this.near = source.near;
-		this.far = source.far;
-		this.dashArray.copy(source.dashArray);
-		this.useDash = source.useDash;
-		this.visibility = source.visibility;
-		this.alphaTest = source.alphaTest;
-		this.repeat.copy(source.repeat);
-
-		return this;
-	};
-
-	if (typeof exports !== 'undefined') {
-		if (typeof module !== 'undefined' && module.exports) {
-			exports = module.exports = { MeshLine: MeshLine, MeshLineMaterial: MeshLineMaterial };
-		}
-		exports.MeshLine = MeshLine;
-		exports.MeshLineMaterial = MeshLineMaterial;
-	} else {
-		root.MeshLine = MeshLine;
-		root.MeshLineMaterial = MeshLineMaterial;
-	}
-}).call(undefined);
-
-},{}],241:[function(require,module,exports){
+},{"../core/scene":179,"../utils/platform-utils":197,"./exit-button":191,"qs":137,"screenfull":141,"webvr-ui/build/webvr-ui":166}],193:[function(require,module,exports){
 // Copyright 2016 The Draco Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -102032,7 +94359,7 @@ THREE.DRACOLoader.getDecoder = function () {
   };
 }();
 
-},{}],242:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 'use strict';
 
 /**
@@ -104579,7 +96906,7 @@ THREE.GLTF2Loader = function () {
 	return GLTF2Loader;
 }();
 
-},{}],243:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -104628,7 +96955,12 @@ function testCompatibility() {
 //   See the License for the specific language governing permissions and
 // limitations under the License.
 
-},{"../utils/platform-utils":245}],244:[function(require,module,exports){
+/**
+ * tests compatibility for analytics
+ *
+ */
+
+},{"../utils/platform-utils":197}],196:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -104730,7 +97062,7 @@ var StaticMathUtils = function () {
 
 var MathUtils = exports.MathUtils = new StaticMathUtils();
 
-},{}],245:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -104902,7 +97234,7 @@ var StaticPlatformUtils = function () {
 
 var PlatformUtils = exports.PlatformUtils = new StaticPlatformUtils();
 
-},{"../core/scene":213}],246:[function(require,module,exports){
+},{"../core/scene":179}],198:[function(require,module,exports){
 'use strict';
 
 require('whatwg-fetch');
@@ -104914,6 +97246,12 @@ var _promisePolyfill2 = _interopRequireDefault(_promisePolyfill);
 var _splash = require('./splash/splash');
 
 var _compatibility = require('./utils/compatibility');
+
+var _scene = require('./core/scene');
+
+var _qs = require('qs');
+
+var _qs2 = _interopRequireDefault(_qs);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -104943,39 +97281,9 @@ require('aframe-daydream-controller-component');
 require('./third_party/three/gltf-loader');
 require('./third_party/three/draco-loader');
 
+// Minimal terrain-only experience - removed all non-essential components
 require('./components/boundary-sphere');
-require('./components/intro-player');
-require('./components/rover');
-require('./components/intro-video');
 require('./components/terrain');
-require('./components/rover-poi');
-require('./components/debug-trace');
-require('./components/look-at-target');
-require('./components/better-raycaster');
-require('./components/controller-dot');
-require('./components/controller-ray');
-require('./components/controller-arc');
-require('./components/controller-parabola');
-require('./components/poi-title-text');
-require('./components/poi-spin-widget');
-require('./components/poi-pole');
-require('./components/poi-marker');
-require('./components/scene-intro-label');
-require('./components/horizon-marker');
-require('./components/map-card');
-require('./components/map-path');
-require('./components/map-marker');
-require('./components/map-site-card');
-require('./components/map-background');
-require('./components/info-card');
-require('./components/info-card-text');
-require('./components/orientation-card');
-require('./components/orientation-card-column');
-require('./components/frustum');
-require('./components/hitbox');
-require('./components/opacity');
-require('./components/fade-to-black');
-require('./components/sky-wireframe');
 require('./components/sky-gradient');
 require('./components/sky-blackout');
 require('./utils/compatibility');
@@ -104994,10 +97302,21 @@ if (WebVRConfig) {
 
 document.addEventListener("DOMContentLoaded", function () {
 	(0, _compatibility.testCompatibility)();
-	(0, _splash.initSplash)();
+	// Skip splash screen for minimal terrain experience
+	// initSplash();
+
+	// Go directly to terrain
+	setTimeout(function () {
+		var parsedQueryString = _qs2.default.parse(location.search.slice(1));
+		var site = parsedQueryString.site ? parsedQueryString.site : 'landing_site';
+
+		_scene.Scene.init(parsedQueryString);
+		_scene.Scene.setModeType('360'); // Default to 360 mode
+		_scene.Scene.loadSite(site);
+	}, 100);
 });
 
-},{"./components/better-raycaster":175,"./components/boundary-sphere":176,"./components/controller-arc":177,"./components/controller-dot":178,"./components/controller-parabola":179,"./components/controller-ray":180,"./components/debug-trace":181,"./components/fade-to-black":182,"./components/frustum":183,"./components/hitbox":184,"./components/horizon-marker":185,"./components/info-card":187,"./components/info-card-text":186,"./components/intro-player":188,"./components/intro-video":189,"./components/look-at-target":190,"./components/map-background":191,"./components/map-card":192,"./components/map-marker":193,"./components/map-path":194,"./components/map-site-card":195,"./components/opacity":196,"./components/orientation-card":198,"./components/orientation-card-column":197,"./components/poi-marker":199,"./components/poi-pole":200,"./components/poi-spin-widget":201,"./components/poi-title-text":202,"./components/rover":204,"./components/rover-poi":203,"./components/scene-intro-label":205,"./components/sky-blackout":206,"./components/sky-gradient":207,"./components/sky-wireframe":208,"./components/terrain":209,"./splash/splash":237,"./third_party/three/draco-loader":241,"./third_party/three/gltf-loader":242,"./utils/compatibility":243,"aframe":2,"aframe-daydream-controller-component":1,"promise-polyfill":135,"whatwg-fetch":169}],247:[function(require,module,exports){
+},{"./components/boundary-sphere":172,"./components/sky-blackout":173,"./components/sky-gradient":174,"./components/terrain":175,"./core/scene":179,"./splash/splash":192,"./third_party/three/draco-loader":193,"./third_party/three/gltf-loader":194,"./utils/compatibility":195,"aframe":2,"aframe-daydream-controller-component":1,"promise-polyfill":135,"qs":137,"whatwg-fetch":167}],199:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -105051,4 +97370,4 @@ var StaticJPEGWorker = function StaticJPEGWorker() {
 
 var JPEGWorker = exports.JPEGWorker = new StaticJPEGWorker();
 
-},{}]},{},[246]);
+},{}]},{},[198]);

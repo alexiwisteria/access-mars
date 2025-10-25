@@ -25,45 +25,17 @@ require( 'aframe-daydream-controller-component' );
 require( './third_party/three/gltf-loader' );
 require( './third_party/three/draco-loader' );
 
+// Minimal terrain-only experience - removed all non-essential components
 require( './components/boundary-sphere' );
-require( './components/intro-player' );
-require( './components/rover' );
-require( './components/intro-video' );
 require( './components/terrain' );
-require( './components/rover-poi' );
-require( './components/debug-trace' );
-require( './components/look-at-target' );
-require( './components/better-raycaster' );
-require( './components/controller-dot' );
-require( './components/controller-ray' );
-require( './components/controller-arc' );
-require( './components/controller-parabola' );
-require( './components/poi-title-text' );
-require( './components/poi-spin-widget' );
-require( './components/poi-pole' );
-require( './components/poi-marker' );
-require( './components/scene-intro-label' );
-require( './components/horizon-marker' );
-require( './components/map-card' );
-require( './components/map-path' );
-require( './components/map-marker' );
-require( './components/map-site-card' );
-require( './components/map-background' );
-require( './components/info-card' );
-require( './components/info-card-text' );
-require( './components/orientation-card' );
-require( './components/orientation-card-column' );
-require( './components/frustum' );
-require( './components/hitbox' );
-require( './components/opacity' );
-require( './components/fade-to-black' );
-require( './components/sky-wireframe' );
 require( './components/sky-gradient' );
 require( './components/sky-blackout' );
 require( './utils/compatibility' );
 
 import { initSplash } from './splash/splash';
 import { testCompatibility } from './utils/compatibility';
+import { Scene } from './core/scene';
+import qs from 'qs';
 
 // Restore the crossOrigin property to its default value.
 // AFRAME modifies it and breaks CORS in some versions of Safari.
@@ -79,5 +51,16 @@ if ( WebVRConfig ) {
 
 document.addEventListener("DOMContentLoaded", () => {
 	testCompatibility();
-	initSplash();
+	// Skip splash screen for minimal terrain experience
+	// initSplash();
+	
+	// Go directly to terrain
+	setTimeout(() => {
+		const parsedQueryString = qs.parse(location.search.slice(1));
+		const site = parsedQueryString.site ? parsedQueryString.site : 'landing_site';
+		
+		Scene.init(parsedQueryString);
+		Scene.setModeType('360'); // Default to 360 mode
+		Scene.loadSite(site);
+	}, 100);
 });

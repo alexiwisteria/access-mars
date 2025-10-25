@@ -1,0 +1,26 @@
+{
+  "name": "xhr-progress",
+  "description": "Get progress updates for your XMLHttpRequests where supported.",
+  "version": "0.0.0",
+  "main": "index.js",
+  "browser": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {},
+  "author": "Hugh Kennedy <hughskennedy@gmail.com> (http://github.com/hughsk)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hughsk/xhr-progress"
+  },
+  "bugs": {
+    "url": "https://github.com/hughsk/xhr-progress/issues"
+  },
+  "keywords": [
+    "xhr",
+    "progress",
+    "percent",
+    "download",
+    "browserify"
+  ]
+}

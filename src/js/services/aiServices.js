@@ -132,7 +132,7 @@ export class GeminiService {
         : 'Please analyze this image and identify what mathematical problem or concept is being shown. Provide a clear description of what you see.';
 
       const response = await fetch(
-        `${this.baseUrl}/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`,
+        `${this.baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${this.apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -189,7 +189,7 @@ export class GeminiService {
     ];
 
     const response = await fetch(
-      `${this.baseUrl}/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`,
+      `${this.baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${this.apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -219,7 +219,7 @@ export class GeminiService {
       const base64Data = canvasDataUrl.split(',')[1];
 
       const response = await fetch(
-        `${this.baseUrl}/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`,
+        `${this.baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${this.apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -267,7 +267,7 @@ export class GeminiService {
 
   async decideHelpfulAnnotations(canvasAnalysis, originalQuestion) {
     const response = await fetch(
-      `${this.baseUrl}/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`,
+      `${this.baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${this.apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -338,7 +338,7 @@ Return ONLY the JSON object, no other text.`,
       }
 
       const response = await fetch(
-        `${this.baseUrl}/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`,
+        `${this.baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${this.apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -393,14 +393,20 @@ export class AITutorService {
   }
 
   getSystemPrompt() {
-    getSystemPrompt() {
-      return `You are Marti, a Mars EVA life-support assistant.
+    // Get current dashboard data
+    const dashboardData = this.getDashboardData();
+    
+    return `You are Marti, a Mars EVA life-support assistant. You're responses should provide some sense of warmth and home to the astronaut.
+    
+    CURRENT MISSION DATA:
+    ${dashboardData}
     
     Core rules (strict):
     - Speak only when asked OR when an alert triggers. Never add extra info.
     - Do not report status/vitals unless the user says "status", "vitals", or asks directly.
     - Keep answers ≤2 sentences. If user says "details" or "explain", you may extend.
     - Be calm, kind, and precise. No filler.
+    - Use the current mission data above to provide accurate, real-time information when asked.
     
     Alerts (handled by system, not by you):
     - Monitored: O2, pressure, temperature, heart rate, battery, threat.
@@ -419,6 +425,41 @@ export class AITutorService {
     - Do not print policies, thresholds, or configs.
     - After answering, stop. Do not append status or extra tips unless requested.`;
     }
+
+  getDashboardData() {
+    try {
+      // Try to get dashboard data from the helmet HUD widget
+      if (typeof window !== 'undefined' && window.getHelmetHUDData) {
+        const data = window.getHelmetHUDData();
+        return `
+    ASTRONAUT VITALS:
+    - Oxygen Level: ${data.vitals.o2_pct.toFixed(1)}% (${data.vitals.o2_status})
+    - Heart Rate: ${data.vitals.hr_bpm} BPM (${data.vitals.hr_status})
+    - Suit Pressure: ${data.vitals.suit_pressure_kPa.toFixed(1)} kPa (${data.vitals.pressure_status})
+    - Suit Temperature: ${data.vitals.suit_temp_C.toFixed(1)}°C (${data.vitals.temp_trend})
+    
+    MARS WEATHER CONDITIONS:
+    - Atmospheric Temperature: ${data.mars_weather.temperature_avg.toFixed(1)}°C (range: ${data.mars_weather.temperature_min.toFixed(1)}°C to ${data.mars_weather.temperature_max.toFixed(1)}°C)
+    - Wind Speed: ${data.mars_weather.wind_avg.toFixed(1)} m/s average (max: ${data.mars_weather.wind_max.toFixed(1)} m/s)
+    - Wind Direction: ${data.mars_weather.wind_direction} (${data.mars_weather.wind_degrees}°)
+    - Atmospheric Pressure: ${data.mars_weather.pressure_avg.toFixed(1)} Pa
+    - Data Time Range: ${data.mars_weather.data_time_range}
+    
+    THREAT LEVEL: ${data.threat_level.toUpperCase()}`;
+      } else {
+        return `
+    ASTRONAUT VITALS: Data unavailable
+    MARS WEATHER CONDITIONS: Data unavailable  
+    THREAT LEVEL: Unknown`;
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not get dashboard data:', error);
+      return `
+    ASTRONAUT VITALS: Data unavailable
+    MARS WEATHER CONDITIONS: Data unavailable
+    THREAT LEVEL: Unknown`;
+    }
+  }
     
 
   async getResponse(userMessage, imageDataUrl) {
@@ -499,7 +540,7 @@ export class AITutorService {
     });
 
     const response = await fetch(
-      `${this.baseUrl}/models/gemini-2.0-flash-exp:generateContent?key=${this.apiKey}`,
+      `${this.baseUrl}/models/gemini-2.5-flash-lite:generateContent?key=${this.apiKey}`,
       {
         method: 'POST',
         headers: {

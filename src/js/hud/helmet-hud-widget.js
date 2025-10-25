@@ -9,20 +9,20 @@ export function initHelmetHUDWidget() {
   container.id = 'helmet-hud-widget';
   Object.assign(container.style, {
     position: 'fixed',
-    left: '50%',
+    left: '20px',
     top: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 'min(82vw, 1100px)',
-    maxWidth: '1100px',
-    height: 'min(66vh, 700px)',
-    background: 'linear-gradient(180deg, rgba(10,11,13,0.9), rgba(0,0,0,0.85))',
-    borderRadius: '28px',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
-    border: '3px solid rgba(60, 70, 80, 0.6)',
-    color: '#cbd5e1',
+    transform: 'translateY(-50%)',
+    width: 'min(400px, 35vw)',
+    maxWidth: '400px',
+    height: 'min(80vh, 600px)',
+    background: 'rgba(0,0,0,0.4)',
+    borderRadius: '16px',
+    boxShadow: '0 0 30px rgba(0,255,0,0.2), inset 0 0 20px rgba(0,255,0,0.05)',
+    border: '1px solid rgba(0,255,0,0.2)',
+    color: '#00ff00',
     zIndex: 9999,
-    padding: '18px',
-    fontFamily: 'Roboto, Arial, sans-serif',
+    padding: '20px',
+    fontFamily: 'Courier New, monospace',
     display: 'flex',
     alignItems: 'stretch',
     justifyContent: 'center',
@@ -34,10 +34,9 @@ export function initHelmetHUDWidget() {
   inner.style.pointerEvents = 'auto';
   inner.style.width = '100%';
   inner.style.height = '100%';
-  inner.style.display = 'grid';
-  inner.style.gridTemplateColumns = '1fr';
-  inner.style.gridTemplateRows = '1fr';
-  inner.style.gap = '12px';
+  inner.style.display = 'flex';
+  inner.style.flexDirection = 'column';
+  inner.style.gap = '16px';
 
   container.appendChild(inner);
   document.body.appendChild(container);
@@ -64,19 +63,19 @@ export function initHelmetHUDWidget() {
   let threat = 'green';
 
   function getO2Color(value){
-    if (value >= 21) return 'color:#34d399';
-    if (value >= 19) return 'color:#fbbf24';
-    return 'color:#f87171';
+    if (value >= 21) return 'color:#00ff00';
+    if (value >= 19) return 'color:#ffff00';
+    return 'color:#ff0000';
   }
   function getHrColor(value){
-    if (value <= 120) return 'color:#67e8f9';
-    if (value <= 160) return 'color:#fbbf24';
-    return 'color:#f87171';
+    if (value <= 120) return 'color:#00ff00';
+    if (value <= 160) return 'color:#ffff00';
+    return 'color:#ff0000';
   }
   function getPressureColor(value){
-    if (value >= 25) return 'color:#67e8f9';
-    if (value >= 20) return 'color:#fbbf24';
-    return 'color:#f87171';
+    if (value >= 25) return 'color:#00ff00';
+    if (value >= 20) return 'color:#ffff00';
+    return 'color:#ff0000';
   }
 
   function formatTimeRange(first, last){
@@ -90,88 +89,112 @@ export function initHelmetHUDWidget() {
   // Render
   function render(){
     inner.innerHTML = `
-      <div style="display:flex;flex-direction:row;gap:12px;height:100%">
-        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
-          <div style="font-size:12px;color:#60a5fa;font-family:monospace;letter-spacing:1px">VITALS</div>
-
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:84px;height:84px;position:relative;border-radius:999px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">
-              <div style="text-align:center">
-                <div style="font-size:22px;font-weight:700;${getO2Color(vitals.o2_pct)}">${vitals.o2_pct.toFixed(1)}</div>
-                <div style="font-size:10px;color:#94a3b8">%</div>
-              </div>
+      <div style="display:flex;flex-direction:column;gap:20px;height:100%">
+        
+        <!-- VITALS SECTION -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,0,0.2);border-radius:12px;padding:16px">
+          <div style="font-size:14px;color:#00ff00;font-weight:bold;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,0,0.5)">VITALS</div>
+          
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <!-- OXYGEN -->
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;color:#00ff00">O₂ LEVEL</div>
+              <div style="font-size:18px;font-weight:bold;${getO2Color(vitals.o2_pct)};text-shadow:0 0 8px currentColor">${vitals.o2_pct.toFixed(1)}%</div>
             </div>
-            <div style="flex:1">
-              <div style="font-size:11px;color:#94a3b8">OXYGEN</div>
-              <div style="font-size:12px;color:#94a3b8">${vitals.o2_pct >=21 ? 'NOMINAL' : vitals.o2_pct >=19 ? 'CAUTION' : 'CRITICAL'}</div>
+            
+            <!-- HEART RATE -->
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;color:#00ff00">HEART RATE</div>
+              <div style="font-size:18px;font-weight:bold;${getHrColor(vitals.hr_bpm)};text-shadow:0 0 8px currentColor">${vitals.hr_bpm} BPM</div>
             </div>
-          </div>
-
-          <!-- Added pressure and temperature to main dashboard -->
-          <div style="display:flex;gap:8px;margin-top:6px">
-            <div style="flex:1;background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
-              <div style="font-size:11px;color:#94a3b8">PRESSURE</div>
-              <div style="font-weight:700;${getPressureColor(vitals.suit_pressure_kPa)}">${vitals.suit_pressure_kPa.toFixed(1)} <span style="font-size:12px;color:#94a3b8">kPa</span></div>
+            
+            <!-- PRESSURE -->
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;color:#00ff00">PRESSURE</div>
+              <div style="font-size:18px;font-weight:bold;${getPressureColor(vitals.suit_pressure_kPa)};text-shadow:0 0 8px currentColor">${vitals.suit_pressure_kPa.toFixed(1)} kPa</div>
             </div>
-            <div style="flex:1;background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
-              <div style="font-size:11px;color:#94a3b8">TEMP</div>
-              <div style="font-weight:700;color:#67e8f9">${vitals.suit_temp_C.toFixed(1)} <span style="font-size:12px;color:#94a3b8">°C</span></div>
+            
+            <!-- TEMPERATURE -->
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:12px;color:#00ff00">TEMP</div>
+              <div style="font-size:18px;font-weight:bold;color:#00ff00;text-shadow:0 0 8px rgba(0,255,0,0.5)">${vitals.suit_temp_C.toFixed(1)}°C</div>
             </div>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div style="font-size:11px;color:#94a3b8">HEART RATE</div>
-              <div style="font-weight:700;${getHrColor(vitals.hr_bpm)}">${vitals.hr_bpm} <span style="font-size:12px;color:#94a3b8">bpm</span></div>
-            </div>
-            <svg width="100%" height="36" viewBox="0 0 240 40" preserveAspectRatio="none">
-              <polyline fill="none" stroke="#67e8f9" stroke-width="1.5" points="${vitals.hr_history.map((v,i)=> `${i*4},${40-((v-60)/120)*40}`).join(' ')}" />
-            </svg>
           </div>
         </div>
 
-        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
-          <div style="font-size:12px;color:#f59e0b;font-family:monospace;letter-spacing:1px">MARS WEATHER</div>
+        <!-- MARS WEATHER SECTION -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,0,0.2);border-radius:12px;padding:16px">
+          <div style="font-size:14px;color:#00ff00;font-weight:bold;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,0,0.5)">MARS WEATHER</div>
+          
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between">
+              <div style="font-size:11px;color:#00ff00">TEMP AVG</div>
+              <div style="font-size:14px;color:#ffff00;text-shadow:0 0 6px rgba(255,255,0,0.5)">${mars.AT.av.toFixed(1)}°C</div>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <div style="font-size:11px;color:#00ff00">WIND AVG</div>
+              <div style="font-size:14px;color:#ffff00;text-shadow:0 0 6px rgba(255,255,0,0.5)">${mars.HWS.av.toFixed(1)} m/s</div>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <div style="font-size:11px;color:#00ff00">WIND DIR</div>
+              <div style="font-size:14px;color:#ffff00;text-shadow:0 0 6px rgba(255,255,0,0.5)">${mars.WD.most_common.compass_point}</div>
+            </div>
+          </div>
+        </div>
 
+        <!-- THREAT STATUS -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,0,0.2);border-radius:12px;padding:16px;text-align:center">
+          <div style="font-size:14px;color:#00ff00;font-weight:bold;margin-bottom:8px;text-shadow:0 0 10px rgba(0,255,0,0.5)">THREAT LEVEL</div>
+          <div id="helmet-threat" style="font-size:20px;font-weight:bold;padding:12px;border-radius:8px;background:${threat==='green'?'rgba(0,255,0,0.2)':threat==='yellow'?'rgba(255,255,0,0.2)':'rgba(255,0,0,0.2)'};color:${threat==='green'?'#00ff00':threat==='yellow'?'#ffff00':'#ff0000'};text-shadow:0 0 12px currentColor;border:2px solid ${threat==='green'?'rgba(0,255,0,0.5)':threat==='yellow'?'rgba(255,255,0,0.5)':'rgba(255,0,0,0.5)'}">${threat.toUpperCase()}</div>
+        </div>
+
+        <!-- STATUS INDICATORS -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,0,0.2);border-radius:12px;padding:16px">
+          <div style="font-size:14px;color:#00ff00;font-weight:bold;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,0,0.5)">STATUS</div>
+          
           <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
-              <div style="font-size:11px;color:#94a3b8">TEMP (AT)</div>
-              <div style="color:#f59e0b">avg ${mars.AT.av.toFixed(1)}°C / min ${mars.AT.mn.toFixed(1)}°C / max ${mars.AT.mx.toFixed(1)}°C</div>
+            <div style="display:flex;justify-content:space-between">
+              <div style="font-size:11px;color:#00ff00">O₂ STATUS</div>
+              <div style="font-size:12px;color:#00ff00;text-shadow:0 0 6px rgba(0,255,0,0.5)">${vitals.o2_pct >=21 ? 'NOMINAL' : vitals.o2_pct >=19 ? 'CAUTION' : 'CRITICAL'}</div>
             </div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
-                <div style="font-size:11px;color:#94a3b8">WIND (HWS)</div>
-                <div style="color:#f59e0b">avg ${mars.HWS.av.toFixed(1)} m/s / max ${mars.HWS.mx.toFixed(1)} m/s</div>
-              </div>
-              <div style="width:110px;background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:11px;color:#94a3b8">WIND DIR</div>
-                <div style="color:#f59e0b;font-weight:700">${mars.WD.most_common.compass_point}</div>
-                <div style="font-size:11px;color:#94a3b8">${mars.WD.most_common.compass_degrees}°</div>
-              </div>
+            <div style="display:flex;justify-content:space-between">
+              <div style="font-size:11px;color:#00ff00">TEMP TREND</div>
+              <div style="font-size:12px;color:#00ff00;text-shadow:0 0 6px rgba(0,255,0,0.5)">${vitals.temp_trend.toUpperCase()}</div>
             </div>
-            <div style="font-size:11px;color:#94a3b8;text-align:center">${formatTimeRange(mars.First_UTC, mars.Last_UTC)}</div>
           </div>
         </div>
-
-        <div style="width:220px;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center">
-          <div style="font-size:12px;color:#60a5fa;font-family:monospace;letter-spacing:1px">SUIT ENV</div>
-          <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);width:100%">
-            <div style="font-size:11px;color:#94a3b8">PRESSURE</div>
-            <div style="font-weight:700;${getPressureColor(vitals.suit_pressure_kPa)}">${vitals.suit_pressure_kPa.toFixed(1)} <span style="font-size:12px;color:#94a3b8">kPa</span></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);width:100%">
-            <div style="font-size:11px;color:#94a3b8">TEMP</div>
-            <div style="font-weight:700;color:#67e8f9">${vitals.suit_temp_C.toFixed(1)} <span style="font-size:12px;color:#94a3b8">°C</span></div>
-          </div>
-
-          <div style="margin-top:6px;text-align:center">
-            <div style="font-size:11px;color:#94a3b8">THREAT</div>
-            <div id="helmet-threat" style="margin-top:6px;padding:12px;border-radius:999px;background:${threat==='green'?'rgba(52,211,153,0.12)':threat==='yellow'?'rgba(251,191,36,0.12)':'rgba(248,113,113,0.12)'};color:${threat==='green'?'#34d399':threat==='yellow'?'#fbbf24':'#f87171'};font-weight:700;width:120px">${threat.toUpperCase()}</div>
-          </div>
-        </div>
+        
       </div>
     `;
   }
+
+  // Export function to get current dashboard data
+  window.getHelmetHUDData = function() {
+    return {
+      vitals: {
+        o2_pct: vitals.o2_pct,
+        hr_bpm: vitals.hr_bpm,
+        suit_pressure_kPa: vitals.suit_pressure_kPa,
+        suit_temp_C: vitals.suit_temp_C,
+        temp_trend: vitals.temp_trend,
+        o2_status: vitals.o2_pct >= 21 ? 'NOMINAL' : vitals.o2_pct >= 19 ? 'CAUTION' : 'CRITICAL',
+        hr_status: vitals.hr_bpm <= 120 ? 'NOMINAL' : vitals.hr_bpm <= 160 ? 'CAUTION' : 'CRITICAL',
+        pressure_status: vitals.suit_pressure_kPa >= 25 ? 'NOMINAL' : vitals.suit_pressure_kPa >= 20 ? 'CAUTION' : 'CRITICAL'
+      },
+      mars_weather: {
+        temperature_avg: mars.AT.av,
+        temperature_min: mars.AT.mn,
+        temperature_max: mars.AT.mx,
+        wind_avg: mars.HWS.av,
+        wind_max: mars.HWS.mx,
+        wind_direction: mars.WD.most_common.compass_point,
+        wind_degrees: mars.WD.most_common.compass_degrees,
+        pressure_avg: mars.PRE.av,
+        data_time_range: formatTimeRange(mars.First_UTC, mars.Last_UTC)
+      },
+      threat_level: threat
+    };
+  };
 
   // periodic updates
   const interval = setInterval(()=>{

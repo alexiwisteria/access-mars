@@ -226,43 +226,24 @@ export class VoiceCaptureService {
         });
         console.log('💬 Response text:', response);
         
-        if (this.elevenLabsService) {
-          console.log('🔊 Using ElevenLabs for TTS...');
-          console.log('🎵 TTS details:', {
-            text: response.substring(0, 100) + '...',
-            voiceId: AI_CONFIG.DEFAULT_VOICE_ID,
-            timestamp: new Date().toISOString()
-          });
+        // Use AudioManager for TTS (handles Supabase endpoint)
+        console.log('🔊 Using AudioManager for TTS...');
+        console.log('🎵 TTS details:', {
+          text: response.substring(0, 100) + '...',
+          timestamp: new Date().toISOString()
+        });
+        
+        if (window.AudioManager) {
           try {
-            await this.elevenLabsService.speak(response, AI_CONFIG.DEFAULT_VOICE_ID);
-            console.log('✅ ElevenLabs TTS completed');
+            await window.AudioManager.playTTS(response);
+            console.log('✅ AudioManager TTS completed');
           } catch (error) {
-            console.error('❌ ElevenLabs TTS failed:', error);
-            console.log('🔄 Falling back to Supabase TTS...');
-            this.playFallbackResponse(response);
-          }
-        } else if (AI_CONFIG.ELEVEN_LABS_API_KEY) {
-          // Try to initialize ElevenLabs service dynamically
-          console.log('🔧 Initializing ElevenLabs service dynamically...');
-          try {
-            this.elevenLabsService = new ElevenLabsService(AI_CONFIG.ELEVEN_LABS_API_KEY);
-            console.log('✅ ElevenLabs service initialized dynamically');
-            
-            console.log('🔊 Using ElevenLabs for TTS...');
-            await this.elevenLabsService.speak(response, AI_CONFIG.DEFAULT_VOICE_ID);
-            console.log('✅ ElevenLabs TTS completed');
-          } catch (error) {
-            console.error('❌ Dynamic ElevenLabs initialization failed:', error);
-            console.log('🔄 Falling back to Supabase TTS...');
+            console.error('❌ AudioManager TTS failed:', error);
+            console.log('🔄 Trying fallback TTS...');
             this.playFallbackResponse(response);
           }
         } else {
-          console.log('🔊 Using fallback TTS (Supabase endpoint)...');
-          console.log('🔍 ElevenLabs service not available:', {
-            elevenLabsService: !!this.elevenLabsService,
-            elevenLabsApiKey: !!AI_CONFIG.ELEVEN_LABS_API_KEY,
-            timestamp: new Date().toISOString()
-          });
+          console.warn('⚠️ AudioManager not available, using fallback');
           this.playFallbackResponse(response);
         }
       } else {
@@ -348,6 +329,24 @@ export class VoiceCaptureService {
   stopListening() {
     if (this.recognition && this.isListening) {
       this.recognition.stop();
+    }
+  }
+
+  pauseListening() {
+    if (this.recognition && this.isListening) {
+      console.log('⏸️ Pausing voice recognition...');
+      this.recognition.stop();
+      this.isListening = false;
+      this.notifyStatusChange('paused');
+    }
+  }
+
+  resumeListening() {
+    if (this.recognition && !this.isListening) {
+      console.log('▶️ Resuming voice recognition...');
+      this.recognition.start();
+      this.isListening = true;
+      this.notifyStatusChange('listening');
     }
   }
 

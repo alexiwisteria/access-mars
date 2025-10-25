@@ -98,11 +98,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.warn('helmet-hud-widget failed to init', e); 
 		}
 
-		// Test Eleven Labs TTS on page load
-		setTimeout(() => {
-			console.log('Testing Eleven Labs TTS...');
-			AudioManager.playTTS('Welcome to Mars, astronaut. I am Marti, your AI assistant for this mission. I am here to help you explore the Martian surface and provide mission support. You are now exploring the surface of Mars as seen by the Curiosity rover.');
-		}, 3000);
+		// Enable voice-over for TTS
+		AudioManager.enableVoiceOver(true);
+
+		// Voice capture will start silently - no automatic messages
 
 		// Start voice capture after initial setup
 		setTimeout(() => {
@@ -149,6 +148,10 @@ document.addEventListener("DOMContentLoaded", () => {
 								voiceStatusText.textContent = 'Listening...';
 								voiceStatusText.style.color = '#51cf66';
 								break;
+							case 'paused':
+								voiceStatusText.textContent = 'AI Speaking...';
+								voiceStatusText.style.color = '#339af0';
+								break;
 							case 'stopped':
 								voiceStatusText.textContent = 'Stopped';
 								voiceStatusText.style.color = '#ffd43b';
@@ -168,7 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				const started = AudioManager.startVoiceCapture();
 				if (started) {
 					console.log('✓ Voice capture started successfully');
-					AudioManager.playTTS('Voice communication system activated, astronaut. You can now speak to Marti for mission support and guidance.');
 				} else {
 					console.warn('⚠️ Failed to start voice capture');
 					if (voiceStatusText) {
@@ -182,7 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
 					voiceStatusText.textContent = 'Not supported';
 					voiceStatusText.style.color = '#ff6b6b';
 				}
-				AudioManager.playTTS('Voice communication system not supported in this browser, astronaut. Please use a modern browser like Chrome or Edge for full mission capabilities.');
 			}
 		}, 5000);
 	}, 100);

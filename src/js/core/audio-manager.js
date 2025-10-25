@@ -21,6 +21,7 @@
 
 import sono from 'sono';
 import { Scene } from './scene';
+import { VoiceCaptureService } from '../services/voiceCaptureService';
 
 class StaticAudioManager {
 
@@ -30,6 +31,10 @@ class StaticAudioManager {
 		this.disableSFX = false;
 		this.useElevenLabs = false;
 		this.elevenLabsEndpoint = 'https://xosrjtiqqiqcznjxjvtj.supabase.co/functions/v1/eleven-labs-tts';
+		
+		// Initialize voice capture service
+		this.voiceCaptureService = new VoiceCaptureService();
+		this.setupVoiceCaptureCallbacks();
 
 		const audio = document.createElement( 'audio' );
 		const status = !!( audio.canPlayType && audio.canPlayType( 'audio/mpeg;' ).replace( /no/, '' ) );
@@ -74,11 +79,23 @@ class StaticAudioManager {
 	}
 
 	async playTTS( text, voiceId = '21m00Tcm4TlvDq8ikWAM' ) {
+		console.log('🔊 AudioManager.playTTS called:', {
+			text: text.substring(0, 50) + '...',
+			voiceId: voiceId,
+			endpoint: this.elevenLabsEndpoint,
+			disableVO: this.disableVO,
+			timestamp: new Date().toISOString()
+		});
+
 		this.stopVO();
 
-		if ( this.disableVO ) return;
+		if ( this.disableVO ) {
+			console.log('⚠️ Voice-over disabled, skipping TTS');
+			return;
+		}
 
 		try {
+			console.log('📡 Sending TTS request to Supabase endpoint...');
 			const response = await fetch( this.elevenLabsEndpoint, {
 				method: 'POST',
 				headers: {
@@ -90,16 +107,33 @@ class StaticAudioManager {
 				})
 			});
 
+			console.log('📥 TTS response received:', {
+				status: response.status,
+				statusText: response.statusText,
+				ok: response.ok
+			});
+
 			if ( !response.ok ) {
-				console.error( 'Eleven Labs TTS failed:', await response.text() );
+				const errorText = await response.text();
+				console.error( '❌ Eleven Labs TTS failed:', errorText );
 				return null;
 			}
 
 			const audioBlob = await response.blob();
+			console.log('🎵 Audio blob received:', {
+				size: audioBlob.size,
+				type: audioBlob.type,
+				timestamp: new Date().toISOString()
+			});
+
 			const audioUrl = URL.createObjectURL( audioBlob );
+			console.log('🔗 Audio URL created:', audioUrl);
 
 			this.currentVO = sono.create( audioUrl );
+			console.log('🎶 Sono audio object created:', !!this.currentVO);
+
 			this.currentVO.play();
+			console.log('▶️ Audio playback started');
 
 			return this.currentVO;
 		} catch ( error ) {
@@ -111,6 +145,80 @@ class StaticAudioManager {
 	enableElevenLabs( enable = true ) {
 		this.useElevenLabs = enable;
 	}
+
+	setupVoiceCaptureCallbacks() {
+		// Handle transcript events
+		this.voiceCaptureService.onTranscript((transcript, isFinal) => {
+			console.log('📝 Voice transcript:', { transcript, isFinal });
+			
+			// You can add UI updates here to show the transcript
+			if (isFinal && this.onVoiceTranscript) {
+				this.onVoiceTranscript(transcript);
+			}
+		});
+
+		// Handle errors
+		this.voiceCaptureService.onError((error) => {
+			console.error('❌ Voice capture error:', error);
+			if (this.onVoiceError) {
+				this.onVoiceError(error);
+			}
+		});
+
+		// Handle status changes
+		this.voiceCaptureService.onStatusChange((status) => {
+			console.log('🎤 Voice capture status:', status);
+			if (this.onVoiceStatusChange) {
+				this.onVoiceStatusChange(status);
+			}
+		});
+	}
+
+	// Voice capture methods
+	startVoiceCapture() {
+		console.log('🎤 Starting voice capture...');
+		return this.voiceCaptureService.startListening();
+	}
+
+	stopVoiceCapture() {
+		console.log('🎤 Stopping voice capture...');
+		this.voiceCaptureService.stopListening();
+	}
+
+	toggleVoiceCapture() {
+		this.voiceCaptureService.toggleListening();
+	}
+
+	getVoiceCaptureStatus() {
+		return {
+			isListening: this.voiceCaptureService.getIsListening(),
+			isSupported: this.voiceCaptureService.getIsSupported()
+		};
+	}
+
+	// Callback setters for voice events
+	onVoiceTranscript(callback) {
+		this.onVoiceTranscript = callback;
+	}
+
+	onVoiceError(callback) {
+		this.onVoiceError = callback;
+	}
+
+	onVoiceStatusChange(callback) {
+		this.onVoiceStatusChange = callback;
+	}
+
+	// Get AI services for external use
+	getAIServices() {
+		return this.voiceCaptureService.getAIServices();
+	}
 }
 
 export let AudioManager = new StaticAudioManager();
+
+// Make AudioManager available globally for fallback TTS
+if (typeof window !== 'undefined') {
+  window.AudioManager = AudioManager;
+  console.log('🌐 AudioManager made available globally');
+}

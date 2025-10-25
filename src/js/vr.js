@@ -36,6 +36,7 @@ import { initSplash } from './splash/splash';
 import { testCompatibility } from './utils/compatibility';
 import { Scene } from './core/scene';
 import { AudioManager } from './core/audio-manager';
+import './config/apiKeys'; // Load API keys configuration
 import qs from 'qs';
 
 // Restore the crossOrigin property to its default value.
@@ -52,6 +53,29 @@ if ( WebVRConfig ) {
 
 document.addEventListener("DOMContentLoaded", () => {
 	testCompatibility();
+	
+	// Enable audio on first user interaction
+	let audioEnabled = false;
+	const enableAudio = () => {
+		if (!audioEnabled) {
+			console.log('🔊 Enabling audio on user interaction...');
+			// Resume AudioContext if available
+			if (window.AudioManager && window.AudioManager.audioContext) {
+				window.AudioManager.audioContext.resume();
+			}
+			audioEnabled = true;
+			// Remove event listeners after first interaction
+			document.removeEventListener('click', enableAudio);
+			document.removeEventListener('touchstart', enableAudio);
+			document.removeEventListener('keydown', enableAudio);
+		}
+	};
+	
+	// Add event listeners for user interaction
+	document.addEventListener('click', enableAudio);
+	document.addEventListener('touchstart', enableAudio);
+	document.addEventListener('keydown', enableAudio);
+	
 	// Skip splash screen for minimal terrain experience
 	// initSplash();
 
@@ -67,7 +91,89 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Test Eleven Labs TTS on page load
 		setTimeout(() => {
 			console.log('Testing Eleven Labs TTS...');
-			AudioManager.playTTS('Welcome to Mars. This audio is generated using Eleven Labs text to speech technology. You are now exploring the surface of Mars as seen by the Curiosity rover.');
+			AudioManager.playTTS('Welcome to Mars, astronaut. I am Marti, your AI assistant for this mission. I am here to help you explore the Martian surface and provide mission support. You are now exploring the surface of Mars as seen by the Curiosity rover.');
 		}, 3000);
+
+		// Start voice capture after initial setup
+		setTimeout(() => {
+			console.log('🎤 Starting voice capture...');
+			const voiceStatus = AudioManager.getVoiceCaptureStatus();
+			
+			// Show voice capture UI
+			const voiceUI = document.getElementById('voice-capture-ui');
+			const voiceStatusText = document.getElementById('voice-status-text');
+			const voiceTranscript = document.getElementById('voice-transcript');
+			
+			if (voiceUI) {
+				voiceUI.style.display = 'block';
+			}
+			
+			if (voiceStatus.isSupported) {
+				// Set up voice capture callbacks
+				AudioManager.onVoiceTranscript((transcript) => {
+					console.log('📝 Voice input received:', transcript);
+					if (voiceTranscript) {
+						voiceTranscript.textContent = transcript;
+						// Clear transcript after 5 seconds
+						setTimeout(() => {
+							if (voiceTranscript.textContent === transcript) {
+								voiceTranscript.textContent = '';
+							}
+						}, 5000);
+					}
+				});
+
+				AudioManager.onVoiceError((error) => {
+					console.error('❌ Voice capture error:', error);
+					if (voiceStatusText) {
+						voiceStatusText.textContent = `Error: ${error}`;
+						voiceStatusText.style.color = '#ff6b6b';
+					}
+				});
+
+				AudioManager.onVoiceStatusChange((status) => {
+					console.log('🎤 Voice status changed:', status);
+					if (voiceStatusText) {
+						switch (status) {
+							case 'listening':
+								voiceStatusText.textContent = 'Listening...';
+								voiceStatusText.style.color = '#51cf66';
+								break;
+							case 'stopped':
+								voiceStatusText.textContent = 'Stopped';
+								voiceStatusText.style.color = '#ffd43b';
+								break;
+							case 'error':
+								voiceStatusText.textContent = 'Error';
+								voiceStatusText.style.color = '#ff6b6b';
+								break;
+							default:
+								voiceStatusText.textContent = status;
+								voiceStatusText.style.color = '#ffffff';
+						}
+					}
+				});
+
+				// Start voice capture
+				const started = AudioManager.startVoiceCapture();
+				if (started) {
+					console.log('✓ Voice capture started successfully');
+					AudioManager.playTTS('Voice communication system activated, astronaut. You can now speak to Marti for mission support and guidance.');
+				} else {
+					console.warn('⚠️ Failed to start voice capture');
+					if (voiceStatusText) {
+						voiceStatusText.textContent = 'Failed to start';
+						voiceStatusText.style.color = '#ff6b6b';
+					}
+				}
+			} else {
+				console.warn('⚠️ Voice capture not supported in this browser');
+				if (voiceStatusText) {
+					voiceStatusText.textContent = 'Not supported';
+					voiceStatusText.style.color = '#ff6b6b';
+				}
+				AudioManager.playTTS('Voice communication system not supported in this browser, astronaut. Please use a modern browser like Chrome or Edge for full mission capabilities.');
+			}
+		}, 5000);
 	}, 100);
 });

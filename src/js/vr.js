@@ -38,6 +38,8 @@ import { Scene } from './core/scene';
 import { AudioManager } from './core/audio-manager';
 import './config/apiKeys'; // Load API keys configuration
 import qs from 'qs';
+import { initHelmetHUDCanvas } from './hud/helmet-hud-canvas';
+import { initHelmetHUDWidget } from './hud/helmet-hud-widget';
 
 // Restore the crossOrigin property to its default value.
 // AFRAME modifies it and breaks CORS in some versions of Safari.
@@ -87,6 +89,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		Scene.init(parsedQueryString);
 		Scene.setModeType('360'); // Default to 360 mode
 		Scene.loadSite(site);
+
+		// Initialize helmet HUD components
+		initHelmetHUDCanvas();
+		try { 
+			initHelmetHUDWidget(); 
+		} catch(e) { 
+			console.warn('helmet-hud-widget failed to init', e); 
+		}
 
 		// Test Eleven Labs TTS on page load
 		setTimeout(() => {

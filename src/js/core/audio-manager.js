@@ -28,6 +28,8 @@ class StaticAudioManager {
 		this.currentVO = null;
 		this.disableVO = false;
 		this.disableSFX = false;
+		this.useElevenLabs = false;
+		this.elevenLabsEndpoint = 'https://xosrjtiqqiqcznjxjvtj.supabase.co/functions/v1/eleven-labs-tts';
 
 		const audio = document.createElement( 'audio' );
 		const status = !!( audio.canPlayType && audio.canPlayType( 'audio/mpeg;' ).replace( /no/, '' ) );
@@ -69,6 +71,45 @@ class StaticAudioManager {
 		this.currentAtmosphere.loop = true;
 		this.currentAtmosphere.volume = 0.4;
 		this.currentAtmosphere.play();
+	}
+
+	async playTTS( text, voiceId = '21m00Tcm4TlvDq8ikWAM' ) {
+		this.stopVO();
+
+		if ( this.disableVO ) return;
+
+		try {
+			const response = await fetch( this.elevenLabsEndpoint, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					text: text,
+					voice_id: voiceId
+				})
+			});
+
+			if ( !response.ok ) {
+				console.error( 'Eleven Labs TTS failed:', await response.text() );
+				return null;
+			}
+
+			const audioBlob = await response.blob();
+			const audioUrl = URL.createObjectURL( audioBlob );
+
+			this.currentVO = sono.create( audioUrl );
+			this.currentVO.play();
+
+			return this.currentVO;
+		} catch ( error ) {
+			console.error( 'Error generating TTS:', error );
+			return null;
+		}
+	}
+
+	enableElevenLabs( enable = true ) {
+		this.useElevenLabs = enable;
 	}
 }
 

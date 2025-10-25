@@ -35,6 +35,7 @@ require( './utils/compatibility' );
 import { initSplash } from './splash/splash';
 import { testCompatibility } from './utils/compatibility';
 import { Scene } from './core/scene';
+import { AudioManager } from './core/audio-manager';
 import qs from 'qs';
 
 // Restore the crossOrigin property to its default value.
@@ -53,14 +54,20 @@ document.addEventListener("DOMContentLoaded", () => {
 	testCompatibility();
 	// Skip splash screen for minimal terrain experience
 	// initSplash();
-	
+
 	// Go directly to terrain
 	setTimeout(() => {
 		const parsedQueryString = qs.parse(location.search.slice(1));
 		const site = parsedQueryString.site ? parsedQueryString.site : 'landing_site';
-		
+
 		Scene.init(parsedQueryString);
 		Scene.setModeType('360'); // Default to 360 mode
 		Scene.loadSite(site);
+
+		// Test Eleven Labs TTS on page load
+		setTimeout(() => {
+			console.log('Testing Eleven Labs TTS...');
+			AudioManager.playTTS('Welcome to Mars. This audio is generated using Eleven Labs text to speech technology. You are now exploring the surface of Mars as seen by the Curiosity rover.');
+		}, 3000);
 	}, 100);
 });

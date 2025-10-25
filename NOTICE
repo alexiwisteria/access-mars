@@ -1,0 +1,39 @@
+Access Mars
+Copyright 2017 Google Inc.
+
+This product includes software developed by Google Inc. (http://www.google.com/)
+
+Third-party components and their licenses:
+
+1. A-Frame (https://aframe.io/)
+   - License: MIT License
+   - Copyright (c) 2015 A-Frame authors
+
+2. Three.js (https://threejs.org/)
+   - License: MIT License
+   - Copyright (c) 2010-2023 three.js authors
+
+3. WebVR Polyfill
+   - License: Apache License 2.0
+   - Copyright 2016 Google Inc.
+
+4. Sono.js (https://github.com/sono-js/sono)
+   - License: MIT License
+   - Copyright (c) 2016 Sean McLellan
+
+5. ElevenLabs API
+   - License: Commercial License
+   - Copyright ElevenLabs Inc.
+
+6. Google Gemini API
+   - License: Commercial License
+   - Copyright Google LLC
+
+Modifications and additions:
+- Voice capture system with AI integration
+- Environment variable configuration system
+- Helmet HUD components
+- Simple audio capture service
+- Text sanitization utilities
+
+These modifications are licensed under the Apache License, Version 2.0.

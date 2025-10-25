@@ -12,6 +12,9 @@
 //   See the License for the specific language governing permissions and
 // limitations under the License.
 
+// MODIFICATIONS: Enhanced with voice capture integration, TTS completion callbacks,
+// and pause/resume functionality for AI voice interactions.
+
 
 /**
  * AudioManager

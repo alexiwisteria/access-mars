@@ -12,6 +12,9 @@
 //   See the License for the specific language governing permissions and
 // limitations under the License.
 
+// MODIFICATIONS: Removed automatic TTS messages, added voice capture integration,
+// and helmet HUD initialization for silent voice-only AI interactions.
+
 // Fetch polyfill
 import 'whatwg-fetch'
 
